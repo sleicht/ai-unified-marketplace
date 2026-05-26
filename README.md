@@ -25,8 +25,9 @@ Inception          Elaboration                          Construction
 ─────────────────  ──────────────────────────────────   ────────────────────────────────────────────────
 /requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  /flyway-migration
                                                                           ↘  /implement
-                                                                          ↘  /browserless-test
-                                                                          ↘  /playwright-test
+                                                                          ↘  /implement-ui  (Compose/Ktor)
+                                                                          ↘  /browserless-test or /ktor-test
+                                                                          ↘  /playwright-test or /compose-test
 ```
 
 Each skill picks up where the previous one left off using the files produced along the way (`docs/vision.md`,
@@ -37,10 +38,11 @@ inspect or manually edit these files before continuing.
 schema and produces the same `docs/use_cases.puml`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
-|                      | Inception       | Elaboration                            | Construction                                                                | Transition |
-|----------------------|-----------------|----------------------------------------|-----------------------------------------------------------------------------|------------|
-| **aiup-core**        | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`                                                            |            |
-| **aiup-vaadin-jooq** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test` |            |
+|                               | Inception       | Elaboration                            | Construction                                                                              | Transition |
+|-------------------------------|-----------------|----------------------------------------|-------------------------------------------------------------------------------------------|------------|
+| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`                                                                          |            |
+| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`          |            |
+| **aiup-compose-ktor-exposed** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/implement-ui`<br>`/ktor-test`<br>`/compose-test` |            |
 
 ---
 
@@ -51,16 +53,21 @@ forward workflow would have produced, giving you a documented baseline to work f
   goals (the `/requirements` skill reads this file to derive your requirements catalog — the richer it is, the better
   the results)
 - For the Vaadin/jOOQ plugin: a Maven or Gradle project with Vaadin and jOOQ already on the classpath
+- For the Compose/Ktor/Exposed plugin: a Kotlin Multiplatform Gradle project with Compose Multiplatform, Ktor, Exposed,
+  Flyway, and PostgreSQL conventions already present or planned
 
 ## Installation
 
 ```
 /plugin marketplace add ai-unified-process/marketplace
 /plugin install aiup-core
-/plugin install aiup-vaadin-jooq
+/plugin install aiup-vaadin-jooq              # Vaadin/jOOQ projects
+/plugin install aiup-compose-ktor-exposed    # Compose/Ktor/Exposed projects
 ```
 
-Install only `aiup-core` if you are using a different tech stack — the methodology skills are stack-agnostic.
+Install `aiup-core` plus the stack plugin you need. Use `aiup-vaadin-jooq` for Vaadin/jOOQ projects and
+`aiup-compose-ktor-exposed` for Kotlin Multiplatform / Compose / Ktor / Exposed projects. Install only `aiup-core` if
+using a different tech stack — the methodology skills are stack-agnostic.
 
 ### Verify installation
 
@@ -128,10 +135,11 @@ latest release.
 Prefer not to use Tessl? You can wire the skills in by hand:
 
 1. `git clone https://github.com/ai-unified-process/marketplace.git` next to your project (or add as a submodule).
-2. Make the skill folders visible to your tool — either copy `aiup-core/skills/*/` and `aiup-vaadin-jooq/skills/*/`
-   into your tool's skills directory, or symlink them
+2. Make the skill folders visible to your tool — either copy `aiup-core/skills/*/`, `aiup-vaadin-jooq/skills/*/`,
+   and/or `aiup-compose-ktor-exposed/skills/*/` into your tool's skills directory, or symlink them
    (e.g. `ln -s /path/to/marketplace/aiup-core/skills/requirements ~/.codex/skills/requirements`).
-3. Configure the MCP servers from `aiup-core/.mcp.json` and `aiup-vaadin-jooq/.mcp.json` in your tool's MCP config file.
+3. Configure the MCP servers from `aiup-core/.mcp.json` plus the stack plugin you installed
+   (`aiup-vaadin-jooq/.mcp.json` or `aiup-compose-ktor-exposed/.mcp.json`) in your tool's MCP config file.
 4. Trigger skills the same way you would in Claude Code — say "write requirements" or invoke `/requirements`. The tool
    matches your prompt against each skill's `description` and loads the matching `SKILL.md`. File outputs
    (`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases.puml`, `docs/use_cases/UC-*.md`) are identical
@@ -205,7 +213,7 @@ See the [Codex skills docs](https://developers.openai.com/codex/skills) and the
 - **Argument passing** (`/use-case-spec UC-001`) works in all four tools but the syntax varies — Codex, Gemini CLI,
   and Cursor accept positional arguments after the skill name; in Copilot, pass the ID inline in the chat message
   after invoking the skill.
-- **HTTP MCP servers**: most aiup-vaadin-jooq servers are HTTP. Every tool listed above supports HTTP MCP. If you use
+- **HTTP MCP servers**: most stack-plugin documentation servers are HTTP. Every tool listed above supports HTTP MCP. If you use
   a client that is stdio-only, you need an HTTP-to-stdio MCP bridge.
 - **Cursor has no global skills directory** — copy or symlink the marketplace skills into each project's
   `.cursor/skills/`.
@@ -275,8 +283,11 @@ spec is a single document — Claude will not bundle multiple use cases together
 ```
 
 Claude reads `docs/entity_model.md` and writes versioned Flyway migrations (`V001__create_*.sql`, `V002__…`) into
-`src/main/resources/db/migration`. Primary keys use sequences (no auto-increment), foreign keys and check constraints
-are derived from the entity model. Run `mvn flyway:migrate` to apply.
+the stack's migration directory.
+
+- Vaadin/jOOQ projects use the existing Maven/Gradle layout and jOOQ-compatible SQL.
+- Compose/Ktor/Exposed projects use PostgreSQL/Flyway style with `BIGSERIAL` primary keys, explicit constraints,
+  indexes, `TIMESTAMPTZ` audit columns, `updated_at` triggers, and Exposed table compatibility.
 
 ---
 
@@ -286,22 +297,42 @@ are derived from the entity model. Run `mvn flyway:migrate` to apply.
 /implement UC-001
 ```
 
-Claude reads the use case spec, the entity model, and existing code to learn your conventions, then implements the data
-access layer with jOOQ and the UI with Vaadin. It compiles after each layer and stops on errors. It does **not** write
-tests — those have dedicated skills.
+Claude reads the use case spec, the entity model, and existing code to learn your conventions, then implements the use
+case in the active stack plugin.
+
+- Vaadin/jOOQ: implements the data access layer with jOOQ and the UI with Vaadin.
+- Compose/Ktor/Exposed: implements backend code using shared DTOs, domain models, repository ports, Exposed
+  persistence, application services, Ktor routes, and Koin wiring.
+
+It compiles after each layer and stops on errors. It does **not** write tests — those have dedicated skills.
 
 ---
 
-### Step 7 — Write Browserless unit tests
+### Step 7 — Implement Compose UI *(Compose/Ktor/Exposed only)*
 
 ```
-/browserless-test UC-001
+/implement-ui UC-001
 ```
 
-Claude generates server-side Vaadin tests using the official **Vaadin Browserless** framework
+Claude implements Compose Multiplatform UI code for the use case: Ktor API client calls, plain ViewModel state,
+constructor-injected dependencies, small Material 3 composables, and shared DTO usage.
+
+---
+
+### Step 8 — Write server-side unit tests
+
+```
+/browserless-test UC-001   # Vaadin/jOOQ
+/ktor-test UC-001          # Compose/Ktor/Exposed
+```
+
+For Vaadin/jOOQ, Claude generates server-side Vaadin tests using the official **Vaadin Browserless** framework
 (`com.vaadin:browserless-test-junit6`) — no browser required. Tests cover navigation, component interactions, form
 validation, grid operations, and notifications. Test data is seeded via Flyway migrations under
 `src/test/resources/db/migration`; transaction boundaries are preserved (no `@Transactional` on tests).
+
+For Compose/Ktor/Exposed, Claude generates Ktor `testApplication` tests with fake ports, route auth checks, and
+Testcontainers/Flyway integration tests when persistence behavior needs a real PostgreSQL database.
 
 > Browserless Testing is free and open source under Apache 2.0 since Vaadin 25.1. It is the official successor to UI
 > Unit Testing (formerly part of the commercial TestBench) and replaces the community Karibu Testing library as the
@@ -310,15 +341,19 @@ validation, grid operations, and notifications. Test data is seeded via Flyway m
 
 ---
 
-### Step 8 — Write Playwright integration tests
+### Step 9 — Write UI / end-to-end tests
 
 ```
-/playwright-test UC-001
+/playwright-test UC-001    # Vaadin/jOOQ
+/compose-test UC-001       # Compose/Ktor/Exposed
 ```
 
-Claude generates browser-based end-to-end tests against the running application (default: `http://localhost:8080`) using
-the Drama Finder library for type-safe, accessibility-first element wrappers. Tests are written black-box — they do not
-look at the implementation — and never use raw Playwright locators or `Thread.sleep()`.
+For Vaadin/jOOQ, Claude generates browser-based end-to-end tests against the running application (default:
+`http://localhost:8080`) using the Drama Finder library for type-safe, accessibility-first element wrappers. Tests are
+written black-box — they do not look at the implementation — and never use raw Playwright locators or `Thread.sleep()`.
+
+For Compose/Ktor/Exposed, Claude generates UI-side tests in the lightest useful layer: Ktor `MockEngine` API-client
+tests, coroutine ViewModel tests, and Compose Multiplatform semantics tests when screen-test dependencies exist.
 
 ---
 
@@ -483,6 +518,30 @@ codebase so legacy projects can join the AIUP workflow without rewriting documen
 
 ---
 
+### `/flyway-migration` — Flyway Migrations for Compose/Ktor/Exposed
+
+**Purpose:** Generates PostgreSQL Flyway migrations compatible with Exposed table definitions.
+
+**Usage:**
+
+```
+/flyway-migration
+```
+
+**What it does:**
+
+1. Reads `docs/entity_model.md` and existing migrations to preserve naming and migration style
+2. Creates tables with `BIGSERIAL` primary keys, explicit constraints, indexes, and `TIMESTAMPTZ` audit columns
+3. Adds `updated_at` trigger functions when the project uses automatic update timestamps
+4. Keeps SQL compatible with Exposed `Table("...")`, `long("id").autoIncrement()`, and explicit mapper code
+5. Writes migrations under the discovered Flyway migration directory, typically `src/main/resources/db/migration`
+
+**Input:** `docs/entity_model.md`
+**Output:** `V*.sql` Flyway migrations
+**Plugin:** `aiup-compose-ktor-exposed`
+
+---
+
 ### `/implement` — Use Case Implementation
 
 **Purpose:** Implements a use case end-to-end using Vaadin for the UI layer and jOOQ for the data access layer.
@@ -505,6 +564,55 @@ codebase so legacy projects can join the AIUP workflow without rewriting documen
 **Input:** Use case ID as argument
 **Output:** Vaadin view + jOOQ data access classes
 **Plugin:** `aiup-vaadin-jooq`
+
+---
+
+### `/implement` — Backend Implementation for Compose/Ktor/Exposed
+
+**Purpose:** Implements backend use cases using shared DTOs, Ktor routes, Exposed persistence, and Koin DI.
+
+**Usage:**
+
+```
+/implement UC-001
+```
+
+**What it does:**
+
+1. Reads the use case spec, entity model, migrations, and existing code conventions
+2. Creates or updates shared `@Serializable` DTOs in the KMP shared module
+3. Adds domain models, repository ports, Exposed tables/repositories, application services, and route functions in a
+   vertical-slice module layout
+4. Wires dependencies through the existing Koin module and route entry points
+5. Runs focused diagnostics/build checks and leaves tests to `/ktor-test` and `/compose-test`
+
+**Input:** Use case ID as argument
+**Output:** Ktor backend + shared DTO implementation
+**Plugin:** `aiup-compose-ktor-exposed`
+
+---
+
+### `/implement-ui` — Compose Multiplatform UI Implementation
+
+**Purpose:** Implements Compose Multiplatform UI for a specified use case.
+
+**Usage:**
+
+```
+/implement-ui UC-001
+```
+
+**What it does:**
+
+1. Reads the use case spec and shared DTO/API contract
+2. Updates the Ktor API client with typed suspend functions and JSON serialization
+3. Adds plain ViewModel classes with Compose state and constructor-injected dependencies
+4. Creates small Material 3 composables using accessible text/content descriptions
+5. Wires screens into the existing app/navigation structure without introducing global service locators
+
+**Input:** Use case ID as argument
+**Output:** Compose UI screen, ViewModel, and API client code
+**Plugin:** `aiup-compose-ktor-exposed`
 
 ---
 
@@ -565,6 +673,54 @@ tree without launching a browser.
 **Input:** Use case ID as argument
 **Output:** Karibu test class under `src/test/java`
 **Plugin:** `aiup-vaadin-jooq`
+
+---
+
+### `/ktor-test` — Ktor Backend Tests
+
+**Purpose:** Creates backend tests for Compose/Ktor/Exposed services.
+
+**Usage:**
+
+```
+/ktor-test UC-001
+```
+
+**What it does:**
+
+1. Reads the use case spec and backend implementation
+2. Creates Ktor `testApplication` route tests with fake repository/service ports
+3. Covers success, validation, not-found, auth, and key alternative flows
+4. Adds Ktor `MockEngine` tests for outbound clients when needed
+5. Adds Testcontainers + Flyway repository integration tests when persistence behavior needs real PostgreSQL
+
+**Input:** Use case ID as argument
+**Output:** Kotlin tests under the backend module's test source sets
+**Plugin:** `aiup-compose-ktor-exposed`
+
+---
+
+### `/compose-test` — Compose UI Tests
+
+**Purpose:** Creates UI-side tests for Compose/Ktor client code.
+
+**Usage:**
+
+```
+/compose-test UC-001
+```
+
+**What it does:**
+
+1. Reads the use case spec and UI implementation
+2. Creates Ktor `MockEngine` API-client tests in `commonTest`
+3. Creates coroutine ViewModel tests with fakes and `runTest`
+4. Creates Compose Multiplatform semantics tests with `runComposeUiTest` when dependencies exist
+5. Avoids real network calls and Android-only test APIs in multiplatform modules
+
+**Input:** Use case ID as argument
+**Output:** Kotlin tests under the UI module's `commonTest` or matching source set
+**Plugin:** `aiup-compose-ktor-exposed`
 
 ---
 
@@ -645,9 +801,10 @@ and `docs/entity_model.md` for product context before making decisions.
 3. `/use-case-diagram`    → produces `docs/use_cases.puml`
 4. `/use-case-spec UC-XX` → produces `docs/use_cases/UC-XX-*.md`
 5. `/flyway-migration`    → produces `src/main/resources/db/migration/V*.sql`
-6. `/implement UC-XX`     → implements the use case (Vaadin + jOOQ)
-7. `/browserless-test UC-XX` → server-side unit tests (recommended, free since Vaadin 25.1)
-8. `/playwright-test UC-XX` → browser-based integration tests
+6. `/implement UC-XX`     → implements the use case backend (Vaadin/jOOQ or Ktor/Exposed)
+7. `/implement-ui UC-XX`  → implements Compose UI when using Compose/Ktor/Exposed
+8. `/browserless-test UC-XX` or `/ktor-test UC-XX` → server-side tests
+9. `/playwright-test UC-XX` or `/compose-test UC-XX` → UI/end-to-end tests
 
 Never skip the spec for a use case before implementing it.
 Always read the entity model before writing data access code.
@@ -701,7 +858,7 @@ to be reviewed and corrected by hand. Do not skip the review.
 not.
 
 **Keep `aiup-core` even on non-Vaadin stacks.** The methodology skills are stack-agnostic — only the construction-phase
-skills are tied to Vaadin/jOOQ. You can pair `aiup-core` with any implementation toolchain.
+skills are tied to a stack plugin such as Vaadin/jOOQ or Compose/Ktor/Exposed. You can pair `aiup-core` with any implementation toolchain.
 
 **Commit `docs/` to version control.** The vision, requirements, entity model, and use case specs are your project's
 institutional memory — they explain *why* the code is the way it is, which is invaluable for onboarding and debugging
@@ -738,11 +895,12 @@ their plugin (e.g., `aiup-core:requirements`).
 An **MCP (Model Context Protocol) server** is an external service that provides Claude with access to specialized tools
 and documentation. The plugins in this marketplace ship with the following servers:
 
-| Server            | Plugin             | Description                                  |
-|-------------------|--------------------|----------------------------------------------|
-| **context7**      | `aiup-core`        | General library documentation lookup         |
-| **Vaadin**        | `aiup-vaadin-jooq` | Vaadin component and framework documentation |
-| **KaribuTesting** | `aiup-vaadin-jooq` | Karibu testing framework documentation       |
-| **jOOQ**          | `aiup-vaadin-jooq` | jOOQ DSL and code generation reference       |
-| **JavaDocs**      | `aiup-vaadin-jooq` | Java API documentation lookup                |
-| **Playwright**    | `aiup-vaadin-jooq` | Browser automation for integration tests     |
+| Server            | Plugin                      | Description                                          |
+|-------------------|-----------------------------|------------------------------------------------------|
+| **context7**      | `aiup-core`                 | General library documentation lookup                 |
+| **Vaadin**        | `aiup-vaadin-jooq`          | Vaadin component and framework documentation         |
+| **KaribuTesting** | `aiup-vaadin-jooq`          | Karibu testing framework documentation               |
+| **jOOQ**          | `aiup-vaadin-jooq`          | jOOQ DSL and code generation reference               |
+| **JavaDocs**      | `aiup-vaadin-jooq`          | Java API documentation lookup                        |
+| **Playwright**    | `aiup-vaadin-jooq`          | Browser automation for integration tests             |
+| **KotlinDocs**    | `aiup-compose-ktor-exposed` | Kotlin, Compose, Ktor, and Exposed API documentation |

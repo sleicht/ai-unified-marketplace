@@ -1,203 +1,211 @@
 ---
 name: implement
 description: >
-  Implements use cases by creating shared @Serializable DTOs in commonMain,
-  Exposed DSL table definitions and queries for the data access layer, and
-  Ktor route handlers for the REST API. Use when the user asks to "implement
-  a use case", "build the backend", "create the API", "write the data access
-  layer", or mentions Ktor implementation, Exposed queries, REST endpoints,
-  or backend development.
+  Implements backend use cases in the Compose/Ktor/Exposed stack using the
+  current reference service style: vertical server modules, domain
+  models, repository ports, Exposed persistence, application services, Ktor
+  routes, Koin DI, and shared DTOs. Use when the user asks to "implement a use
+  case", "build the backend", "create the API", "write the data access layer",
+  or mentions Ktor implementation, Exposed repositories, REST endpoints, or
+  backend development.
 ---
 
 # Implement Use Case (Backend)
 
 ## Instructions
 
-Implement the backend for use case $ARGUMENTS using:
-- Shared `@Serializable` data classes in `commonMain` for DTOs
-- Exposed DSL for data access (PostgreSQL)
-- Ktor route handlers for REST endpoints
-- Koin for dependency injection
+Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
 
-Don't create tests -- there are the `ktor-test` and `compose-test` skills for that.
-Don't create UI screens -- there is the `implement-ui` skill for that.
+Use:
+- Vertical server slices under `modules/<feature>/`
+- Domain models with validation in `domain/model`
+- Repository interfaces in `domain/repository`
+- Exposed table objects and repository implementations in `infrastructure/persistence`
+- Application services in `application` for orchestration
+- Ktor routes in `infrastructure/rest`
+- Shared `@Serializable` DTOs in the shared KMP module for API/UI boundaries
+- Koin registration in `di/DependencyInjection.kt`
+
+Do not create tests. Use `ktor-test` and `compose-test` for tests.
+Do not create UI screens. Use `implement-ui` for UI.
+
+## Required Reference
+
+Read `../_references/service-style.md` before editing code. Apply its conventions for:
+- Multi-module layout discovery
+- Server package architecture
+- Domain/repository/persistence/application/rest boundaries
+- DTO placement and mapping rules
+- Route authorization and API Gateway annotations
+- Koin module composition
+- Build and verification commands
 
 ## DO NOT
 
-- Create test classes (use dedicated testing skills instead)
-- Create Compose UI screens (use `implement-ui` instead)
-- Use Exposed DAO style (use DSL style only)
-- Use `runBlocking` inside route handlers (Ktor handlers are already suspending)
-- Put server-only code in `commonMain` (Exposed tables and Ktor routes go in the server module)
-- Forget `@Serializable` annotation on DTOs
+- Put Exposed table access directly inside routes
+- Use Exposed DAO style when project uses DSL repositories
+- Put server-only code in `commonMain`
+- Use `runBlocking` inside route handlers or repositories
+- Inject dependencies inside domain models
+- Skip domain validation for business invariants from the use case
+- Create one large route function when existing style uses small private helpers
+- Bypass route auth helpers in Company-style services
+- Return internal domain models when shared response DTOs already exist or are required
 
-## Architecture Layers
+## Target Architecture
 
+```text
+<server-module>/src/main/kotlin/<base-package>/
+├── di/DependencyInjection.kt
+└── modules/<feature>/
+    ├── api/                         # Service/source ports, public API interfaces
+    ├── application/                 # Use-case orchestration, cross-layer mappers
+    ├── domain/
+    │   ├── model/                   # Domain model + enums + init validation
+    │   └── repository/              # Repository interfaces
+    └── infrastructure/
+        ├── persistence/             # Exposed Table + ExposedXxxRepository
+        └── rest/                    # Ktor Route extension + response mappers
+
+<shared-module>/src/commonMain/kotlin/<base-package>/shared/
+└── XxxRequest.kt / XxxResponse.kt / XxxListItem.kt
 ```
-commonMain/
-  └── model/           # @Serializable DTOs shared between client and server
-      └── PersonDto.kt
 
-server (jvmMain)/
-  ├── db/              # Exposed table definitions
-  │   └── PersonTable.kt
-  ├── repository/      # Data access using Exposed DSL
-  │   └── PersonRepository.kt
-  ├── route/           # Ktor route handlers
-  │   └── PersonRoutes.kt
-  └── di/              # Koin module definitions
-      └── PersonModule.kt
-```
+## Implementation Patterns
 
-> **Note:** The actual package/directory structure must be discovered from the existing project.
-> The above is a reference pattern — always follow existing conventions.
-
-## Shared DTO Pattern
+### Domain Model
 
 ```kotlin
-// In commonMain
-@Serializable
-data class PersonDto(
+data class Patient(
     val id: Long? = null,
-    val firstName: String,
+    val partnerContractNumber: String? = null,
+    val ahvNumber: String? = null,
     val lastName: String,
-    val email: String,
-    val birthDate: LocalDate? = null
-)
-```
-
-## Exposed Table Definition
-
-```kotlin
-// In server module
-object Persons : LongIdTable("person") {
-    val firstName = varchar("first_name", 100)
-    val lastName = varchar("last_name", 100)
-    val email = varchar("email", 255).uniqueIndex()
-    val birthDate = date("birth_date").nullable()
+    val firstName: String,
+    val active: Boolean = true,
+    val createdAt: Instant? = null,
+    val updatedAt: Instant? = null,
+) {
+    init {
+        require(partnerContractNumber != null || ahvNumber != null) {
+            "At least one of partnerContractNumber or ahvNumber must be set"
+        }
+    }
 }
 ```
 
-## Repository Pattern
+### Repository Port
 
 ```kotlin
-// In server module
-class PersonRepository {
-    suspend fun findAll(): List<PersonDto> = newSuspendedTransaction {
-        Persons.selectAll().map { it.toPersonDto() }
-    }
+interface PatientRepository {
+    suspend fun create(patient: Patient): Patient
+    suspend fun update(patient: Patient): Patient
+    suspend fun findById(id: Long): Patient?
+    suspend fun findAll(limit: Int): List<Patient>
+}
+```
 
-    suspend fun findById(id: Long): PersonDto? = newSuspendedTransaction {
-        Persons.selectAll().where { Persons.id eq id }
-            .map { it.toPersonDto() }
+### Exposed Table
+
+```kotlin
+object PatientTable : Table("patient") {
+    val id = long("id").autoIncrement()
+    val partnerContractNumber = varchar("partner_contract_number", 50).nullable()
+    val active = bool("active").default(true)
+    val createdAt = timestampWithTimeZone("created_at")
+    val updatedAt = timestampWithTimeZone("updated_at")
+
+    override val primaryKey = PrimaryKey(id)
+}
+```
+
+Use `Table` plus `long("id").autoIncrement()` when migrations use `BIGSERIAL`. Use Exposed v1 imports when the project already does:
+
+```kotlin
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+```
+
+### Exposed Repository
+
+```kotlin
+class ExposedPatientRepository : PatientRepository {
+    override suspend fun findById(id: Long): Patient? = suspendTransaction {
+        PatientTable.selectAll()
+            .where { PatientTable.id eq id }
+            .map { it.toPatient() }
             .singleOrNull()
     }
 
-    suspend fun create(dto: PersonDto): Long = newSuspendedTransaction {
-        Persons.insertAndGetId {
-            it[firstName] = dto.firstName
-            it[lastName] = dto.lastName
-            it[email] = dto.email
-            it[birthDate] = dto.birthDate
-        }.value
-    }
-
-    suspend fun update(id: Long, dto: PersonDto): Boolean = newSuspendedTransaction {
-        Persons.update({ Persons.id eq id }) {
-            it[firstName] = dto.firstName
-            it[lastName] = dto.lastName
-            it[email] = dto.email
-            it[birthDate] = dto.birthDate
-        } > 0
-    }
-
-    suspend fun delete(id: Long): Boolean = newSuspendedTransaction {
-        Persons.deleteWhere { Persons.id eq id } > 0
-    }
-
-    private fun ResultRow.toPersonDto() = PersonDto(
-        id = this[Persons.id].value,
-        firstName = this[Persons.firstName],
-        lastName = this[Persons.lastName],
-        email = this[Persons.email],
-        birthDate = this[Persons.birthDate]
-    )
+    private fun ResultRow.toPatient() =
+        Patient(
+            id = this[PatientTable.id],
+            partnerContractNumber = this[PatientTable.partnerContractNumber],
+            active = this[PatientTable.active],
+        )
 }
 ```
 
-## Ktor Route Pattern
+Use private `ResultRow.toXxx()` repository mappers. Use private column-mapping helpers for insert/update symmetry.
+
+### Route Pattern
 
 ```kotlin
-// In server module
-fun Route.personRoutes() {
-    val repository by inject<PersonRepository>()
+fun Route.patientRoutes() {
+    val patientRepository by inject<PatientRepository>()
 
-    route("/api/persons") {
-        get {
-            call.respond(repository.findAll())
-        }
-        get("/{id}") {
-            val id = call.parameters["id"]?.toLongOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            val person = repository.findById(id)
-                ?: return@get call.respond(HttpStatusCode.NotFound)
-            call.respond(person)
-        }
-        post {
-            val dto = call.receive<PersonDto>()
-            val id = repository.create(dto)
-            call.respond(HttpStatusCode.Created, dto.copy(id = id))
-        }
-        put("/{id}") {
-            val id = call.parameters["id"]?.toLongOrNull()
-                ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            val dto = call.receive<PersonDto>()
-            if (repository.update(id, dto)) {
-                call.respond(HttpStatusCode.OK, dto.copy(id = id))
-            } else {
-                call.respond(HttpStatusCode.NotFound)
-            }
-        }
-        delete("/{id}") {
-            val id = call.parameters["id"]?.toLongOrNull()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            if (repository.delete(id)) {
-                call.respond(HttpStatusCode.NoContent)
-            } else {
-                call.respond(HttpStatusCode.NotFound)
-            }
-        }
+    route("/patients") {
+        hasEmployeeOrMicroserviceAuth()
+        listPatients { patientRepository }
+        getPatientById { patientRepository }
     }
 }
-```
 
-## Koin Module Pattern
-
-```kotlin
-// In server module
-val personModule = module {
-    single { PersonRepository() }
+private fun Route.getPatientById(patientRepository: () -> PatientRepository) {
+    get("/{id}") { respondPatientById(call, patientRepository()) }
 }
 ```
 
-## Build Tool Discovery
+Keep route blocks small. Use route-local mappers when mapping domain models to shared response DTOs.
 
-- Check for `.mise.toml` in the project root. If present, use `mise run build` (or the equivalent task name).
-- If no mise configuration exists, fall back to `./gradlew build`.
+### DI Pattern
+
+```kotlin
+private val repositoryModule = module {
+    single<PatientRepository> { ExposedPatientRepository() }
+}
+
+private val serviceModule = module {
+    single<MassImportService> {
+        MassImportServiceImpl(
+            patientRepository = get(),
+            transactionRunner = get(),
+        )
+    }
+}
+
+val appModule = module { includes(repositoryModule, serviceModule) }
+```
 
 ## Workflow
 
-1. Read the use case specification from `docs/use_cases/`
-2. Read the entity model from `docs/entity_model.md`
-3. Check existing code for patterns and conventions (inspect `settings.gradle.kts` for module names)
-4. Create `@Serializable` DTOs in `commonMain`
-5. Create Exposed table definitions in the server module (if not already present from migrations)
-6. Implement the repository using Exposed DSL
-7. Implement the Ktor route handlers
-8. Register the Koin module
-9. Wire routes into the Ktor application module
-10. Verify the implementation compiles successfully
+1. Read the use case spec from `docs/use_cases/`.
+2. Read `docs/entity_model.md` and `docs/architecture.md` when present.
+3. Read `../_references/service-style.md`.
+4. Discover module names from `settings.gradle.kts` and package names from existing files.
+5. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.
+6. Create or update shared DTOs only for API/UI boundaries.
+7. Create or update domain models and repository interfaces.
+8. Create or update Exposed table objects matching Flyway schema.
+9. Implement Exposed repositories using `suspendTransaction` and private mappers.
+10. Implement application service only when orchestration spans multiple dependencies or transactions.
+11. Implement Ktor routes with auth helpers and route-local mappers.
+12. Register repositories/services in Koin DI.
+13. Wire routes in top-level `Routing.kt` under existing `/api/v1` structure.
+14. Run LSP diagnostics for touched Kotlin files.
+15. Verify with project command: prefer `mise run compile`, then `mise run verify`; fallback to module Gradle tasks.
 
 ## Resources
 
-- Use the KotlinDocs MCP server for Exposed DSL and Ktor API reference
+- `../_references/service-style.md` — canonical service style
+- KotlinDocs MCP server — Ktor, Exposed, Koin, kotlinx.serialization reference

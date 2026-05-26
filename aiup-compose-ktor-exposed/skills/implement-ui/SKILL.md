@@ -1,293 +1,210 @@
 ---
 name: implement-ui
 description: >
-  Implements Compose Multiplatform screens and wires them to the Ktor backend
-  via Ktor Client using shared @Serializable DTOs. Use when the user asks to
-  "implement the UI", "create a screen", "build the Compose view", "wire the
-  frontend", or mentions Compose Multiplatform screen, UI implementation,
-  client-side development, or frontend for a use case.
+  Implements Compose Multiplatform UI for use cases in the reference service
+  style: Ktor API client, plain Compose-state ViewModels,
+  constructor-injected dependencies, small Material 3 composables, shared DTOs,
+  and multiplatform-safe utilities. Use when the user asks to "implement the UI",
+  "create a screen", "build the Compose view", "wire the frontend", or mentions
+  Compose Multiplatform screens, UI implementation, client-side development, or
+  frontend for a use case.
 ---
 
 # Implement Use Case (UI)
 
 ## Instructions
 
-Implement the Compose Multiplatform UI for use case $ARGUMENTS using:
-- Compose Multiplatform screens with Material 3 components
-- Ktor Client for API calls to the backend
-- Shared `@Serializable` DTOs from `commonMain`
-- Koin for dependency injection
+Implement the Compose Multiplatform UI for use case $ARGUMENTS. Follow existing UI conventions first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
 
-Don't create tests -- there is the `compose-test` skill for that.
-Don't create backend code -- there is the `implement` skill for that.
+Use:
+- `service-ui`/`*-ui` KMP module or discovered UI module
+- Shared `@Serializable` DTOs from the shared module
+- Ktor Client in a dedicated API client class
+- Plain ViewModel classes with Compose `mutableStateOf`
+- `rememberCoroutineScope()` passed into ViewModels
+- Small private composables and Material 3 components
+- Constructor injection via top-level `App(apiClient: ...)`, not Koin inside composables
 
-## Prerequisites
+Do not create backend code. Use `implement` for backend.
+Do not create tests. Use `compose-test` for UI tests and Ktor MockEngine tests.
 
-The backend must be implemented first (shared DTOs, Ktor routes, Exposed repositories).
-The `@Serializable` DTOs in `commonMain` must exist before building the UI.
+## Required Reference
+
+Read `../_references/service-style.md` before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
 
 ## DO NOT
 
-- Create test classes (use `compose-test` instead)
-- Create backend code (use `implement` instead)
-- Duplicate DTO definitions (import from `commonMain`)
-- Use platform-specific APIs without `expect`/`actual` declarations
-- Block the UI thread with synchronous network calls
-- Use `runBlocking` in composables (use `LaunchedEffect` or ViewModel coroutine scopes)
+- Duplicate DTOs in the UI module
+- Use `runBlocking` in composables or ViewModels
+- Make composables own long-lived HTTP clients directly
+- Use Koin injection inside composables when the existing UI uses constructor injection
+- Use platform-specific APIs in `commonMain` without `expect`/`actual`
+- Put business orchestration into composables; keep it in ViewModels or API clients
+- Create Android-only UI test APIs in a multiplatform UI module
 
-## Architecture Layers
+## Target UI Architecture
 
+```text
+<ui-module>/src/commonMain/kotlin/<base-package>/ui/
+├── api/
+│   └── ServiceApiClient.kt              # Ktor Client calls, JSON config, auth header
+├── screen/
+│   ├── App.kt                       # App root, MaterialTheme, navigation/tabs
+│   ├── ErrorBanner.kt               # Reusable error display
+│   └── <Feature>Screen.kt           # Screen + private composables
+├── util/
+│   └── PlatformUtil.kt              # expect/actual only when needed
+└── viewmodel/
+    └── <Feature>ViewModel.kt        # Plain state holder + coroutine actions
 ```
-commonMain/
-  └── model/              # @Serializable DTOs (already created by /implement)
-      └── PersonDto.kt
-
-UI module (composeApp / shared):
-  ├── data/
-  │   └── PersonApiClient.kt    # Ktor Client calls
-  ├── ui/
-  │   ├── PersonListScreen.kt   # List/overview screen
-  │   └── PersonDetailScreen.kt # Detail/edit screen
-  └── di/
-      └── UiModule.kt           # Koin module for UI dependencies
-```
-
-> **Note:** The actual package/directory structure must be discovered from the existing project.
-> The above is a reference pattern -- always follow existing conventions.
 
 ## API Client Pattern
 
 ```kotlin
-// In the UI module (commonMain or composeApp)
-class PersonApiClient(private val httpClient: HttpClient) {
-    suspend fun getAll(): List<PersonDto> =
-        httpClient.get("/api/persons").body()
-
-    suspend fun getById(id: Long): PersonDto =
-        httpClient.get("/api/persons/$id").body()
-
-    suspend fun create(dto: PersonDto): PersonDto =
-        httpClient.post("/api/persons") {
-            contentType(ContentType.Application.Json)
-            setBody(dto)
-        }.body()
-
-    suspend fun update(id: Long, dto: PersonDto): PersonDto =
-        httpClient.put("/api/persons/$id") {
-            contentType(ContentType.Application.Json)
-            setBody(dto)
-        }.body()
-
-    suspend fun delete(id: Long) {
-        httpClient.delete("/api/persons/$id")
-    }
+private val serviceJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
 }
-```
 
-## Compose Screen Patterns
+internal fun HttpClientConfig<*>.installServiceContentNegotiation() {
+    install(ContentNegotiation) { json(serviceJson) }
+}
 
-### List Screen
+internal fun createServiceHttpClient(): HttpClient = HttpClient { installServiceContentNegotiation() }
 
-```kotlin
-@Composable
-fun PersonListScreen(
-    onPersonClick: (Long) -> Unit,
-    onAddClick: () -> Unit
+class ServiceApiClient(
+    baseUrl: String = "http://localhost:5600",
+    private val bearerToken: String = DEFAULT_POC_EMPLOYEE_TOKEN,
+    val httpClient: HttpClient = createServiceHttpClient(),
 ) {
-    val apiClient = koinInject<PersonApiClient>()
-    var persons by remember { mutableStateOf<List<PersonDto>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf<String?>(null) }
+    private val apiBase = "${baseUrl.trimEnd('/')}/api/v1"
 
-    LaunchedEffect(Unit) {
-        try {
-            persons = apiClient.getAll()
-        } catch (e: Exception) {
-            error = e.message
-        } finally {
-            isLoading = false
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Persons") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add Person")
+    suspend fun listPatients(limit: Int = 50): List<PatientListItem> =
+        httpClient
+            .get("$apiBase/patients") {
+                bearerAuth(bearerToken)
+                parameter("limit", limit)
             }
-        }
-    ) { padding ->
-        when {
-            isLoading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            error != null -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Error: $error", color = MaterialTheme.colorScheme.error)
-                }
-            }
-            else -> {
-                LazyColumn(contentPadding = padding) {
-                    items(persons, key = { it.id!! }) { person ->
-                        PersonListItem(
-                            person = person,
-                            onClick = { onPersonClick(person.id!!) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PersonListItem(person: PersonDto, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text("${person.firstName} ${person.lastName}") },
-        supportingContent = { Text(person.email) },
-        modifier = Modifier.clickable(onClick = onClick)
-    )
+            .body()
 }
 ```
 
-### Detail/Edit Screen
+Keep base URL normalization (`trimEnd('/')`) and endpoint prefix (`/api/v1`) consistent with the backend.
+
+## ViewModel Pattern
 
 ```kotlin
-@Composable
-fun PersonDetailScreen(
-    personId: Long?,
-    onNavigateBack: () -> Unit
+class PatientViewModel(
+    private val api: ServiceApiClient,
+    private val scope: CoroutineScope,
 ) {
-    val apiClient = koinInject<PersonApiClient>()
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var isSaving by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    var patients by mutableStateOf<List<PatientListItem>>(emptyList())
+        private set
 
-    LaunchedEffect(personId) {
-        if (personId != null) {
-            val person = apiClient.getById(personId)
-            firstName = person.firstName
-            lastName = person.lastName
-            email = person.email
-        }
-    }
+    var selectedPatient by mutableStateOf<PatientDetail?>(null)
+        private set
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(if (personId == null) "New Person" else "Edit Person") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Button(
-                onClick = {
-                    scope.launch {
-                        isSaving = true
-                        try {
-                            val dto = PersonDto(
-                                id = personId,
-                                firstName = firstName,
-                                lastName = lastName,
-                                email = email
-                            )
-                            if (personId == null) {
-                                apiClient.create(dto)
-                            } else {
-                                apiClient.update(personId, dto)
-                            }
-                            onNavigateBack()
-                        } catch (e: Exception) {
-                            snackbarHostState.showSnackbar("Error: ${e.message}")
-                        } finally {
-                            isSaving = false
-                        }
-                    }
-                },
-                enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (isSaving) "Saving..." else "Save")
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var error by mutableStateOf<String?>(null)
+        private set
+
+    var searchQuery by mutableStateOf("")
+
+    fun loadPatients() {
+        scope.launch {
+            isLoading = true
+            error = null
+            try {
+                patients = api.listPatients(limit = 100)
+            } catch (e: Exception) {
+                error = "Failed to load patients: ${e.message}"
+            } finally {
+                isLoading = false
             }
         }
     }
 }
 ```
 
-## Koin Module Pattern
+Use private setters for state that only ViewModel actions mutate. Keep user input state public only when simple two-way binding is needed.
+
+## App Wiring Pattern
 
 ```kotlin
-val uiModule = module {
-    single {
-        HttpClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    isLenient = true
-                })
-            }
-            defaultRequest {
-                url("http://localhost:8080")
-            }
-        }
+@Composable
+fun App(apiClient: ServiceApiClient = ServiceApiClient()) {
+    val scope: CoroutineScope = rememberCoroutineScope()
+    val patientVm = remember { PatientViewModel(apiClient, scope) }
+    val importVm = remember { ImportViewModel(apiClient, scope) }
+    var selectedTab by remember { mutableStateOf(Tab.PATIENTS) }
+
+    MaterialTheme {
+        AppScaffold(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
+            patientContent = { PatientBrowserScreen(patientVm) },
+            importContent = { ImportDashboardScreen(importVm) },
+        )
     }
-    single { PersonApiClient(get()) }
 }
 ```
 
-## Build Tool Discovery
+Prefer simple tabs/navigation until the project already has a navigation framework.
 
-- Check for `.mise.toml` in the project root. If present, use `mise run build` (or the equivalent task name).
-- If no mise configuration exists, fall back to `./gradlew build`.
+## Screen Pattern
+
+```kotlin
+@Composable
+fun PatientBrowserScreen(vm: PatientViewModel) {
+    LaunchedEffect(Unit) { vm.loadPatients() }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        PatientBrowserHeader(vm)
+        PatientBrowserContent(vm)
+    }
+
+    vm.selectedPatient?.let { detail ->
+        PatientDetailDialog(detail, onDismiss = { vm.clearSelection() })
+    }
+}
+```
+
+Split large screens into private composables:
+- Header/search/filter area
+- Loading/empty/error content
+- List/grid rows
+- Dialog/detail panel
+- Small reusable rows such as `DetailRow`
+
+Use visible text and content descriptions that can be tested through semantics.
+
+## Error and Loading UX
+
+Use existing reusable components where present:
+
+```kotlin
+ErrorBanner(message = vm.error, context = "Patient Browser")
+```
+
+Show loading only when there is no existing content, unless the use case requires blocking refresh.
 
 ## Workflow
 
-1. Read the use case specification from `docs/use_cases/`
-2. Verify the shared DTOs exist in `commonMain` (if not, run `/implement` first)
-3. Check existing UI code for patterns, navigation setup, and conventions
-4. Implement the Ktor Client API class
-5. Implement the Compose screens following Material 3 patterns
-6. Register the Koin module
-7. Wire screens into the navigation graph
-8. Verify the implementation compiles across all targets
+1. Read the use case spec from `docs/use_cases/`.
+2. Verify backend DTOs/routes exist in shared/server modules; if missing, run backend implementation first.
+3. Read `../_references/service-style.md`.
+4. Inspect existing UI module for package names, screen structure, API client style, and platform targets.
+5. Add or extend shared DTO usage; do not duplicate DTOs.
+6. Add API client methods in the existing client class.
+7. Add or extend a ViewModel with Compose state and coroutine actions.
+8. Add or extend screens using small private composables and Material 3.
+9. Wire the screen into `App.kt` or existing navigation/tabs.
+10. Run LSP diagnostics for touched Kotlin files.
+11. Verify with project command: prefer `mise run compile`, `mise run run-admin-ui` for manual UI, or UI module Gradle tasks as fallback.
 
 ## Resources
 
-- Use the KotlinDocs MCP server for Compose Multiplatform and Ktor Client API reference
+- `../_references/service-style.md` — canonical UI style
+- KotlinDocs MCP server — Compose Multiplatform and Ktor Client reference

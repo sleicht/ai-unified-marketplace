@@ -1,264 +1,181 @@
 ---
 name: compose-test
 description: >
-  Creates Compose Multiplatform UI tests using runComposeUiTest with
-  semantics-based assertions covering screen rendering, user interactions,
-  form validation, navigation, and state management. Use when the user asks
-  to "write Compose tests", "test the UI", "create screen tests", "unit test
-  a Compose screen", or mentions Compose testing, UI testing,
-  runComposeUiTest, semantics testing, or Compose assertions.
+  Creates UI-side tests for Compose/Ktor client code in the reference service
+  style: commonTest Ktor MockEngine API-client tests,
+  coroutine runTest ViewModel tests, and Compose Multiplatform semantics tests
+  when screen-test dependencies exist. Use when the user asks to "write Compose
+  tests", "test the UI", "create screen tests", "unit test a Compose screen",
+  or mentions Compose testing, UI testing, MockEngine, ViewModel testing, or
+  runComposeUiTest.
 ---
 
 # Compose Test
 
 ## Instructions
 
-Create Compose Multiplatform UI tests for use case $ARGUMENTS using:
-- `runComposeUiTest {}` for in-process UI testing (no device or emulator needed)
-- Semantics-based node finders (`onNodeWithText`, `onNodeWithContentDescription`)
-- kotlin.test for test annotations
-- Kotest assertions where applicable
+Create UI-side tests for use case $ARGUMENTS. Follow the target project's existing UI test style first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+
+Prefer this order:
+1. API client tests with Ktor `MockEngine` in `commonTest`
+2. ViewModel tests with fake API clients and `runTest`
+3. Compose semantics tests with `runComposeUiTest` only when the project has Compose UI test dependencies configured
+
+## Required Reference
+
+Read `../_references/service-style.md` before writing tests. Apply its UI API client, ViewModel, and commonTest conventions.
 
 ## DO NOT
 
-- Use Android-specific `createComposeRule()` (use `runComposeUiTest` for multiplatform)
-- Use `Thread.sleep()` or explicit delays (use `waitUntil {}` for async operations)
-- Make real network calls (provide fake/stub API clients)
-- Test implementation details (test behavior through the semantics tree)
-- Use `onNodeWithTag` as the primary finder (prefer text and content description for accessibility)
+- Make real network calls
+- Use Android-only `createComposeRule()` in a multiplatform module
+- Use `Thread.sleep()` or fixed delays
+- Test implementation details hidden from user semantics
+- Add Compose UI test dependencies unless the user asked for screen tests or existing project already has them
+- Use Koin in tests when UI code uses constructor injection
+- Duplicate shared DTOs inside tests
 
-## Test Data Strategy
+## API Client Test Pattern
 
-Provide fake API clients that return predefined data. Do not call real backends.
-
-```kotlin
-class FakePersonApiClient : PersonApiClient {
-    val persons = mutableListOf(
-        PersonDto(id = 1, firstName = "Eula", lastName = "Lane", email = "eula@example.com"),
-        PersonDto(id = 2, firstName = "John", lastName = "Doe", email = "john@example.com")
-    )
-
-    override suspend fun getAll(): List<PersonDto> = persons
-    override suspend fun getById(id: Long): PersonDto = persons.first { it.id == id }
-    override suspend fun create(dto: PersonDto): PersonDto = dto.copy(id = 3)
-    override suspend fun update(id: Long, dto: PersonDto): PersonDto = dto.copy(id = id)
-    override suspend fun delete(id: Long) { persons.removeAll { it.id == id } }
-}
-```
-
-## Template
-
-Use [templates/ExampleScreenTest.kt](templates/ExampleScreenTest.kt) as the test class structure.
-
-## Common Patterns
-
-### Basic Test Setup
+Use Ktor `MockEngine` to verify URL, method, headers, query params, body, and JSON decoding:
 
 ```kotlin
-class PersonListScreenTest {
-
-    private val fakeClient = FakePersonApiClient()
+class ServiceApiClientTest {
 
     @Test
-    fun screen_displays_persons() = runComposeUiTest {
-        setContent {
-            PersonListScreen(
-                apiClient = fakeClient,
-                onPersonClick = {},
-                onAddClick = {}
-            )
+    fun `listPatients sends default POC bearer token`() = runTest {
+        lateinit var request: HttpRequestData
+        val httpClient =
+            HttpClient(
+                MockEngine { capturedRequest ->
+                    request = capturedRequest
+                    respond(
+                        content =
+                            Json.encodeToString(
+                                listOf(
+                                    PatientListItem(
+                                        id = 1,
+                                        partnerContractNumber = "P-1001",
+                                        firstName = "Ada",
+                                        lastName = "Lovelace",
+                                        dateOfBirth = "1815-12-10",
+                                        gender = "FEMALE",
+                                        active = true,
+                                    )
+                                )
+                            ),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            ) { install(ContentNegotiation) { json() } }
+
+        val client = ServiceApiClient(baseUrl = "http://localhost:5600", httpClient = httpClient)
+
+        val patients = client.listPatients(limit = 100)
+
+        assertEquals("Bearer $DEFAULT_POC_EMPLOYEE_TOKEN", request.headers[HttpHeaders.Authorization])
+        assertEquals("/api/v1/patients", request.url.encodedPath)
+        assertEquals("100", request.url.parameters["limit"])
+        assertEquals(1, patients.size)
+    }
+}
+```
+
+Test error handling by returning non-2xx responses from `MockEngine` and asserting the client or ViewModel behavior expected by the project.
+
+## ViewModel Test Pattern
+
+If the API client is concrete and not interface-based, prefer extracting a small interface only if existing code already uses that style or the change is needed for testability. Otherwise, test API client behavior directly.
+
+When a fake can be injected:
+
+```kotlin
+class PatientViewModelTest {
+    @Test
+    fun `loadPatients stores patients`() = runTest {
+        val api = FakeServiceApiClient(patients = listOf(aPatientListItem()))
+        val vm = PatientViewModel(api, this)
+
+        vm.loadPatients()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(1, vm.patients.size)
+        assertEquals(null, vm.error)
+    }
+}
+```
+
+Use `kotlinx.coroutines.test.runTest` and `advanceUntilIdle()` for coroutine-driven state changes.
+
+## Compose Semantics Test Pattern
+
+Use only when Compose UI testing dependencies exist in `commonTest`:
+
+```kotlin
+@OptIn(ExperimentalTestApi::class)
+class PatientBrowserScreenTest {
+
+    @Test
+    fun `screen displays patients`() = runComposeUiTest {
+        val vm = PatientViewModel(fakeApiWithPatients(), backgroundScope)
+        vm.loadPatients()
+
+        setContent { PatientBrowserScreen(vm) }
+
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("Muster", substring = true).fetchSemanticsNodes().isNotEmpty()
         }
 
-        onNodeWithText("Eula Lane").assertIsDisplayed()
-        onNodeWithText("John Doe").assertIsDisplayed()
+        onNodeWithText("Patient Browser").assertIsDisplayed()
+        onNodeWithText("Muster, Max").assertIsDisplayed()
     }
 }
 ```
 
-### Finding Nodes
+Prefer user-visible text and content descriptions. Use test tags only for structural elements with no accessible text.
 
-```kotlin
-// By visible text
-onNodeWithText("Save").assertIsDisplayed()
-onNodeWithText("Eula", substring = true).assertExists()
+## Common Assertions
 
-// By content description (icons, image buttons)
-onNodeWithContentDescription("Add Person").assertIsDisplayed()
-onNodeWithContentDescription("Back").performClick()
+| Target | Assertion style |
+|---|---|
+| API auth header | `assertEquals("Bearer ...", request.headers[HttpHeaders.Authorization])` |
+| API path | `assertEquals("/api/v1/patients", request.url.encodedPath)` |
+| Query param | `assertEquals("100", request.url.parameters["limit"])` |
+| ViewModel state | `assertEquals(expected, vm.patients)` |
+| Error state | `assertTrue(vm.error!!.contains("Failed"))` |
+| Screen text | `onNodeWithText("...").assertIsDisplayed()` |
+| Async UI | `waitUntil(timeoutMillis = 5_000) { ... }` |
 
-// By test tag (when text/description aren't suitable)
-onNodeWithTag("person-grid").assertIsDisplayed()
+## Scenario Coverage
 
-// Multiple matching nodes
-onAllNodesWithText("Delete").assertCountEquals(2)
-onAllNodesWithText("Delete")[0].performClick()
-```
+Derive UI tests from use case behavior:
 
-### User Interactions
-
-```kotlin
-// Click
-onNodeWithText("Save").performClick()
-
-// Text input
-onNodeWithText("First Name").performTextInput("John")
-onNodeWithText("First Name").performTextClearance()
-onNodeWithText("First Name").performTextReplacement("Jane")
-
-// Scroll
-onNodeWithTag("person-list").performScrollToIndex(10)
-onNodeWithText("Last Item").performScrollTo()
-
-// Swipe
-onNodeWithTag("item-1").performTouchInput { swipeLeft() }
-```
-
-### Assertions
-
-```kotlin
-// Visibility
-onNodeWithText("Save").assertIsDisplayed()
-onNodeWithText("Error").assertDoesNotExist()
-
-// Enabled state
-onNodeWithText("Save").assertIsEnabled()
-onNodeWithText("Save").assertIsNotEnabled()
-
-// Focus
-onNodeWithText("First Name").assertIsFocused()
-
-// Text content
-onNodeWithText("First Name").assertTextEquals("First Name", "John")
-onNodeWithText("First Name").assertTextContains("John")
-
-// Selection
-onNodeWithText("Active").assertIsOn()     // checkbox/switch
-onNodeWithText("Active").assertIsOff()
-
-// Count
-onAllNodesWithText("Delete").assertCountEquals(5)
-onAllNodesWithContentDescription("Star").assertCountEquals(3)
-```
-
-### Waiting for Async Operations
-
-```kotlin
-@Test
-fun screen_shows_data_after_loading() = runComposeUiTest {
-    setContent {
-        PersonListScreen(apiClient = fakeClient, onPersonClick = {}, onAddClick = {})
-    }
-
-    // Wait for loading to complete
-    waitUntil(timeoutMillis = 5000) {
-        onAllNodesWithText("Eula").fetchSemanticsNodes().isNotEmpty()
-    }
-
-    onNodeWithText("Eula Lane").assertIsDisplayed()
-}
-```
-
-### Testing Navigation Callbacks
-
-```kotlin
-@Test
-fun clicking_person_triggers_navigation() = runComposeUiTest {
-    var navigatedToId: Long? = null
-
-    setContent {
-        PersonListScreen(
-            apiClient = fakeClient,
-            onPersonClick = { navigatedToId = it },
-            onAddClick = {}
-        )
-    }
-
-    waitUntil {
-        onAllNodesWithText("Eula").fetchSemanticsNodes().isNotEmpty()
-    }
-
-    onNodeWithText("Eula Lane").performClick()
-
-    navigatedToId shouldBe 1L
-}
-```
-
-### Testing Form Validation
-
-```kotlin
-@Test
-fun empty_name_shows_error() = runComposeUiTest {
-    setContent {
-        PersonDetailScreen(personId = null, onNavigateBack = {})
-    }
-
-    // Leave name empty, click save
-    onNodeWithText("Save").performClick()
-
-    // Assert error is shown
-    onNodeWithText("First name is required").assertIsDisplayed()
-}
-```
-
-### Testing Snackbar / Feedback
-
-```kotlin
-@Test
-fun save_success_shows_snackbar() = runComposeUiTest {
-    setContent {
-        PersonDetailScreen(personId = null, onNavigateBack = {})
-    }
-
-    onNodeWithText("First Name").performTextInput("John")
-    onNodeWithText("Last Name").performTextInput("Doe")
-    onNodeWithText("Email").performTextInput("john@example.com")
-    onNodeWithText("Save").performClick()
-
-    waitUntil {
-        onAllNodesWithText("Saved successfully").fetchSemanticsNodes().isNotEmpty()
-    }
-    onNodeWithText("Saved successfully").assertIsDisplayed()
-}
-```
-
-## Assertions Reference
-
-| Assertion Type       | Example                                                |
-|----------------------|--------------------------------------------------------|
-| Displayed            | `onNodeWithText("Name").assertIsDisplayed()`           |
-| Not exists           | `onNodeWithText("Error").assertDoesNotExist()`         |
-| Enabled              | `onNodeWithText("Save").assertIsEnabled()`             |
-| Disabled             | `onNodeWithText("Save").assertIsNotEnabled()`          |
-| Text content         | `onNodeWithText("Name").assertTextContains("John")`    |
-| Checkbox on          | `onNodeWithText("Active").assertIsOn()`                |
-| Count                | `onAllNodesWithText("Item").assertCountEquals(3)`      |
-| Callback triggered   | `navigatedToId shouldBe 1L` (Kotest)                  |
-
-## Build Tool Discovery
-
-- Check for `.mise.toml` in the project root. If present, use `mise run test` (or the equivalent task name).
-- If no mise configuration exists, fall back to `./gradlew desktopTest` (or the appropriate test task for the UI module).
+| Use case need | Preferred test |
+|---|---|
+| API call shape | MockEngine API client test |
+| JSON serialization | MockEngine response/body test |
+| Loading state | ViewModel coroutine test |
+| Error message | ViewModel fake failure test |
+| Search/filter | ViewModel pure state test or screen semantics test |
+| Button invokes action | Screen semantics test if available |
+| Navigation/tab selection | Screen semantics test or extracted state test |
 
 ## Workflow
 
-1. Read the use case specification
-2. Use TodoWrite to create a task for each test scenario
-3. Create a fake API client for the screen under test
-4. Create test class using the template
-5. For each test:
-    - Set content with the composable under test, injecting fakes
-    - Find nodes using semantics (text, content description)
-    - Perform interactions (click, text input, scroll)
-    - Assert expected outcomes
-    - Use `waitUntil` for any async operations
-6. Run tests to verify they pass
-7. If a test fails:
-    - Use `onRoot().printToLog("TAG")` to dump the semantics tree
-    - Verify the composable is receiving the fake data correctly
-    - Check that `waitUntil` timeouts are sufficient
-    - Ensure text matchers are exact (use `substring = true` for partial matches)
-8. Mark todos complete
+1. Read the use case spec and UI implementation.
+2. Read `../_references/service-style.md`.
+3. Inspect `service-ui/src/commonTest` or equivalent to identify existing dependencies and assertion style.
+4. Choose the lightest useful test level: API client, ViewModel, or Compose screen.
+5. Use Ktor `MockEngine` for API client behavior and no network.
+6. Use fake clients/repositories for ViewModel and screen tests.
+7. Use `runTest` and `advanceUntilIdle()` for coroutine state.
+8. Use `runComposeUiTest` and semantics only when dependencies exist.
+9. Run LSP diagnostics for touched Kotlin test files.
+10. Run focused UI test command: prefer `mise run test <ClassName>` if wired to UI tests; fallback to `./gradlew <ui-module>:allTests` or the existing module test task.
 
 ## Resources
 
-- Use the KotlinDocs MCP server for Compose testing API reference
+- `../_references/service-style.md` — canonical UI testing style
+- `templates/ExampleScreenTest.kt` — UI-side API client test skeleton using Ktor MockEngine
+- KotlinDocs MCP server — Compose testing, Ktor MockEngine, kotlinx.coroutines.test reference

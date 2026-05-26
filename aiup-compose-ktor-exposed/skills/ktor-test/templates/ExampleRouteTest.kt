@@ -1,132 +1,83 @@
-package com.example.app.routes
+package com.example.app.modules.patient.infrastructure.rest
 
-import com.example.app.model.PersonDto
-import com.example.app.plugins.configureDI
-import com.example.app.plugins.configureRouting
-import com.example.app.plugins.configureSerialization
-import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.accept
-import io.ktor.client.request.delete
+import com.example.app.configureRouting
+import com.example.app.infrastructure.plugins.configureSerialization
+import com.example.app.modules.patient.domain.model.Patient
+import com.example.app.modules.patient.domain.repository.PatientRepository
 import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import kotlinx.serialization.json.Json
-import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.koin.dsl.module
+import org.koin.ktor.plugin.Koin
 
 class ExampleRouteTest {
 
-    private fun ApplicationTestBuilder.jsonClient() = createClient {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            })
-        }
-    }
-
-    @Test
-    fun `GET persons returns list`() = testApplication {
-        application {
-            configureSerialization()
-            configureDI()
-            configureRouting()
-        }
-        val client = jsonClient()
-
-        val response = client.get("/api/persons") {
-            accept(ContentType.Application.Json)
-        }
-
-        response.status shouldBe HttpStatusCode.OK
-        val persons = response.body<List<PersonDto>>()
-        persons.shouldNotBeEmpty()
-    }
-
-    @Test
-    fun `GET person by id returns person`() = testApplication {
-        application {
-            configureSerialization()
-            configureDI()
-            configureRouting()
-        }
-        val client = jsonClient()
-
-        val response = client.get("/api/persons/1")
-
-        response.status shouldBe HttpStatusCode.OK
-        val person = response.body<PersonDto>()
-        person.firstName shouldBe "Eula"
-    }
-
-    @Test
-    fun `GET person by invalid id returns 404`() = testApplication {
-        application {
-            configureSerialization()
-            configureDI()
-            configureRouting()
-        }
-        val client = jsonClient()
-
-        val response = client.get("/api/persons/99999")
-
-        response.status shouldBe HttpStatusCode.NotFound
-    }
-
-    @Test
-    fun `POST creates new person and returns 201`() = testApplication {
-        application {
-            configureSerialization()
-            configureDI()
-            configureRouting()
-        }
-        val client = jsonClient()
-
-        val newPerson = PersonDto(
-            firstName = "John",
-            lastName = "Doe",
-            email = "john.doe@example.com"
+    private val samplePatient =
+        Patient(
+            id = 1L,
+            partnerContractNumber = "P-1001",
+            lastName = "Muster",
+            firstName = "Max",
+            active = true,
         )
 
-        val response = client.post("/api/persons") {
-            contentType(ContentType.Application.Json)
-            setBody(newPerson)
+    private fun fakePatientRepository(patients: List<Patient> = listOf(samplePatient)) =
+        object : PatientRepository {
+            override suspend fun create(patient: Patient) = patient
+
+            override suspend fun update(patient: Patient) = patient
+
+            override suspend fun findById(id: Long) = patients.find { it.id == id }
+
+            override suspend fun findAll(limit: Int) = patients.take(limit)
         }
 
-        response.status shouldBe HttpStatusCode.Created
-        val created = response.body<PersonDto>()
-        created.id.shouldNotBeNull()
-        created.firstName shouldBe "John"
+    private fun ApplicationTestBuilder.configureTestApp(
+        patientRepo: PatientRepository = fakePatientRepository(),
+    ) {
+        install(Koin) { modules(module { single<PatientRepository> { patientRepo } }) }
+        application {
+            configureSerialization()
+            configureRouting()
+        }
+    }
+
+    private fun employeeToken(): String = "test-token"
+
+    @Test
+    fun `GET patients returns list`() = testApplication {
+        configureTestApp()
+
+        client
+            .get("/api/v1/patients") {
+                header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
+            }
+            .apply {
+                assertEquals(HttpStatusCode.OK, status)
+                val arr = Json.parseToJsonElement(bodyAsText()).jsonArray
+                assertEquals(1, arr.size)
+                assertEquals("P-1001", arr[0].jsonObject["partnerContractNumber"]!!.jsonPrimitive.content)
+            }
     }
 
     @Test
-    fun `DELETE person returns 204`() = testApplication {
-        application {
-            configureSerialization()
-            configureDI()
-            configureRouting()
-        }
-        val client = jsonClient()
+    fun `GET patient by id returns 404 when not found`() = testApplication {
+        configureTestApp()
 
-        val response = client.delete("/api/persons/1")
-
-        response.status shouldBe HttpStatusCode.NoContent
-    }
-
-    @AfterTest
-    fun cleanup() {
-        // Remove test-created data here if needed
+        client
+            .get("/api/v1/patients/999") {
+                header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
+            }
+            .apply { assertEquals(HttpStatusCode.NotFound, status) }
     }
 }

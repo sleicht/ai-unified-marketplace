@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Create UI-side tests for use case $ARGUMENTS. Follow the target project's existing UI test style first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Create UI-side tests for use case $ARGUMENTS. Follow the target project's existing UI test style first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Prefer this order:
 1. API client tests with Ktor `MockEngine` in `commonTest`
@@ -23,7 +23,7 @@ Prefer this order:
 
 ## Required Reference
 
-Read `../_references/service-style.md` before writing tests. Apply its UI API client, ViewModel, and commonTest conventions.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its UI API client, ViewModel, and commonTest conventions.
 
 ## DO NOT
 
@@ -164,7 +164,7 @@ Derive UI tests from use case behavior:
 ## Workflow
 
 1. Read the use case spec and UI implementation.
-2. Read `../_references/service-style.md`.
+2. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
 3. Inspect `service-ui/src/commonTest` or equivalent to identify existing dependencies and assertion style.
 4. Choose the lightest useful test level: API client, ViewModel, or Compose screen.
 5. Use Ktor `MockEngine` for API client behavior and no network.
@@ -176,6 +176,5 @@ Derive UI tests from use case behavior:
 
 ## Resources
 
-- `../_references/service-style.md` — canonical UI testing style
+- `references/service-style.md` — canonical UI testing style
 - `templates/ExampleScreenTest.kt` — UI-side API client test skeleton using Ktor MockEngine
-- KotlinDocs MCP server — Compose testing, Ktor MockEngine, kotlinx.coroutines.test reference

@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Implement the Compose Multiplatform UI for use case $ARGUMENTS. Follow existing UI conventions first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Implement the Compose Multiplatform UI for use case $ARGUMENTS. Follow existing UI conventions first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Use:
 - `service-ui`/`*-ui` KMP module or discovered UI module
@@ -30,7 +30,7 @@ Do not create tests. Use `compose-test` for UI tests and Ktor MockEngine tests.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
 
 ## DO NOT
 
@@ -194,7 +194,7 @@ Show loading only when there is no existing content, unless the use case require
 
 1. Read the use case spec from `docs/use_cases/`.
 2. Verify backend DTOs/routes exist in shared/server modules; if missing, run backend implementation first.
-3. Read `../_references/service-style.md`.
+3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
 4. Inspect existing UI module for package names, screen structure, API client style, and platform targets.
 5. Add or extend shared DTO usage; do not duplicate DTOs.
 6. Add API client methods in the existing client class.
@@ -206,5 +206,4 @@ Show loading only when there is no existing content, unless the use case require
 
 ## Resources
 
-- `../_references/service-style.md` — canonical UI style
-- KotlinDocs MCP server — Compose Multiplatform and Ktor Client reference
+- `references/service-style.md` — canonical UI style

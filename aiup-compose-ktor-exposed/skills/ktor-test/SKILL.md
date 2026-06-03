@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Create backend tests for use case $ARGUMENTS. Follow the target project's existing test style first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Create backend tests for use case $ARGUMENTS. Follow the target project's existing test style first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Use:
 - Ktor `testApplication {}` for route tests
@@ -29,7 +29,7 @@ Do not use a real database for route unit tests.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before writing tests. Apply its route-test, fake-dependency, auth-token, and Testcontainers conventions.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its route-test, fake-dependency, auth-token, and Testcontainers conventions.
 
 ## DO NOT
 
@@ -207,7 +207,7 @@ Derive tests from use case flows:
 ## Workflow
 
 1. Read the use case spec and acceptance scenarios.
-2. Read `../_references/service-style.md`.
+2. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
 3. Inspect existing tests in the same module and mirror imports, assertions, auth helpers, and naming.
 4. Decide test level: route unit test, application service unit test, outbound client test, or Testcontainers repository integration test.
 5. Create small fake implementations for ports used by route/service tests.
@@ -218,6 +218,5 @@ Derive tests from use case flows:
 
 ## Resources
 
-- `../_references/service-style.md` — canonical testing style
+- `references/service-style.md` — canonical testing style
 - `templates/ExampleRouteTest.kt` — route test skeleton in current style
-- KotlinDocs MCP server — Ktor TestHost and Testcontainers reference

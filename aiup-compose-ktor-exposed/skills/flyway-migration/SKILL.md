@@ -13,11 +13,11 @@ description: >
 
 ## Instructions
 
-Create Flyway database migrations for PostgreSQL from `docs/entity_model.md` and the target project's existing migrations. Follow existing migration style first. When the project resembles reference service, use `../_references/service-style.md`.
+Create Flyway database migrations for PostgreSQL from `docs/entity_model.md` and the target project's existing migrations. Follow existing migration style first. When the project resembles reference service, use `references/service-style.md`.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before creating migrations. Apply its migration and Exposed compatibility rules.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before creating migrations. Apply its migration and Exposed compatibility rules.
 
 ## DO NOT
 
@@ -153,5 +153,4 @@ Use plain `Table`, not `LongIdTable`, when the project uses `Table("...")` and `
 
 ## Resources
 
-- `../_references/service-style.md` — canonical migration style
-- KotlinDocs MCP server — Exposed table DSL reference
+- `references/service-style.md` — canonical migration style

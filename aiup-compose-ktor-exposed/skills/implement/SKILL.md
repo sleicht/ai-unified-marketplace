@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Use:
 - Vertical server slices under `modules/<feature>/`
@@ -31,7 +31,7 @@ Do not create UI screens. Use `implement-ui` for UI.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before editing code. Apply its conventions for:
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before editing code. Apply its conventions for:
 - Multi-module layout discovery
 - Server package architecture
 - Domain/repository/persistence/application/rest boundaries
@@ -191,7 +191,7 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 
 1. Read the use case spec from `docs/use_cases/`.
 2. Read `docs/entity_model.md` and `docs/architecture.md` when present.
-3. Read `../_references/service-style.md`.
+3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
 4. Discover module names from `settings.gradle.kts` and package names from existing files.
 5. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.
 6. Create or update shared DTOs only for API/UI boundaries.
@@ -207,5 +207,4 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 
 ## Resources
 
-- `../_references/service-style.md` — canonical service style
-- KotlinDocs MCP server — Ktor, Exposed, Koin, kotlinx.serialization reference
+- `references/service-style.md` — canonical service style

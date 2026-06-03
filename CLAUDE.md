@@ -37,7 +37,7 @@ marketplace/
 ├── aiup-compose-ktor-exposed/    # Kotlin KMP + Compose + Ktor + Exposed stack plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json
-│   ├── .mcp.json                 # KotlinDocs (javadocs.dev)
+│   ├── .mcp.json
 │   └── skills/                   # All workflow steps as skills (slash commands)
 │       ├── flyway-migration/
 │       ├── implement/

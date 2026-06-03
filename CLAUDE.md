@@ -34,6 +34,16 @@ marketplace/
 │       ├── implement/
 │       ├── karibu-test/
 │       └── playwright-test/
+├── aiup-compose-ktor-exposed/    # Kotlin KMP + Compose + Ktor + Exposed stack plugin
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── .mcp.json
+│   └── skills/                   # All workflow steps as skills (slash commands)
+│       ├── flyway-migration/
+│       ├── implement/
+│       ├── implement-ui/
+│       ├── ktor-test/
+│       └── compose-test/
 └── README.md
 ```
 
@@ -42,7 +52,8 @@ marketplace/
 ### Two-Layer Design
 
 - **aiup-core** — Stack-agnostic methodology: from vision to use case specification. Works with any tech stack.
-- **vaadin-jooq** — Stack-specific: implementation and testing for the Vaadin + jOOQ stack. Requires core.
+- **aiup-vaadin-jooq** — Stack-specific: implementation and testing for the Vaadin + jOOQ stack. Requires core.
+- **aiup-compose-ktor-exposed** — Stack-specific: implementation and testing for the Kotlin KMP + Compose + Ktor + Exposed stack. Requires core.
 
 ### Marketplace Configuration
 
@@ -83,6 +94,16 @@ Skills follow the AI Unified Process phases: Inception, Elaboration, Constructio
 | Construction | `/browserless-test`       | Create Vaadin Browserless unit tests (recommended)         |
 | Construction | `/karibu-test`            | Create Karibu unit tests (legacy — superseded since 25.1)  |
 | Construction | `/playwright-test`        | Create Playwright integration tests                        |
+
+### Compose/Ktor/Exposed (stack-specific)
+
+| Phase        | Skill (slash command) | Description                                              |
+|--------------|-----------------------|----------------------------------------------------------|
+| Construction | `/flyway-migration`   | Create Flyway PostgreSQL migrations from entity model    |
+| Construction | `/implement`          | Implement backend: shared DTOs + Exposed DSL + Ktor routes |
+| Construction | `/implement-ui`       | Implement UI: Compose Multiplatform screens + Ktor Client  |
+| Construction | `/ktor-test`          | Create Ktor testApplication API tests                    |
+| Construction | `/compose-test`       | Create Compose UI tests with runComposeUiTest            |
 
 The core `/implement`, `/test`, and `/e2e` skills inspect the project's build files (`pom.xml`, `build.gradle`,
 `package.json`, etc.) to choose which stack-specific skill to invoke. New stack plugins (e.g. a future

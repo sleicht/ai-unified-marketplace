@@ -903,4 +903,4 @@ and documentation. The plugins in this marketplace ship with the following serve
 | **jOOQ**          | `aiup-vaadin-jooq`          | jOOQ DSL and code generation reference               |
 | **JavaDocs**      | `aiup-vaadin-jooq`          | Java API documentation lookup                        |
 | **Playwright**    | `aiup-vaadin-jooq`          | Browser automation for integration tests             |
-| **KotlinDocs**    | `aiup-compose-ktor-exposed` | Kotlin, Compose, Ktor, and Exposed API documentation |
+

@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Use:
 - Vertical server slices under `modules/<feature>/`
@@ -31,14 +31,16 @@ Do not create UI screens. Use `implement-ui` for UI.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before editing code. Apply its conventions for:
-- Multi-module layout discovery
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before editing code. Apply its conventions for:
+- Monorepo/stack module discovery from the owning `settings.gradle.kts`
+- Version detection from `libs.versions.toml` and existing build catalogs
 - Server package architecture
 - Domain/repository/persistence/application/rest boundaries
 - DTO placement and mapping rules
+- ArchUnit layering rules and `ArchitectureTest` verification
 - Route authorization and API Gateway annotations
 - Koin module composition
-- Build and verification commands
+- Namespaced mise or Gradle fallback verification commands
 
 ## DO NOT
 
@@ -76,19 +78,19 @@ Read `../_references/service-style.md` before editing code. Apply its convention
 ### Domain Model
 
 ```kotlin
-data class Patient(
+data class Record(
     val id: Long? = null,
-    val partnerContractNumber: String? = null,
-    val ahvNumber: String? = null,
-    val lastName: String,
-    val firstName: String,
+    val externalReference: String? = null,
+    val sourceReference: String? = null,
+    val category: String,
+    val displayName: String,
     val active: Boolean = true,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null,
 ) {
     init {
-        require(partnerContractNumber != null || ahvNumber != null) {
-            "At least one of partnerContractNumber or ahvNumber must be set"
+        require(!externalReference.isNullOrBlank()) {
+            "externalReference must not be blank"
         }
     }
 }
@@ -97,20 +99,20 @@ data class Patient(
 ### Repository Port
 
 ```kotlin
-interface PatientRepository {
-    suspend fun create(patient: Patient): Patient
-    suspend fun update(patient: Patient): Patient
-    suspend fun findById(id: Long): Patient?
-    suspend fun findAll(limit: Int): List<Patient>
+interface RecordRepository {
+    suspend fun create(record: Record): Record
+    suspend fun update(record: Record): Record
+    suspend fun findById(id: Long): Record?
+    suspend fun findAll(limit: Int): List<Record>
 }
 ```
 
 ### Exposed Table
 
 ```kotlin
-object PatientTable : Table("patient") {
+object RecordTable : Table("record") {
     val id = long("id").autoIncrement()
-    val partnerContractNumber = varchar("partner_contract_number", 50).nullable()
+    val externalReference = varchar("external_reference", 50).nullable()
     val active = bool("active").default(true)
     val createdAt = timestampWithTimeZone("created_at")
     val updatedAt = timestampWithTimeZone("updated_at")
@@ -129,19 +131,19 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 ### Exposed Repository
 
 ```kotlin
-class ExposedPatientRepository : PatientRepository {
-    override suspend fun findById(id: Long): Patient? = suspendTransaction {
-        PatientTable.selectAll()
-            .where { PatientTable.id eq id }
-            .map { it.toPatient() }
+class ExposedRecordRepository : RecordRepository {
+    override suspend fun findById(id: Long): Record? = suspendTransaction {
+        RecordTable.selectAll()
+            .where { RecordTable.id eq id }
+            .map { it.toRecord() }
             .singleOrNull()
     }
 
-    private fun ResultRow.toPatient() =
-        Patient(
-            id = this[PatientTable.id],
-            partnerContractNumber = this[PatientTable.partnerContractNumber],
-            active = this[PatientTable.active],
+    private fun ResultRow.toRecord() =
+        Record(
+            id = this[RecordTable.id],
+            externalReference = this[RecordTable.externalReference],
+            active = this[RecordTable.active],
         )
 }
 ```
@@ -151,18 +153,18 @@ Use private `ResultRow.toXxx()` repository mappers. Use private column-mapping h
 ### Route Pattern
 
 ```kotlin
-fun Route.patientRoutes() {
-    val patientRepository by inject<PatientRepository>()
+fun Route.recordRoutes() {
+    val recordRepository by inject<RecordRepository>()
 
-    route("/patients") {
+    route("/records") {
         hasEmployeeOrMicroserviceAuth()
-        listPatients { patientRepository }
-        getPatientById { patientRepository }
+        listRecords { recordRepository }
+        getRecordById { recordRepository }
     }
 }
 
-private fun Route.getPatientById(patientRepository: () -> PatientRepository) {
-    get("/{id}") { respondPatientById(call, patientRepository()) }
+private fun Route.getRecordById(recordRepository: () -> RecordRepository) {
+    get("/{id}") { respondRecordById(call, recordRepository()) }
 }
 ```
 
@@ -172,13 +174,13 @@ Keep route blocks small. Use route-local mappers when mapping domain models to s
 
 ```kotlin
 private val repositoryModule = module {
-    single<PatientRepository> { ExposedPatientRepository() }
+    single<RecordRepository> { ExposedRecordRepository() }
 }
 
 private val serviceModule = module {
-    single<MassImportService> {
-        MassImportServiceImpl(
-            patientRepository = get(),
+    single<ExampleService> {
+        ExampleServiceImpl(
+            recordRepository = get(),
             transactionRunner = get(),
         )
     }
@@ -189,23 +191,25 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 
 ## Workflow
 
-1. Read the use case spec from `docs/use_cases/`.
-2. Read `docs/entity_model.md` and `docs/architecture.md` when present.
-3. Read `../_references/service-style.md`.
-4. Discover module names from `settings.gradle.kts` and package names from existing files.
-5. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.
-6. Create or update shared DTOs only for API/UI boundaries.
-7. Create or update domain models and repository interfaces.
-8. Create or update Exposed table objects matching Flyway schema.
-9. Implement Exposed repositories using `suspendTransaction` and private mappers.
-10. Implement application service only when orchestration spans multiple dependencies or transactions.
-11. Implement Ktor routes with auth helpers and route-local mappers.
-12. Register repositories/services in Koin DI.
-13. Wire routes in top-level `Routing.kt` under existing `/api/v1` structure.
-14. Run LSP diagnostics for touched Kotlin files.
-15. Verify with project command: prefer `mise run compile`, then `mise run verify`; fallback to module Gradle tasks.
+1. Read the use case spec from the resolved docs path (`<service>/docs/use_cases/` in a monorepo service, otherwise `docs/use_cases/`).
+2. Read the resolved `entity_model.md` and `architecture.html` when present.
+3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
+4. Discover the owning stack/service, then discover module names from that stack's `settings.gradle.kts` and package names from existing files.
+5. Read version and toolchain constraints from `gradle/libs.versions.toml` or existing build files before editing dependencies.
+6. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.
+7. If `ArchitectureTest.kt` exists, read it before choosing package/module dependencies.
+8. Create or update shared DTOs only for API/UI boundaries.
+9. Create or update domain models and repository interfaces.
+10. Create or update Exposed table objects matching Flyway schema.
+11. Implement Exposed repositories using the project's transaction style and private mappers.
+12. Implement application service only when orchestration spans multiple dependencies or transactions.
+13. Implement Ktor routes with auth helpers and route-local mappers.
+14. Register repositories/services in Koin DI.
+15. Wire routes in top-level `Routing.kt` under existing `/api/v1` structure.
+16. Update or extend `ArchitectureTest.kt` when adding modules or enforced architectural boundaries.
+17. Run LSP diagnostics for touched Kotlin files.
+18. Verify with the detected project command: `mise run //<stack>:compile` / `mise run //<stack>:verify` from a monorepo root, bare `mise run compile` / `mise run verify` inside a stack, or module Gradle tasks as fallback. Include a focused `ArchitectureTest` run when present.
 
 ## Resources
 
-- `../_references/service-style.md` — canonical service style
-- KotlinDocs MCP server — Ktor, Exposed, Koin, kotlinx.serialization reference
+- `references/service-style.md` — canonical service style

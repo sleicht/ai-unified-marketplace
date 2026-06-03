@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Create backend tests for use case $ARGUMENTS. Follow the target project's existing test style first. When the project resembles reference service, use `../_references/service-style.md` as the canonical style guide.
+Create backend tests for use case $ARGUMENTS. Follow the target project's existing test style first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
 
 Use:
 - Ktor `testApplication {}` for route tests
@@ -23,13 +23,14 @@ Use:
 - `kotlin.test` assertions if existing tests use them
 - Ktor `MockEngine` for outbound HTTP clients
 - Testcontainers + Flyway for repository integration tests
+- ArchUnit `ArchitectureTest.kt` updates when adding or changing modules
 
 Do not start a real HTTP server for route tests.
 Do not use a real database for route unit tests.
 
 ## Required Reference
 
-Read `../_references/service-style.md` before writing tests. Apply its route-test, fake-dependency, auth-token, and Testcontainers conventions.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its route-test, fake-dependency, auth-token, Testcontainers, ArchUnit, source-set, and command conventions.
 
 ## DO NOT
 
@@ -40,11 +41,12 @@ Read `../_references/service-style.md` before writing tests. Apply its route-tes
 - Use Kotest assertions in projects that use `kotlin.test`
 - Delete all shared data in cleanup outside tables owned by the test
 - Put Testcontainers tests in `src/test` when the project has `src/testContainerTest`
+- Put ArchUnit tests outside the existing architecture-test location/style
 
 ## Route Test Pattern
 
 ```kotlin
-class PatientRoutesTest {
+class RecordRoutesTest {
 
     private val helper =
         IntegrationTestHelper(
@@ -63,28 +65,27 @@ class PatientRoutesTest {
             }
         )
 
-    private val samplePatient = Patient(
+    private val sampleRecord = Record(
         id = 1L,
-        partnerContractNumber = "P-1001",
-        lastName = "Muster",
-        firstName = "Max",
-        dateOfBirth = LocalDate.of(1985, 3, 15),
-        gender = Gender.MALE,
+        externalReference = "REC-1001",
+        category = "Standard",
+        displayName = "Example",
+        status = RecordStatus.ACTIVE,
     )
 
-    private fun fakePatientRepository(patients: List<Patient> = listOf(samplePatient)) =
-        object : PatientRepository {
-            override suspend fun create(patient: Patient) = patient
-            override suspend fun update(patient: Patient) = patient
-            override suspend fun findById(id: Long) = patients.find { it.id == id }
-            override suspend fun findAll(limit: Int) = patients.take(limit)
+    private fun fakeRecordRepository(records: List<Record> = listOf(sampleRecord)) =
+        object : RecordRepository {
+            override suspend fun create(record: Record) = record
+            override suspend fun update(record: Record) = record
+            override suspend fun findById(id: Long) = records.find { it.id == id }
+            override suspend fun findAll(limit: Int) = records.take(limit)
         }
 
     private fun ApplicationTestBuilder.configureTestApp(
-        patientRepo: PatientRepository = fakePatientRepository(),
+        recordRepo: RecordRepository = fakeRecordRepository(),
     ) {
         helper.installAuth(this)
-        install(Koin) { modules(module { single<PatientRepository> { patientRepo } }) }
+        install(Koin) { modules(module { single<RecordRepository> { recordRepo } }) }
         application {
             configureSerialization()
             configureRouting()
@@ -95,10 +96,10 @@ class PatientRoutesTest {
         helper.employeeToken(cNumber = "C123456", roles = listOf("DL_COMPANY_APP_ADMIN"))
 
     @Test
-    fun `GET patients returns list`() = testApplication {
+    fun `GET records returns list`() = testApplication {
         configureTestApp()
         client
-            .get("/api/v1/patients") {
+            .get("/api/v1/records") {
                 header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
             }
             .apply { assertEquals(HttpStatusCode.OK, status) }
@@ -110,7 +111,7 @@ Use JSON parsing for response shape assertions when the project already does:
 
 ```kotlin
 val obj = Json.parseToJsonElement(bodyAsText()).jsonObject
-assertEquals("P-1001", obj["partnerContractNumber"]!!.jsonPrimitive.content)
+assertEquals("REC-1001", obj["externalReference"]!!.jsonPrimitive.content)
 ```
 
 ## Auth Test Coverage
@@ -128,24 +129,24 @@ Use Ktor `MockEngine` and capture `HttpRequestData`:
 
 ```kotlin
 @Test
-fun `listPatients sends default POC bearer token`() = runTest {
+fun `listRecords sends default POC bearer token`() = runTest {
     lateinit var request: HttpRequestData
     val httpClient =
         HttpClient(
             MockEngine { capturedRequest ->
                 request = capturedRequest
                 respond(
-                    content = Json.encodeToString(emptyList<PatientListItem>()),
+                    content = Json.encodeToString(emptyList<RecordListItem>()),
                     status = HttpStatusCode.OK,
                     headers = headersOf(HttpHeaders.ContentType, "application/json"),
                 )
             }
         ) { install(ContentNegotiation) { json() } }
 
-    val client = ServiceApiClient(baseUrl = "http://localhost:5600", httpClient = httpClient)
-    client.listPatients(limit = 100)
+    val client = ServiceApiClient(baseUrl = testBaseUrl, accessTokenProvider = FakeAccessTokenProvider("test-token"), httpClient = httpClient)
+    client.listRecords(limit = 100)
 
-    assertEquals("Bearer $DEFAULT_POC_EMPLOYEE_TOKEN", request.headers[HttpHeaders.Authorization])
+    assertEquals("Bearer test-token", request.headers[HttpHeaders.Authorization])
 }
 ```
 
@@ -188,7 +189,19 @@ class RepositoryIntegrationTest {
 }
 ```
 
-Delete child tables before parent tables. Keep helper factories (`aPatient`, `anImportRun`) private and configurable.
+Delete child tables before parent tables. Keep helper factories (`aRecord`, `anImportRun`) private and configurable.
+
+## Architecture Test Pattern
+
+When the backend project uses ArchUnit, create or extend `ArchitectureTest.kt` for new modules and boundaries. Mirror the existing rule style and keep rules generic to the module layout.
+
+Reference rules to preserve:
+
+- domain packages do not depend on application or infrastructure packages
+- application packages do not depend on infrastructure packages
+- cross-module dependencies go through `..api..` packages only
+
+Run the focused `ArchitectureTest` after backend architecture changes. Do not loosen existing rules to make a new implementation pass; fix the dependency direction instead.
 
 ## Scenario Coverage
 
@@ -206,18 +219,20 @@ Derive tests from use case flows:
 
 ## Workflow
 
-1. Read the use case spec and acceptance scenarios.
-2. Read `../_references/service-style.md`.
-3. Inspect existing tests in the same module and mirror imports, assertions, auth helpers, and naming.
-4. Decide test level: route unit test, application service unit test, outbound client test, or Testcontainers repository integration test.
-5. Create small fake implementations for ports used by route/service tests.
-6. Cover success, validation, not-found, auth, and key alternative flows.
-7. Run LSP diagnostics for touched Kotlin test files.
-8. Run focused test command: prefer `mise run test <ClassName>` or `mise run tc-test <ClassName>`; fallback to Gradle module test task.
-9. Run `mise run format-check` or project formatting check if available.
+1. Read the use case spec and acceptance scenarios from the resolved docs path.
+2. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
+3. Inspect existing tests in the same module and mirror imports, assertions, auth helpers, source-set placement, and naming.
+4. Inspect `ArchitectureTest.kt` when present; extend it for new modules or boundaries.
+5. Decide test level: route unit test, application service unit test, outbound client test, ArchUnit rule, or Testcontainers repository integration test.
+6. Place route/unit/ArchUnit tests in `src/test`; place PostgreSQL/Flyway repository tests in `src/testContainerTest` when that suite exists.
+7. Create small fake implementations for ports used by route/service tests.
+8. Cover success, validation, not-found, auth, and key alternative flows.
+9. Run LSP diagnostics for touched Kotlin test files.
+10. Run focused test command using detected shape: `mise run //<stack>:test <ClassName>` or bare `mise run test <ClassName>`; for Testcontainers use namespaced/bare `tc-test`. Fallback to Gradle module test tasks.
+11. Run `ArchitectureTest` when architecture rules changed.
+12. Run `mise run format-check` or project formatting check if available.
 
 ## Resources
 
-- `../_references/service-style.md` — canonical testing style
-- `templates/ExampleRouteTest.kt` — route test skeleton in current style
-- KotlinDocs MCP server — Ktor TestHost and Testcontainers reference
+- `references/service-style.md` — canonical testing style
+- `references/ExampleRouteTest.kt` — route test skeleton in current style

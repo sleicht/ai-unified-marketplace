@@ -190,7 +190,7 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 ## Workflow
 
 1. Read the use case spec from `docs/use_cases/`.
-2. Read `docs/entity_model.md` and `docs/architecture.md` when present.
+2. Read `docs/entity_model.md` and `docs/architecture.html` when present.
 3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
 4. Discover module names from `settings.gradle.kts` and package names from existing files.
 5. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.

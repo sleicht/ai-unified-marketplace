@@ -2,7 +2,7 @@
 name: reverse-engineer
 description: >
   Reverse-engineers an existing software project into AI Unified Process
-  artifacts: a PlantUML use case diagram, per-use-case specification documents,
+  artifacts: a Mermaid use case diagram, per-use-case specification documents,
   and an entity model with a Mermaid ER diagram. Use when the user asks to
   "reverse engineer this codebase", "extract use cases from existing code",
   "document the system we already have", "generate use case specs from
@@ -23,7 +23,7 @@ formats used by the forward-engineering skills (`/use-case-diagram`,
 `/use-case-spec`, `/entity-model`) so the output is a drop-in starting point
 for the rest of the AI Unified Process workflow:
 
-1. `docs/use_cases.puml` — PlantUML use case diagram (actors and use cases)
+1. `docs/requirements.html` — Mermaid use case diagram (actors and use cases) inside Requirements document.
 2. `docs/use_cases/UC-XXX-name.md` — one specification document per use case
 3. `docs/entity_model.md` — entity model with Mermaid ER diagram and attribute tables
 
@@ -108,25 +108,21 @@ descriptive name in title case.
 
 ### 4. Generate the use case diagram
 
-Write `docs/use_cases.puml`. Follow the format from the `/use-case-diagram`
+Write Mermaid Diagram inside `docs/requirements.html`. Follow the format from the `/use-case-diagram`
 skill exactly:
 
-```plantuml
-@startuml Use Cases Overview
-left to right direction
+```Mermaid
+graph LR
+    customer(("Customer"))
+    admin(("Administrator"))
 
-actor "Customer" as customer
-actor "Administrator" as admin
+    subgraph "System Name"
+        UC001(["UC-001\nPlace Order"])
+        UC002(["UC-002\nManage Catalog"])
+    end
 
-rectangle "System Name" {
-    usecase "UC-001\nPlace Order" as UC001
-    usecase "UC-002\nManage Catalog" as UC002
-}
-
-customer --> UC001
-admin --> UC002
-
-@enduml
+    customer --> UC001
+    admin --> UC002
 ```
 
 - Use the actual system name from `pom.xml` / `package.json` / project README.

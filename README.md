@@ -31,11 +31,11 @@ Inception          Elaboration                          Construction
 ```
 
 Each skill picks up where the previous one left off using the files produced along the way (`docs/vision.md`,
-`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases.puml`, `docs/use_cases/UC-*.md`). At any point you can
+`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`). At any point you can
 inspect or manually edit these files before continuing.
 
 **Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
-schema and produces the same `docs/use_cases.puml`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
+schema and produces the same mermaid diagram in `docs/requirements.html`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
 |                               | Inception       | Elaboration                            | Construction                                                                              | Transition |
@@ -106,7 +106,7 @@ CLI**, **Cursor**, **GitHub Copilot**, and **Gemini CLI**. Pair them with the
    (`aiup-vaadin-jooq/.mcp.json` or `aiup-compose-ktor-exposed/.mcp.json`) in your tool's MCP config file.
 4. Trigger skills the same way you would in Claude Code — say "write requirements" or invoke `/requirements`. The tool
    matches your prompt against each skill's `description` and loads the matching `SKILL.md`. File outputs
-   (`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases.puml`, `docs/use_cases/UC-*.md`) are identical
+   (`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`) are identical
    regardless of tool, so the chain composes even if you mix tools across steps.
 
 ### OpenAI Codex CLI
@@ -188,7 +188,7 @@ Here is a complete end-to-end example of building a hotel reservation system.
 ```
 
 Claude reads `docs/vision.md`, identifies functional requirements (as user stories), non-functional requirements (
-measurable quality attributes), and constraints, then writes them into `docs/requirements.md` as three separate tables.
+measurable quality attributes), and constraints, then writes them into `docs/requirements.html` as three separate tables.
 Every requirement gets a stable ID (FR-001, NFR-001, CON-001) and a status. Review the catalog before continuing.
 
 ---
@@ -199,7 +199,7 @@ Every requirement gets a stable ID (FR-001, NFR-001, CON-001) and a status. Revi
 /entity-model
 ```
 
-Claude reads `docs/requirements.md`, identifies the domain entities and their relationships, then writes
+Claude reads `docs/requirements.html`, identifies the domain entities and their relationships, then writes
 `docs/entity_model.md` with a Mermaid ER diagram and one attribute table per entity (data type, length/precision,
 validation rules). Approve the model before moving to use cases.
 
@@ -211,8 +211,8 @@ validation rules). Approve the model before moving to use cases.
 /use-case-diagram
 ```
 
-Claude reads `docs/requirements.md`, identifies actors and use cases, then writes a PlantUML diagram at
-`docs/use_cases.puml`. Each use case gets a stable ID (UC-001, UC-002, …) that traces back to one or more functional
+Claude reads `docs/requirements.html`, identifies actors and use cases, then writes a Mermaid diagram at
+`docs/requirements.html`. Each use case gets a stable ID (UC-001, UC-002, …) that traces back to one or more functional
 requirements.
 
 ---
@@ -315,7 +315,7 @@ tests, coroutine ViewModel tests, and Compose Multiplatform semantics tests when
 
 ### `/requirements` — Requirements Catalog
 
-**Purpose:** Turns a `docs/vision.md` document into a structured `docs/requirements.md` catalog with functional
+**Purpose:** Turns a `docs/vision.md` document into a structured `docs/requirements.html` catalog with functional
 requirements, non-functional requirements, and constraints.
 
 **Usage:**
@@ -332,10 +332,10 @@ requirements, non-functional requirements, and constraints.
 3. Extracts non-functional requirements as measurable quality attributes with category (Performance, Security,
    Availability, …), priority, and status
 4. Extracts constraints (technical, regulatory, business) with stable IDs (CON-001, CON-002, …)
-5. Writes all three as separate tables in `docs/requirements.md` — never mixing requirement types in one table
+5. Writes all three as separate tables in `docs/requirements.html` — never mixing requirement types in one table
 
 **Input:** `docs/vision.md`
-**Output:** `docs/requirements.md`
+**Output:** `docs/requirements.html`
 **Plugin:** `aiup-core`
 
 ---
@@ -352,14 +352,14 @@ requirements, non-functional requirements, and constraints.
 
 **What it does:**
 
-1. Reads `docs/requirements.md` to identify the domain entities implied by the user stories
+1. Reads `docs/requirements.html` to identify the domain entities implied by the user stories
 2. Draws a Mermaid `erDiagram` showing entities and their relationships (cardinality, role names) — without listing
    attributes inside the diagram
 3. Produces one attribute table per entity with columns for attribute name, description, data type, length/precision,
    and validation rules (Primary Key, Sequence, NOT NULL, UNIQUE, foreign keys, check constraints)
 4. Writes the result to `docs/entity_model.md`
 
-**Input:** `docs/requirements.md`
+**Input:** `docs/requirements.html`
 **Output:** `docs/entity_model.md`
 **Plugin:** `aiup-core`
 
@@ -367,7 +367,7 @@ requirements, non-functional requirements, and constraints.
 
 ### `/use-case-diagram` — Use Case Diagram
 
-**Purpose:** Generates a PlantUML use case diagram showing actors, use cases, and their relationships derived from the
+**Purpose:** Generates a Mermaid use case diagram showing actors, use cases, and their relationships derived from the
 requirements catalog.
 
 **Usage:**
@@ -378,14 +378,14 @@ requirements catalog.
 
 **What it does:**
 
-1. Reads `docs/requirements.md` to identify actors and the use cases they participate in
+1. Reads `docs/requirements.html` to identify actors and the use cases they participate in
 2. Assigns stable IDs (UC-001, UC-002, …), each tracing to at least one functional requirement
-3. Writes a `.puml` file at `docs/use_cases.puml` using `left to right direction` and a `rectangle "System Name"`
+3. Writes a Mermaid Diagram in `docs/requirements.html` using `left to right direction` and a `rectangle "System Name"`
    boundary
-4. Uses standard PlantUML syntax only — no implementation details in use case names
+4. Uses standard Mermaid syntax only — no implementation details in use case names
 
-**Input:** `docs/requirements.md`
-**Output:** `docs/use_cases.puml`
+**Input:** `docs/requirements.html`
+**Output:** `docs/requirements.html`
 **Plugin:** `aiup-core`
 
 ---
@@ -404,7 +404,7 @@ requirements catalog.
 
 **What it does:**
 
-1. Reads `docs/use_cases.puml` and `docs/requirements.md` to scope the use case
+1. Reads `docs/requirements.html` to scope the use case
 2. Writes one document per use case under `docs/use_cases/` using a fixed template covering: Overview (ID, name, primary
    actor, goal, status), Preconditions, Main Success Scenario (numbered steps), Alternative Flows (for error
    conditions), Postconditions, and Business Rules
@@ -434,14 +434,14 @@ codebase so legacy projects can join the AIUP workflow without rewriting documen
    schema migrations), and authentication/authorization configuration
 2. Identifies actors from role/authority definitions, authentication boundaries, and external system integrations
 3. Groups entry points by user goal — not one use case per HTTP endpoint — and assigns stable IDs (`UC-001`, `UC-002`, …)
-4. Writes a PlantUML use case diagram, one specification document per use case, and an entity model with a Mermaid ER
+4. Writes a Mermaid use case diagram, one specification document per use case, and an entity model with a Mermaid ER
    diagram, all in the exact formats produced by `/use-case-diagram`, `/use-case-spec`, and `/entity-model`
 5. Cross-validates that the three documents agree (every actor has a spec, every UC ID has a file, every entity
    referenced in a spec exists in the model)
 6. Reports gaps honestly — endpoints it couldn't classify, use cases where the success scenario was hard to recover
 
 **Input:** Existing source tree
-**Output:** `docs/use_cases.puml`, `docs/use_cases/UC-XXX-*.md`, `docs/entity_model.md`
+**Output:** `docs/requirements.html`, `docs/use_cases/UC-XXX-*.md`, `docs/entity_model.md`
 **Plugin:** `aiup-core`
 
 ---
@@ -715,9 +715,8 @@ After running the full workflow for a project, your tree will look like this:
 your-project/
 ├── docs/
 │   ├── vision.md                         ← you maintain this
-│   ├── requirements.md                   ← produced by /requirements
+│   ├── requirements.html                   ← produced by /requirements and /use-case-diagram
 │   ├── entity_model.md                   ← produced by /entity-model
-│   ├── use_cases.puml                    ← produced by /use-case-diagram
 │   └── use_cases/                        ← produced by /use-case-spec
 │       ├── UC-001-create-reservation.md
 │       ├── UC-002-cancel-reservation.md
@@ -745,14 +744,14 @@ Create a `CLAUDE.md` at your project root. Claude loads this automatically at th
 ```markdown
 # Project Context
 
-This project follows the AI Unified Process. Read `docs/vision.md`, `docs/requirements.md`,
+This project follows the AI Unified Process. Read `docs/vision.md`, `docs/requirements.html`,
 and `docs/entity_model.md` for product context before making decisions.
 
 ## AIUP Workflow
 
-1. `/requirements`        → derives `docs/requirements.md` from `docs/vision.md`
+1. `/requirements`        → derives `docs/requirements.html` from `docs/vision.md`
 2. `/entity-model`        → derives `docs/entity_model.md` from requirements
-3. `/use-case-diagram`    → produces `docs/use_cases.puml`
+3. `/use-case-diagram`    → produces Mermaid diagram inside `docs/requirements.html`
 4. `/use-case-spec UC-XX` → produces `docs/use_cases/UC-XX-*.md`
 5. `/flyway-migration`    → produces `src/main/resources/db/migration/V*.sql`
 6. `/implement UC-XX`     → implements the use case backend (Vaadin/jOOQ or Ktor/Exposed)
@@ -804,7 +803,7 @@ The `/requirements` skill relies heavily on this file. Include at minimum:
 to one or more FRs; every test should reference a use case ID. The skills produce stable IDs (FR-001, UC-001, …) — keep
 them.
 
-**Edit between steps.** The intermediate documents (`requirements.md`, `entity_model.md`, `use_cases.puml`) are designed
+**Edit between steps.** The intermediate documents (`requirements.html`, `entity_model.md`) are designed
 to be reviewed and corrected by hand. Do not skip the review.
 
 **Re-run upstream skills when requirements change.** If a new functional requirement appears, re-run `/entity-model` and

@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Create or update the requirements catalog at `docs/requirements.md` based on `docs/vision.md`.
+Create or update the requirements catalog at `docs/requirements.html` based on `docs/vision.md`.
 The document contains functional requirements, non-functional requirements, and constraints organized as Markdown
 tables.
 

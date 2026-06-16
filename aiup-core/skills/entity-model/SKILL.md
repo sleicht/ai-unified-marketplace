@@ -12,7 +12,7 @@ description: >
 
 ## Instructions
 
-Create or update the entity model at `docs/entity_model.md` based on `docs/requirements.md`.
+Create or update the entity model at `docs/entity_model.md` based on `docs/requirements.html`.
 The document contains an ER diagram and attribute tables.
 
 ## DO NOT

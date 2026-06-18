@@ -36,8 +36,8 @@ Use the next available Flyway version under the server module:
 ```text
 <server-module>/src/main/resources/db/migration/V001__create_initial_schema.sql
 <server-module>/src/main/resources/db/migration/V002__create_import_run_table.sql
-<server-module>/src/main/resources/db/migration/V003__add_language_and_head_contract_number.sql
-V004__create_coverage_domain_tables.sql
+<server-module>/src/main/resources/db/migration/V003__add_record_metadata.sql
+V004__create_example_tables.sql
 ```
 
 Inspect existing migrations to determine zero padding and description style.
@@ -53,7 +53,7 @@ Use this style when existing migrations match it:
 
 CREATE TABLE example (
     id                  BIGSERIAL       PRIMARY KEY,
-    patient_id          BIGINT          NOT NULL REFERENCES patient(id),
+    record_id          BIGINT          NOT NULL REFERENCES record(id),
     external_id         VARCHAR(50)     NOT NULL UNIQUE,
     status              VARCHAR(20)     NOT NULL CHECK (status IN ('ACTIVE', 'INACTIVE')),
     payload             TEXT,
@@ -62,7 +62,7 @@ CREATE TABLE example (
     CONSTRAINT chk_example_external_id CHECK (external_id <> '')
 );
 
-CREATE INDEX idx_example_patient_id ON example(patient_id);
+CREATE INDEX idx_example_record_id ON example(record_id);
 CREATE INDEX idx_example_status ON example(status);
 
 CREATE TRIGGER trg_example_updated_at BEFORE UPDATE ON example FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -85,7 +85,7 @@ $$ LANGUAGE plpgsql;
 | Entity type | SQL convention |
 |---|---|
 | Primary key | `id BIGSERIAL PRIMARY KEY` when existing service uses BIGSERIAL |
-| Foreign key | `patient_id BIGINT NOT NULL REFERENCES patient(id)` |
+| Foreign key | `record_id BIGINT NOT NULL REFERENCES record(id)` |
 | Strings | `VARCHAR(n)` with entity-model length |
 | Long text / JSON payload snapshots | `TEXT`; use `JSONB` only if existing schema does |
 | Boolean | `BOOLEAN NOT NULL DEFAULT ...` |
@@ -99,21 +99,19 @@ $$ LANGUAGE plpgsql;
 Create constraints close to table definition:
 
 ```sql
-CONSTRAINT chk_patient_correlation CHECK (
-    partner_contract_number IS NOT NULL OR ahv_number IS NOT NULL
+CONSTRAINT chk_record_external_reference CHECK (external_reference <> ''),
+CONSTRAINT chk_processing_run_records CHECK (
+    processed_records + failed_records <= total_records
 ),
-CONSTRAINT chk_import_run_records CHECK (
-    imported_records + error_records <= total_records
-),
-CONSTRAINT uq_coverage_patient_product UNIQUE (patient_id, product_type, valid_from)
+CONSTRAINT uq_example_record_reference UNIQUE (record_id, external_id)
 ```
 
 Create indexes after table definition for common query paths:
 
 ```sql
-CREATE INDEX idx_patient_active ON patient(active);
-CREATE INDEX idx_patient_last_name ON patient(last_name);
-CREATE INDEX idx_dlq_created_at ON dead_letter_queue_entry(created_at);
+CREATE INDEX idx_record_active ON record(active);
+CREATE INDEX idx_record_external_reference ON record(external_reference);
+CREATE INDEX idx_processing_run_created_at ON processing_run(created_at);
 ```
 
 Rely on implicit unique indexes from `UNIQUE` constraints; do not duplicate them.
@@ -125,7 +123,7 @@ When documenting corresponding Exposed table definitions, match the migration:
 ```kotlin
 object ExampleTable : Table("example") {
     val id = long("id").autoIncrement()
-    val patientId = long("patient_id")
+    val recordId = long("record_id")
     val externalId = varchar("external_id", 50)
     val status = varchar("status", 20)
     val createdAt = timestampWithTimeZone("created_at")

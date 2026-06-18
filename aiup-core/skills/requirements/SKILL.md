@@ -14,9 +14,9 @@ description: >
 
 ## Instructions
 
-Create or update the requirements catalog at `docs/requirements.html` based on `docs/vision.md`.
-The document contains functional requirements, non-functional requirements, and constraints organized as Markdown
-tables.
+Create or update the requirements catalog based on the project vision. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/requirements.html`; otherwise write `docs/requirements.html`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
+
+The document contains functional requirements, non-functional requirements, and constraints organized as Markdown tables. Detect existing docs language when updating; default to English for new docs unless the user asks for another language.
 
 ## DO NOT
 
@@ -62,6 +62,16 @@ Define limitations and boundaries imposed on the solution.
 | C-004 | Budget Limit      | Total development cost must not exceed $50,000.                  | Business  | High     | Open   |
 | C-005 | Deadline          | System must be production-ready by Q2 2025.                      | Schedule  | High     | Open   |
 
+## Language Variants
+
+Default to English. For German docs, use these vocabulary variants and keep domain terms untranslated:
+
+| Concept | English | German |
+|---|---|---|
+| Status values | Open / In Progress / Implemented / Verified / Deferred / Rejected | Offen / Teilweise / Umgesetzt / Bestätigt / Abgelehnt / Ersetzt |
+| Priority values | High / Medium / Low | Hoch / Mittel / Niedrig |
+| Functional story | As a [role], I want [goal] so that [benefit]. | Als [Rolle] möchte ich [Ziel], damit [Nutzen]. |
+
 ## Reference
 
 See [REFERENCE.md](REFERENCE.md) for ID prefixes, priority levels, status values, NFR categories, and constraint
@@ -90,23 +100,25 @@ Every requirement must pass these checks before finalizing:
 
 ## Workflow
 
-1. Read the vision document or project brief
-2. Use TodoWrite to create tasks for each requirement type
-3. Write the document header
-4. For functional requirements:
+1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
+2. Detect existing docs language or user-requested language; default to English.
+3. Read the vision document or project brief from the resolved docs path.
+4. Use TodoWrite to create tasks for each requirement type.
+5. Write the document header.
+6. For functional requirements:
     - Identify user roles
     - Define user stories with clear goals and benefits
     - Assign priorities based on business value
-5. For non-functional requirements:
+7. For non-functional requirements:
     - Define measurable quality attributes
     - Categorize by NFR type
     - Ensure requirements are testable
-6. For constraints:
+8. For constraints:
     - Document technical and business limitations
     - Categorize by constraint type
-7. Validate: run every requirement against the quality checks table above
+9. Validate: run every requirement against the quality checks table above
     - No duplicate IDs across all tables
     - All Status columns filled
-    - All user stories follow "As a [role], I want [goal] so that [benefit]"
+    - All user stories follow the selected language's story format
     - All NFRs contain a measurable threshold
-8. Mark todos complete
+10. Mark todos complete

@@ -6,7 +6,9 @@
 **Use Case Name:** [Descriptive Name]   
 **Primary Actor:** [Role]   
 **Goal:** [What the actor wants to achieve]   
-**Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete
+**Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete   
+**Stakeholders:** [Stakeholder roles or groups affected by the use case]   
+**Trigger:** [Event or actor action that starts the use case]
 
 ## Preconditions
 
@@ -59,6 +61,19 @@
 | Tested      | All tests pass, pending final acceptance.        |
 | Done        | Fully implemented, tested, and accepted.         |
 | Obsolete    | No longer valid, superseded by another use case. |
+
+### German Section Names
+
+| English | German |
+|---------|--------|
+| Overview | Überblick |
+| Stakeholders | Stakeholder |
+| Trigger | Auslöser |
+| Preconditions | Vorbedingungen |
+| Main Success Scenario | Standardablauf |
+| Alternative Flows | Alternative Abläufe |
+| Postconditions | Nachbedingungen |
+| Business Rules | Geschäftsregeln |
 
 ### Step Writing Guidelines
 

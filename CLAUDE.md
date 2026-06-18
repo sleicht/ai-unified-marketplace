@@ -24,7 +24,9 @@ marketplace/
 │       ├── entity-model/
 │       ├── reverse-engineer/
 │       ├── use-case-diagram/
-│       └── use-case-spec/
+│       ├── use-case-spec/
+│       ├── architecture/
+│       └── reference/
 ├── aiup-vaadin-jooq/             # Vaadin + jOOQ technology stack plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json
@@ -51,7 +53,7 @@ marketplace/
 
 ### Two-Layer Design
 
-- **aiup-core** — Stack-agnostic methodology: from vision to use case specification. Works with any tech stack.
+- **aiup-core** — Stack-agnostic methodology: from vision to use case specification, architecture, and project reference. Works with any tech stack.
 - **aiup-vaadin-jooq** — Stack-specific: implementation and testing for the Vaadin + jOOQ stack. Requires core.
 - **aiup-compose-ktor-exposed** — Stack-specific: implementation and testing for the Kotlin KMP + Compose + Ktor + Exposed stack. Requires core.
 
@@ -82,6 +84,7 @@ Skills follow the AI Unified Process phases: Inception, Elaboration, Constructio
 | Construction | `/use-case-spec`      | Write detailed use case specifications                               |
 | Any          | `/reverse-engineer`   | Recover use case diagram, use case specs, and entity model from code |
 | Elaboration  | `/architecture`       | Create or update minimal architecture.html documentation             |
+| Any          | `/reference`          | Create or update docs/REFERENCE.md for project context               |
 | Construction | `/implement`          | Stack-agnostic dispatcher — detects the stack and delegates          |
 | Construction | `/test`               | Stack-agnostic dispatcher — server-side unit / integration tests     |
 

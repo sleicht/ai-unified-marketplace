@@ -12,7 +12,7 @@ description: >
 
 ## Instructions
 
-Create or update use case specification documents for $ARGUMENTS in `docs/use_cases/`. Each use case describes a complete interaction between an actor and the system to achieve a goal.
+Create or update use case specification documents for $ARGUMENTS. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write under `<service>/docs/use_cases/`; otherwise write under `docs/use_cases/`. Each use case describes a complete interaction between an actor and the system to achieve a goal.
 
 ## DO NOT
 
@@ -22,6 +22,12 @@ Create or update use case specification documents for $ARGUMENTS in `docs/use_ca
 - Leave postconditions undefined
 - Mix multiple use cases in one document
 - Use technical implementation details in the flow steps
+
+## Path and Language Resolution
+
+- Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
+- Use existing docs language when updating; default to English for new docs.
+- For German docs, use section names such as `Überblick`, `Stakeholder`, `Auslöser`, `Vorbedingungen`, `Standardablauf`, `Alternative Abläufe`, `Nachbedingungen`, and `Geschäftsregeln`. Keep domain terms untranslated.
 
 ## Template
 
@@ -38,6 +44,8 @@ Use [templates/use-case.md](templates/use-case.md) as the document structure.
 **Primary Actor:** Front Desk Clerk
 **Goal:** Create a new room reservation for a guest
 **Status:** Approved
+**Stakeholders:** Front Desk Clerk, Guest, Reservation Manager
+**Trigger:** Clerk starts a new reservation request
 
 ## Preconditions
 
@@ -116,17 +124,19 @@ Reservations of 3 or more nights require a 50% deposit.
 
 ## Workflow
 
-1. Read the requirements document and use case diagram
-2. Identify the use case to document
-3. Use TodoWrite to track progress
-4. Write the Overview section with actor and goal
-5. Define preconditions (what must be true before starting)
-6. Write the Main Success Scenario step by step
-7. Identify alternative flows:
+1. Resolve docs path: `<service>/docs/use_cases/` for a scoped monorepo service, otherwise `docs/use_cases/`.
+2. Detect existing docs language or user-requested language; default to English.
+3. Read the requirements document and use case diagram from the resolved docs path.
+4. Identify the use case to document.
+5. Use TodoWrite to track progress.
+6. Write the Overview section with actor, stakeholders, trigger, and goal.
+7. Define preconditions (what must be true before starting).
+8. Write the Main Success Scenario step by step.
+9. Identify alternative flows:
     - Error conditions
     - Optional paths
     - Exceptional situations
-8. Define postconditions for both success and failure
-9. Document applicable business rules
-10. Review for completeness and clarity
-11. Mark todo complete
+10. Define postconditions for both success and failure.
+11. Document applicable business rules.
+12. Review for completeness and clarity.
+13. Mark todo complete

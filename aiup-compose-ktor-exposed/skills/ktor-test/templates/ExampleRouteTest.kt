@@ -1,9 +1,9 @@
-package com.example.app.modules.patient.infrastructure.rest
+package com.example.app.modules.record.infrastructure.rest
 
 import com.example.app.configureRouting
 import com.example.app.infrastructure.plugins.configureSerialization
-import com.example.app.modules.patient.domain.model.Patient
-import com.example.app.modules.patient.domain.repository.PatientRepository
+import com.example.app.modules.record.domain.model.Record
+import com.example.app.modules.record.domain.repository.RecordRepository
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -22,30 +22,30 @@ import org.koin.ktor.plugin.Koin
 
 class ExampleRouteTest {
 
-    private val samplePatient =
-        Patient(
+    private val sampleRecord =
+        Record(
             id = 1L,
-            partnerContractNumber = "P-1001",
-            lastName = "Muster",
-            firstName = "Max",
+            externalReference = "REC-1001",
+            category = "Standard",
+            displayName = "Example",
             active = true,
         )
 
-    private fun fakePatientRepository(patients: List<Patient> = listOf(samplePatient)) =
-        object : PatientRepository {
-            override suspend fun create(patient: Patient) = patient
+    private fun fakeRecordRepository(records: List<Record> = listOf(sampleRecord)) =
+        object : RecordRepository {
+            override suspend fun create(record: Record) = record
 
-            override suspend fun update(patient: Patient) = patient
+            override suspend fun update(record: Record) = record
 
-            override suspend fun findById(id: Long) = patients.find { it.id == id }
+            override suspend fun findById(id: Long) = records.find { it.id == id }
 
-            override suspend fun findAll(limit: Int) = patients.take(limit)
+            override suspend fun findAll(limit: Int) = records.take(limit)
         }
 
     private fun ApplicationTestBuilder.configureTestApp(
-        patientRepo: PatientRepository = fakePatientRepository(),
+        recordRepo: RecordRepository = fakeRecordRepository(),
     ) {
-        install(Koin) { modules(module { single<PatientRepository> { patientRepo } }) }
+        install(Koin) { modules(module { single<RecordRepository> { recordRepo } }) }
         application {
             configureSerialization()
             configureRouting()
@@ -55,27 +55,27 @@ class ExampleRouteTest {
     private fun employeeToken(): String = "test-token"
 
     @Test
-    fun `GET patients returns list`() = testApplication {
+    fun `GET records returns list`() = testApplication {
         configureTestApp()
 
         client
-            .get("/api/v1/patients") {
+            .get("/api/v1/records") {
                 header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
             }
             .apply {
                 assertEquals(HttpStatusCode.OK, status)
                 val arr = Json.parseToJsonElement(bodyAsText()).jsonArray
                 assertEquals(1, arr.size)
-                assertEquals("P-1001", arr[0].jsonObject["partnerContractNumber"]!!.jsonPrimitive.content)
+                assertEquals("REC-1001", arr[0].jsonObject["externalReference"]!!.jsonPrimitive.content)
             }
     }
 
     @Test
-    fun `GET patient by id returns 404 when not found`() = testApplication {
+    fun `GET record by id returns 404 when not found`() = testApplication {
         configureTestApp()
 
         client
-            .get("/api/v1/patients/999") {
+            .get("/api/v1/records/999") {
                 header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
             }
             .apply { assertEquals(HttpStatusCode.NotFound, status) }

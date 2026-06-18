@@ -21,9 +21,11 @@ Prefer this order:
 2. ViewModel tests with fake API clients and `runTest`
 3. Compose semantics tests with `runComposeUiTest` only when the project has Compose UI test dependencies configured
 
+When UI code uses OIDC/PKCE or platform `expect`/`actual` auth, place tests in the matching source set (`commonTest`, `jvmTest`, or `wasmJsTest`) and use deterministic fake token providers.
+
 ## Required Reference
 
-Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its UI API client, ViewModel, and commonTest conventions.
+Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its UI API client, ViewModel, commonTest, platform source-set, OIDC/PKCE, and command conventions.
 
 ## DO NOT
 
@@ -34,6 +36,8 @@ Read `references/service-style.md` (absolute path: prepend the "Base directory f
 - Add Compose UI test dependencies unless the user asked for screen tests or existing project already has them
 - Use Koin in tests when UI code uses constructor injection
 - Duplicate shared DTOs inside tests
+- Put platform-specific auth tests in `commonTest` when the implementation lives in `jvmMain` or `wasmJsMain`
+- Assert POC bearer-token headers when the project uses an OIDC token provider
 
 ## API Client Test Pattern
 
@@ -43,7 +47,7 @@ Use Ktor `MockEngine` to verify URL, method, headers, query params, body, and JS
 class ServiceApiClientTest {
 
     @Test
-    fun `listPatients sends default POC bearer token`() = runTest {
+    fun `listRecords sends default POC bearer token`() = runTest {
         lateinit var request: HttpRequestData
         val httpClient =
             HttpClient(
@@ -53,13 +57,12 @@ class ServiceApiClientTest {
                         content =
                             Json.encodeToString(
                                 listOf(
-                                    PatientListItem(
+                                    RecordListItem(
                                         id = 1,
-                                        partnerContractNumber = "P-1001",
-                                        firstName = "Ada",
-                                        lastName = "Lovelace",
-                                        dateOfBirth = "1815-12-10",
-                                        gender = "FEMALE",
+                                        externalReference = "REC-1001",
+                                        displayName = "Example",
+                                        category = "Record",
+                                        status = "ACTIVE",
                                         active = true,
                                     )
                                 )
@@ -70,19 +73,21 @@ class ServiceApiClientTest {
                 }
             ) { install(ContentNegotiation) { json() } }
 
-        val client = ServiceApiClient(baseUrl = "http://localhost:5600", httpClient = httpClient)
+        val client = ServiceApiClient(baseUrl = testBaseUrl, accessTokenProvider = FakeAccessTokenProvider("test-token"), httpClient = httpClient)
 
-        val patients = client.listPatients(limit = 100)
+        val records = client.listRecords(limit = 100)
 
-        assertEquals("Bearer $DEFAULT_POC_EMPLOYEE_TOKEN", request.headers[HttpHeaders.Authorization])
-        assertEquals("/api/v1/patients", request.url.encodedPath)
+        assertEquals("Bearer test-token", request.headers[HttpHeaders.Authorization])
+        assertEquals("/api/v1/records", request.url.encodedPath)
         assertEquals("100", request.url.parameters["limit"])
-        assertEquals(1, patients.size)
+        assertEquals(1, records.size)
     }
 }
 ```
 
 Test error handling by returning non-2xx responses from `MockEngine` and asserting the client or ViewModel behavior expected by the project.
+
+For OIDC/PKCE-backed clients, inject a fake `AccessTokenProvider` or equivalent and assert the resolved bearer token and request shape. Test PKCE generation, callback parsing, token exchange, and browser/desktop adapters in platform source sets only when those components exist.
 
 ## ViewModel Test Pattern
 
@@ -91,16 +96,16 @@ If the API client is concrete and not interface-based, prefer extracting a small
 When a fake can be injected:
 
 ```kotlin
-class PatientViewModelTest {
+class RecordViewModelTest {
     @Test
-    fun `loadPatients stores patients`() = runTest {
-        val api = FakeServiceApiClient(patients = listOf(aPatientListItem()))
-        val vm = PatientViewModel(api, this)
+    fun `loadRecords stores records`() = runTest {
+        val api = FakeServiceApiClient(records = listOf(aRecordListItem()))
+        val vm = RecordViewModel(api, this)
 
-        vm.loadPatients()
+        vm.loadRecords()
         testScheduler.advanceUntilIdle()
 
-        assertEquals(1, vm.patients.size)
+        assertEquals(1, vm.records.size)
         assertEquals(null, vm.error)
     }
 }
@@ -114,21 +119,21 @@ Use only when Compose UI testing dependencies exist in `commonTest`:
 
 ```kotlin
 @OptIn(ExperimentalTestApi::class)
-class PatientBrowserScreenTest {
+class RecordBrowserScreenTest {
 
     @Test
-    fun `screen displays patients`() = runComposeUiTest {
-        val vm = PatientViewModel(fakeApiWithPatients(), backgroundScope)
-        vm.loadPatients()
+    fun `screen displays records`() = runComposeUiTest {
+        val vm = RecordViewModel(fakeApiWithRecords(), backgroundScope)
+        vm.loadRecords()
 
-        setContent { PatientBrowserScreen(vm) }
+        setContent { RecordBrowserScreen(vm) }
 
         waitUntil(timeoutMillis = 5_000) {
-            onAllNodesWithText("Muster", substring = true).fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithText("Standard", substring = true).fetchSemanticsNodes().isNotEmpty()
         }
 
-        onNodeWithText("Patient Browser").assertIsDisplayed()
-        onNodeWithText("Muster, Max").assertIsDisplayed()
+        onNodeWithText("Record Browser").assertIsDisplayed()
+        onNodeWithText("Example Record").assertIsDisplayed()
     }
 }
 ```
@@ -140,9 +145,9 @@ Prefer user-visible text and content descriptions. Use test tags only for struct
 | Target | Assertion style |
 |---|---|
 | API auth header | `assertEquals("Bearer ...", request.headers[HttpHeaders.Authorization])` |
-| API path | `assertEquals("/api/v1/patients", request.url.encodedPath)` |
+| API path | `assertEquals("/api/v1/records", request.url.encodedPath)` |
 | Query param | `assertEquals("100", request.url.parameters["limit"])` |
-| ViewModel state | `assertEquals(expected, vm.patients)` |
+| ViewModel state | `assertEquals(expected, vm.records)` |
 | Error state | `assertTrue(vm.error!!.contains("Failed"))` |
 | Screen text | `onNodeWithText("...").assertIsDisplayed()` |
 | Async UI | `waitUntil(timeoutMillis = 5_000) { ... }` |
@@ -163,16 +168,18 @@ Derive UI tests from use case behavior:
 
 ## Workflow
 
-1. Read the use case spec and UI implementation.
+1. Read the use case spec and UI implementation from the resolved docs path/module.
 2. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
-3. Inspect `service-ui/src/commonTest` or equivalent to identify existing dependencies and assertion style.
-4. Choose the lightest useful test level: API client, ViewModel, or Compose screen.
-5. Use Ktor `MockEngine` for API client behavior and no network.
-6. Use fake clients/repositories for ViewModel and screen tests.
-7. Use `runTest` and `advanceUntilIdle()` for coroutine state.
-8. Use `runComposeUiTest` and semantics only when dependencies exist.
-9. Run LSP diagnostics for touched Kotlin test files.
-10. Run focused UI test command: prefer `mise run test <ClassName>` if wired to UI tests; fallback to `./gradlew <ui-module>:allTests` or the existing module test task.
+3. Inspect `service-ui/src/commonTest`, `src/jvmTest`, and `src/wasmJsTest` or equivalents to identify dependencies and assertion style.
+4. Inspect existing API-client auth style: OIDC/PKCE token provider, POC bearer token, or no auth.
+5. Choose the lightest useful test level: API client, ViewModel, platform auth helper, or Compose screen.
+6. Use Ktor `MockEngine` for API client behavior and no network.
+7. Use fake token providers/clients/repositories for ViewModel and screen tests.
+8. Use `runTest` and `advanceUntilIdle()` for coroutine state.
+9. Use `runComposeUiTest` and semantics only when dependencies exist.
+10. Put `expect`/`actual` platform behaviour tests in `jvmTest`/`wasmJsTest` when relevant.
+11. Run LSP diagnostics for touched Kotlin test files.
+12. Run focused UI test command using detected shape: namespaced `mise run //<stack>:test <ClassName>` from monorepo root, bare `mise run test <ClassName>` inside a stack, or `./gradlew <ui-module>:allTests` / matching source-set task as fallback.
 
 ## Resources
 

@@ -9,7 +9,7 @@
     {
       "name": "aiup-core",
       "source": "./aiup-core",
-      "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases, architecture)"
+      "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases, architecture, project reference)"
     },
     {
       "name": "aiup-vaadin-jooq",

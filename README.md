@@ -24,6 +24,7 @@ Construction, Transition** — but adapted for AI-driven workflows.
 Inception          Elaboration                          Construction
 ─────────────────  ──────────────────────────────────   ────────────────────────────────────────────────
 /requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  /architecture
+                                                                          ↘  /reference
                                                                           ↘  /flyway-migration
                                                                           ↘  /implement
                                                                           ↘  /implement-ui  (Compose/Ktor)
@@ -33,17 +34,17 @@ Inception          Elaboration                          Construction
 ```
 
 Each skill picks up where the previous one left off using the files produced along the way (`docs/vision.md`,
-`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`). At any point you can
+`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.html`, `docs/REFERENCE.md`). At any point you can
 inspect or manually edit these files before continuing.
 
 **Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
 schema and produces the same mermaid diagram in `docs/requirements.html`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
-|                               | Inception       | Elaboration                            | Construction                                                                              | Transition |
-|-------------------------------|-----------------|----------------------------------------|-------------------------------------------------------------------------------------------|------------|
-| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`<br>`/architecture`                                                    |            |
-| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`        |            |
+|                               | Inception       | Elaboration                            | Construction                                                                                                          | Transition |
+|-------------------------------|-----------------|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------|------------|
+| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`<br>`/architecture`<br>`/reference`                                                                   |            |
+| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`                                      |            |
 | **aiup-compose-ktor-exposed** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/implement-ui`<br>`/ktor-test`<br>`/compose-test`<br>`/implementation-status` |            |
 
 ---
@@ -108,7 +109,7 @@ CLI**, **Cursor**, **GitHub Copilot**, and **Gemini CLI**. Pair them with the
    (`aiup-vaadin-jooq/.mcp.json` or `aiup-compose-ktor-exposed/.mcp.json`) in your tool's MCP config file.
 4. Trigger skills the same way you would in Claude Code — say "write requirements" or invoke `/requirements`. The tool
    matches your prompt against each skill's `description` and loads the matching `SKILL.md`. File outputs
-   (`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`) are identical
+   (`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.html`, `docs/REFERENCE.md`) are identical
    regardless of tool, so the chain composes even if you mix tools across steps.
 
 ### OpenAI Codex CLI
@@ -240,6 +241,16 @@ business rules. Each spec is a single document — Claude will not bundle multip
 Claude creates or updates `docs/architecture.html` (or `<service>/docs/architecture.html` in a monorepo service) with a
 minimal HTML architecture page covering context, high-level structure, layering, data flow, decisions/ADRs, tech stack,
 scaling, failure modes, security, observability, deployment, and cross-cutting concerns.
+
+---
+
+### Step 4b — Capture project reference
+
+```
+/reference
+```
+
+Claude creates or updates `docs/REFERENCE.md` (or `<service>/docs/REFERENCE.md` in a monorepo service) with concise project context: repository layout, authoritative docs, commands, architecture boundaries, domain vocabulary, integrations, testing strategy, and operational notes.
 
 ---
 
@@ -451,6 +462,30 @@ requirements catalog.
 
 **Input:** Existing project docs and source tree
 **Output:** `docs/architecture.html` or `<service>/docs/architecture.html`
+**Plugin:** `aiup-core`
+
+---
+
+### `/reference` — Project Reference
+
+**Purpose:** Creates or updates `docs/REFERENCE.md` as a concise project reference for future AI agents and maintainers.
+
+**Usage:**
+
+```
+/reference
+```
+
+**What it does:**
+
+1. Resolves `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md` in monorepos
+2. Reads existing docs, AIUP artifacts, build/task files, and source layout
+3. Captures repository layout, authoritative documentation, commands, module boundaries, vocabulary, persistence, integrations, testing strategy, conventions, and operational notes
+4. Links to canonical docs instead of duplicating long requirements, use case specs, entity models, or architecture pages
+5. Marks missing but important information as `Not documented yet` rather than inventing facts
+
+**Input:** Existing project docs and source tree
+**Output:** `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md`
 **Plugin:** `aiup-core`
 
 ---

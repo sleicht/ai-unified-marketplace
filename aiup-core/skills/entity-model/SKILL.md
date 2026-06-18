@@ -12,14 +12,21 @@ description: >
 
 ## Instructions
 
-Create or update the entity model at `docs/entity_model.md` based on `docs/requirements.html`.
-The document contains an ER diagram and attribute tables.
+Create or update the entity model based on the requirements catalog. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/entity_model.md`; otherwise write `docs/entity_model.md`.
+The document contains an ER diagram and attribute tables. Treat it as the schema source of truth for downstream migrations; migration skills should reference it with `-- Source: docs/entity_model.md` or the resolved service-relative path.
 
 ## DO NOT
 
 - Add attributes/columns to the Mermaid diagram
 - Write prose descriptions like "Key attributes: name, email..."
 - Create a "Relationships" table
+
+## Path and Language Resolution
+
+- Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
+- Read `requirements.html` from the same resolved docs directory.
+- Detect existing docs language when updating; default to English for new docs.
+- If the Compose/Ktor/Exposed stack plugin is installed, its `implementation-status` skill may add an implementation-status matrix to this file after code/migrations exist.
 
 ## Document Structure
 
@@ -84,16 +91,17 @@ If validation spans multiple columns, add after the table:
 
 ## Workflow
 
-1. Read the requirements document
-2. Use TodoWrite to create a task for each entity
-3. Write the document header and ER diagram (relationships only)
-4. For each entity:
+1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
+2. Read the requirements document from the resolved docs path.
+3. Use TodoWrite to create a task for each entity.
+4. Write the document header and ER diagram (relationships only).
+5. For each entity:
     - Write ### heading
     - Write one sentence description
     - Write attribute table with 5 columns
     - Add constraints if needed
     - Mark todo complete
-5. Validate the document:
+6. Validate the document:
     - Every entity in the ER diagram has a corresponding attribute table section
     - Every attribute table has exactly 5 columns
     - No attributes appear inside the Mermaid diagram entity blocks

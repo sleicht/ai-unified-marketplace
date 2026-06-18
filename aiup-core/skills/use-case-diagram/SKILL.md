@@ -4,21 +4,24 @@ description: >
   Creates or updates Mermaid use case diagrams defining actors, use cases,
   and their relationships from requirements. Use when the user asks to
   "create a use case diagram", "draw a UML diagram", "map actors to use cases",
-  "generate a .puml file", or mentions Mermaid, use case overview, actor
-  diagram, or system use cases.
+  or mentions Mermaid, use case overview, actor diagram, or system use cases.
 ---
 
 # Use Case Diagram
 
 ## Instructions
 
-Create or update the Mermaid use case diagram in `docs/requirements.html` based on `docs/requirements.html`.
+Create or update the Mermaid use case diagram embedded in the resolved `requirements.html` based on the requirements catalog.
 
 ## DO NOT
 
 - Create diagrams without reading the requirements first
 - Use non-standard Mermaid syntax
 - Include implementation details in use case names
+
+## Path Resolution
+
+If a service/module is in scope or cwd is inside a monorepo service, read and update `<service>/docs/requirements.html`; otherwise use `docs/requirements.html`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
 
 ## Template
 
@@ -47,12 +50,13 @@ graph LR
 
 ## Workflow
 
-1. Read the requirements at `docs/requirements.html`
-2. Read existing diagram in `docs/requirements.puml` (if exists)
-3. Identify actors and use cases from requirements
-4. Create/update the Mermaid use case diagram
-5. Validate the diagram:
-    - Each use case traces to at least one functional requirement in `docs/requirements.html`
+1. Resolve docs path: `<service>/docs/requirements.html` for a scoped monorepo service, otherwise `docs/requirements.html`.
+2. Read the requirements catalog.
+3. Read the existing Mermaid diagram embedded in `requirements.html`, if present.
+4. Identify actors and use cases from requirements.
+5. Create/update the Mermaid use case diagram in `requirements.html`.
+6. Validate the diagram:
+    - Each use case traces to at least one functional requirement in `requirements.html`
     - All actors are connected to at least one use case
     - Use case IDs follow the UC-{3-digit} convention
-    - Mermaid syntax is valid (no missing `@enduml`, proper arrow syntax)
+    - Mermaid syntax is valid

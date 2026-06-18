@@ -1,7 +1,7 @@
 {
   "name": "aiup-core",
-  "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases)",
-  "version": "103.4.0",
+  "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases, architecture)",
+  "version": "103.5.0",
   "author": {
     "name": "Simon Martinelli",
     "email": "simon@martinelli.ch",

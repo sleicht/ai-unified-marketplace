@@ -9,7 +9,7 @@
     {
       "name": "aiup-core",
       "source": "./aiup-core",
-      "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases)"
+      "description": "AI Unified Process - stack-agnostic core methodology (requirements, entity model, use cases, architecture, project reference)"
     },
     {
       "name": "aiup-vaadin-jooq",
@@ -19,7 +19,7 @@
     {
       "name": "aiup-compose-ktor-exposed",
       "source": "./aiup-compose-ktor-exposed",
-      "description": "AI Unified Process plugin for the Kotlin KMP / Compose / Ktor / Exposed stack"
+      "description": "AI Unified Process plugin for the Kotlin KMP / Compose / Ktor / Exposed stack, including implementation-status documentation"
     }
   ]
 }

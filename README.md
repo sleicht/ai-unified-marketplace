@@ -23,26 +23,29 @@ Construction, Transition** — but adapted for AI-driven workflows.
 ```
 Inception          Elaboration                          Construction
 ─────────────────  ──────────────────────────────────   ────────────────────────────────────────────────
-/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  /flyway-migration
+/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  /architecture
+                                                                          ↘  /reference
+                                                                          ↘  /flyway-migration
                                                                           ↘  /implement
                                                                           ↘  /implement-ui  (Compose/Ktor)
                                                                           ↘  /browserless-test or /ktor-test
                                                                           ↘  /playwright-test or /compose-test
+                                                                          ↘  /implementation-status (Compose/Ktor)
 ```
 
 Each skill picks up where the previous one left off using the files produced along the way (`docs/vision.md`,
-`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases.puml`, `docs/use_cases/UC-*.md`). At any point you can
+`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.html`, `docs/REFERENCE.md`). At any point you can
 inspect or manually edit these files before continuing.
 
 **Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
-schema and produces the same `docs/use_cases.puml`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
+schema and produces the same mermaid diagram in `docs/requirements.html`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
-|                               | Inception       | Elaboration                            | Construction                                                                              | Transition |
-|-------------------------------|-----------------|----------------------------------------|-------------------------------------------------------------------------------------------|------------|
-| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`                                                                          |            |
-| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`          |            |
-| **aiup-compose-ktor-exposed** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/implement-ui`<br>`/ktor-test`<br>`/compose-test` |            |
+|                               | Inception       | Elaboration                            | Construction                                                                                                          | Transition |
+|-------------------------------|-----------------|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------|------------|
+| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`<br>`/architecture` <br>`/reference`                                                                  |            |
+| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`                                      |            |
+| **aiup-compose-ktor-exposed** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/implement-ui`<br>`/ktor-test`<br>`/compose-test`<br>`/implementation-status` |            |
 
 ---
 
@@ -143,7 +146,7 @@ Prefer not to use Tessl? You can wire the skills in by hand:
    (`aiup-vaadin-jooq/.mcp.json` or `aiup-compose-ktor-exposed/.mcp.json`) in your tool's MCP config file.
 4. Trigger skills the same way you would in Claude Code — say "write requirements" or invoke `/requirements`. The tool
    matches your prompt against each skill's `description` and loads the matching `SKILL.md`. File outputs
-   (`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases.puml`, `docs/use_cases/UC-*.md`) are identical
+   (`docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.html`, `docs/REFERENCE.md`) are identical
    regardless of tool, so the chain composes even if you mix tools across steps.
 
 ### OpenAI Codex CLI
@@ -235,7 +238,7 @@ Here is a complete end-to-end example of building a hotel reservation system.
 ```
 
 Claude reads `docs/vision.md`, identifies functional requirements (as user stories), non-functional requirements (
-measurable quality attributes), and constraints, then writes them into `docs/requirements.md` as three separate tables.
+measurable quality attributes), and constraints, then writes them into `docs/requirements.html` as three separate tables.
 Every requirement gets a stable ID (FR-001, NFR-001, CON-001) and a status. Review the catalog before continuing.
 
 ---
@@ -246,7 +249,7 @@ Every requirement gets a stable ID (FR-001, NFR-001, CON-001) and a status. Revi
 /entity-model
 ```
 
-Claude reads `docs/requirements.md`, identifies the domain entities and their relationships, then writes
+Claude reads `docs/requirements.html`, identifies the domain entities and their relationships, then writes
 `docs/entity_model.md` with a Mermaid ER diagram and one attribute table per entity (data type, length/precision,
 validation rules). Approve the model before moving to use cases.
 
@@ -258,8 +261,8 @@ validation rules). Approve the model before moving to use cases.
 /use-case-diagram
 ```
 
-Claude reads `docs/requirements.md`, identifies actors and use cases, then writes a PlantUML diagram at
-`docs/use_cases.puml`. Each use case gets a stable ID (UC-001, UC-002, …) that traces back to one or more functional
+Claude reads `docs/requirements.html`, identifies actors and use cases, then writes a Mermaid diagram at
+`docs/requirements.html`. Each use case gets a stable ID (UC-001, UC-002, …) that traces back to one or more functional
 requirements.
 
 ---
@@ -271,11 +274,33 @@ requirements.
 /use-case-spec UC-001 UC-002 UC-003     # multiple at once
 ```
 
-Claude writes a detailed specification per use case into `docs/use_cases/` covering actors, preconditions, the main
-success scenario as numbered steps, alternative flows for error conditions, postconditions, and business rules. Each
-spec is a single document — Claude will not bundle multiple use cases together.
+Claude writes a detailed specification per use case into `docs/use_cases/` covering actors, stakeholders, trigger,
+preconditions, the main success scenario as numbered steps, alternative flows for error conditions, postconditions, and
+business rules. Each spec is a single document — Claude will not bundle multiple use cases together.
 
 ---
+### Step 4a — Document architecture
+
+```
+/architecture
+```
+
+Claude creates or updates `docs/architecture.html` (or `<service>/docs/architecture.html` in a monorepo service) with a
+minimal HTML architecture page covering context, high-level structure, layering, data flow, decisions/ADRs, tech stack,
+scaling, failure modes, security, observability, deployment, and cross-cutting concerns.
+
+---
+
+### Step 4b — Capture project reference
+
+```
+/reference
+```
+
+Claude creates or updates `docs/REFERENCE.md` (or `<service>/docs/REFERENCE.md` in a monorepo service) with concise project context: repository layout, authoritative docs, commands, architecture boundaries, domain vocabulary, integrations, testing strategy, and operational notes.
+
+---
+
 
 ### Step 5 — Create the database migrations
 
@@ -362,8 +387,8 @@ tests, coroutine ViewModel tests, and Compose Multiplatform semantics tests when
 
 ### `/requirements` — Requirements Catalog
 
-**Purpose:** Turns a `docs/vision.md` document into a structured `docs/requirements.md` catalog with functional
-requirements, non-functional requirements, and constraints.
+**Purpose:** Turns a `docs/vision.md` document into a structured `docs/requirements.html` catalog with functional
+requirements, non-functional requirements, and constraints. In monorepos it writes under the scoped service's `docs/`.
 
 **Usage:**
 
@@ -379,10 +404,10 @@ requirements, non-functional requirements, and constraints.
 3. Extracts non-functional requirements as measurable quality attributes with category (Performance, Security,
    Availability, …), priority, and status
 4. Extracts constraints (technical, regulatory, business) with stable IDs (CON-001, CON-002, …)
-5. Writes all three as separate tables in `docs/requirements.md` — never mixing requirement types in one table
+5. Writes all three as separate tables in `docs/requirements.html` — never mixing requirement types in one table
 
 **Input:** `docs/vision.md`
-**Output:** `docs/requirements.md`
+**Output:** `docs/requirements.html`
 **Plugin:** `aiup-core`
 
 ---
@@ -399,14 +424,14 @@ requirements, non-functional requirements, and constraints.
 
 **What it does:**
 
-1. Reads `docs/requirements.md` to identify the domain entities implied by the user stories
+1. Reads `docs/requirements.html` to identify the domain entities implied by the user stories
 2. Draws a Mermaid `erDiagram` showing entities and their relationships (cardinality, role names) — without listing
    attributes inside the diagram
 3. Produces one attribute table per entity with columns for attribute name, description, data type, length/precision,
    and validation rules (Primary Key, Sequence, NOT NULL, UNIQUE, foreign keys, check constraints)
-4. Writes the result to `docs/entity_model.md`
+4. Writes the result to `docs/entity_model.md` or the scoped service's `docs/entity_model.md`
 
-**Input:** `docs/requirements.md`
+**Input:** `docs/requirements.html`
 **Output:** `docs/entity_model.md`
 **Plugin:** `aiup-core`
 
@@ -414,7 +439,7 @@ requirements, non-functional requirements, and constraints.
 
 ### `/use-case-diagram` — Use Case Diagram
 
-**Purpose:** Generates a PlantUML use case diagram showing actors, use cases, and their relationships derived from the
+**Purpose:** Generates a Mermaid use case diagram showing actors, use cases, and their relationships derived from the
 requirements catalog.
 
 **Usage:**
@@ -425,14 +450,14 @@ requirements catalog.
 
 **What it does:**
 
-1. Reads `docs/requirements.md` to identify actors and the use cases they participate in
+1. Reads `docs/requirements.html` to identify actors and the use cases they participate in
 2. Assigns stable IDs (UC-001, UC-002, …), each tracing to at least one functional requirement
-3. Writes a `.puml` file at `docs/use_cases.puml` using `left to right direction` and a `rectangle "System Name"`
+3. Writes a Mermaid Diagram in `docs/requirements.html` using `left to right direction` and a `rectangle "System Name"`
    boundary
-4. Uses standard PlantUML syntax only — no implementation details in use case names
+4. Uses standard Mermaid syntax only — no implementation details in use case names
 
-**Input:** `docs/requirements.md`
-**Output:** `docs/use_cases.puml`
+**Input:** `docs/requirements.html`
+**Output:** `docs/requirements.html`
 **Plugin:** `aiup-core`
 
 ---
@@ -451,10 +476,10 @@ requirements catalog.
 
 **What it does:**
 
-1. Reads `docs/use_cases.puml` and `docs/requirements.md` to scope the use case
+1. Reads `docs/requirements.html` to scope the use case
 2. Writes one document per use case under `docs/use_cases/` using a fixed template covering: Overview (ID, name, primary
-   actor, goal, status), Preconditions, Main Success Scenario (numbered steps), Alternative Flows (for error
-   conditions), Postconditions, and Business Rules
+   actor, goal, status), Stakeholders, Trigger, Preconditions, Main Success Scenario (numbered steps), Alternative Flows
+   (for error conditions), Postconditions, and Business Rules
 3. Keeps flow steps free of implementation details
 4. Refuses to bundle multiple use cases into a single document
 
@@ -463,6 +488,55 @@ requirements catalog.
 **Plugin:** `aiup-core`
 
 ---
+
+### `/architecture` — Architecture Documentation
+
+**Purpose:** Creates or updates a minimal `architecture.html` page for the project or scoped service.
+
+**Usage:**
+
+```
+/architecture
+```
+
+**What it does:**
+
+1. Resolves `docs/architecture.html` or `<service>/docs/architecture.html` in monorepos
+2. Reads existing docs, build files, source layout, deployment config, and architecture tests when present
+3. Documents context, high-level structure, layering, data flow, ADRs, tech stack, scaling, failure modes, security, observability, deployment, and cross-cutting concerns
+4. Embeds Mermaid diagrams where they clarify structure or flow
+5. Uses minimal portable HTML with no brand-specific CSS
+
+**Input:** Existing project docs and source tree
+**Output:** `docs/architecture.html` or `<service>/docs/architecture.html`
+**Plugin:** `aiup-core`
+
+---
+
+### `/reference` — Project Reference
+
+**Purpose:** Creates or updates `docs/REFERENCE.md` as a concise project reference for future AI agents and maintainers.
+
+**Usage:**
+
+```
+/reference
+```
+
+**What it does:**
+
+1. Resolves `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md` in monorepos
+2. Reads existing docs, AIUP artifacts, build/task files, and source layout
+3. Captures repository layout, authoritative documentation, commands, module boundaries, vocabulary, persistence, integrations, testing strategy, conventions, and operational notes
+4. Links to canonical docs instead of duplicating long requirements, use case specs, entity models, or architecture pages
+5. Marks missing but important information as `Not documented yet` rather than inventing facts
+
+**Input:** Existing project docs and source tree
+**Output:** `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md`
+**Plugin:** `aiup-core`
+
+---
+
 
 ### `/reverse-engineer` — Reverse Engineer Existing Project
 
@@ -481,14 +555,14 @@ codebase so legacy projects can join the AIUP workflow without rewriting documen
    schema migrations), and authentication/authorization configuration
 2. Identifies actors from role/authority definitions, authentication boundaries, and external system integrations
 3. Groups entry points by user goal — not one use case per HTTP endpoint — and assigns stable IDs (`UC-001`, `UC-002`, …)
-4. Writes a PlantUML use case diagram, one specification document per use case, and an entity model with a Mermaid ER
+4. Writes a Mermaid use case diagram, one specification document per use case, and an entity model with a Mermaid ER
    diagram, all in the exact formats produced by `/use-case-diagram`, `/use-case-spec`, and `/entity-model`
 5. Cross-validates that the three documents agree (every actor has a spec, every UC ID has a file, every entity
    referenced in a spec exists in the model)
 6. Reports gaps honestly — endpoints it couldn't classify, use cases where the success scenario was hard to recover
 
 **Input:** Existing source tree
-**Output:** `docs/use_cases.puml`, `docs/use_cases/UC-XXX-*.md`, `docs/entity_model.md`
+**Output:** `docs/requirements.html`, `docs/use_cases/UC-XXX-*.md`, `docs/entity_model.md`
 **Plugin:** `aiup-core`
 
 ---
@@ -693,7 +767,8 @@ tree without launching a browser.
 2. Creates Ktor `testApplication` route tests with fake repository/service ports
 3. Covers success, validation, not-found, auth, and key alternative flows
 4. Adds Ktor `MockEngine` tests for outbound clients when needed
-5. Adds Testcontainers + Flyway repository integration tests when persistence behavior needs real PostgreSQL
+5. Adds or extends `ArchitectureTest.kt` for new modules when the backend enforces ArchUnit layering
+6. Adds Testcontainers + Flyway repository integration tests under `src/testContainerTest` when persistence behavior needs real PostgreSQL
 
 **Input:** Use case ID as argument
 **Output:** Kotlin tests under the backend module's test source sets
@@ -716,11 +791,36 @@ tree without launching a browser.
 1. Reads the use case spec and UI implementation
 2. Creates Ktor `MockEngine` API-client tests in `commonTest`
 3. Creates coroutine ViewModel tests with fakes and `runTest`
-4. Creates Compose Multiplatform semantics tests with `runComposeUiTest` when dependencies exist
-5. Avoids real network calls and Android-only test APIs in multiplatform modules
+4. Places OIDC/PKCE or `expect`/`actual` platform tests in `jvmTest`/`wasmJsTest` when relevant
+5. Creates Compose Multiplatform semantics tests with `runComposeUiTest` when dependencies exist
+6. Avoids real network calls and Android-only test APIs in multiplatform modules
 
 **Input:** Use case ID as argument
 **Output:** Kotlin tests under the UI module's `commonTest` or matching source set
+**Plugin:** `aiup-compose-ktor-exposed`
+
+---
+
+### `/implementation-status` — Implementation Status Documentation
+
+**Purpose:** Produces traceability/status documentation for Compose/Ktor/Exposed services.
+
+**Usage:**
+
+```
+/implementation-status UC-001
+```
+
+**What it does:**
+
+1. Reads `entity_model.md`, use case specs, source code, tests, and Flyway migrations
+2. Maintains an entity implementation-status matrix with Entity / DB Table / Domain Model / Repository / Service / Migrations columns
+3. Creates per-use-case minimal HTML status pages under `docs/use_cases/` or `<service>/docs/use_cases/`
+4. Cross-references migration version ranges and code/test evidence
+5. Reports missing or partial implementation honestly
+
+**Input:** Use case ID(s) as argument, or current entity/use-case docs
+**Output:** implementation-status matrix and `UC-XXX-implementation-status.html`
 **Plugin:** `aiup-compose-ktor-exposed`
 
 ---
@@ -762,10 +862,10 @@ After running the full workflow for a project, your tree will look like this:
 your-project/
 ├── docs/
 │   ├── vision.md                         ← you maintain this
-│   ├── requirements.md                   ← produced by /requirements
-│   ├── entity_model.md                   ← produced by /entity-model
-│   ├── use_cases.puml                    ← produced by /use-case-diagram
-│   └── use_cases/                        ← produced by /use-case-spec
+│   ├── requirements.html                 ← produced by /requirements and /use-case-diagram
+│   ├── entity_model.md                   ← produced by /entity-model, updated by /implementation-status
+│   ├── architecture.html                 ← produced by /architecture
+│   └── use_cases/                        ← produced by /use-case-spec and /implementation-status
 │       ├── UC-001-create-reservation.md
 │       ├── UC-002-cancel-reservation.md
 │       └── ...
@@ -792,20 +892,22 @@ Create a `CLAUDE.md` at your project root. Claude loads this automatically at th
 ```markdown
 # Project Context
 
-This project follows the AI Unified Process. Read `docs/vision.md`, `docs/requirements.md`,
+This project follows the AI Unified Process. Read `docs/vision.md`, `docs/requirements.html`,
 and `docs/entity_model.md` for product context before making decisions.
 
 ## AIUP Workflow
 
-1. `/requirements`        → derives `docs/requirements.md` from `docs/vision.md`
+1. `/requirements`        → derives `docs/requirements.html` from `docs/vision.md`
 2. `/entity-model`        → derives `docs/entity_model.md` from requirements
-3. `/use-case-diagram`    → produces `docs/use_cases.puml`
+3. `/use-case-diagram`    → produces Mermaid diagram inside `docs/requirements.html`
 4. `/use-case-spec UC-XX` → produces `docs/use_cases/UC-XX-*.md`
-5. `/flyway-migration`    → produces `src/main/resources/db/migration/V*.sql`
-6. `/implement UC-XX`     → implements the use case backend (Vaadin/jOOQ or Ktor/Exposed)
-7. `/implement-ui UC-XX`  → implements Compose UI when using Compose/Ktor/Exposed
-8. `/browserless-test UC-XX` or `/ktor-test UC-XX` → server-side tests
-9. `/playwright-test UC-XX` or `/compose-test UC-XX` → UI/end-to-end tests
+5. `/architecture`        → produces `docs/architecture.html`
+6. `/flyway-migration`    → produces `src/main/resources/db/migration/V*.sql`
+7. `/implement UC-XX`     → implements the use case backend (Vaadin/jOOQ or Ktor/Exposed)
+8. `/implement-ui UC-XX`  → implements Compose UI when using Compose/Ktor/Exposed
+9. `/browserless-test UC-XX` or `/ktor-test UC-XX` → server-side tests
+10. `/playwright-test UC-XX` or `/compose-test UC-XX` → UI/end-to-end tests
+11. `/implementation-status UC-XX` → documents entity/use-case implementation status for Compose/Ktor/Exposed
 
 Never skip the spec for a use case before implementing it.
 Always read the entity model before writing data access code.
@@ -851,7 +953,7 @@ The `/requirements` skill relies heavily on this file. Include at minimum:
 to one or more FRs; every test should reference a use case ID. The skills produce stable IDs (FR-001, UC-001, …) — keep
 them.
 
-**Edit between steps.** The intermediate documents (`requirements.md`, `entity_model.md`, `use_cases.puml`) are designed
+**Edit between steps.** The intermediate documents (`requirements.html`, `entity_model.md`) are designed
 to be reviewed and corrected by hand. Do not skip the review.
 
 **Re-run upstream skills when requirements change.** If a new functional requirement appears, re-run `/entity-model` and

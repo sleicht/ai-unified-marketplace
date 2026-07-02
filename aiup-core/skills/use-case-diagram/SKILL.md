@@ -1,45 +1,44 @@
 ---
 name: use-case-diagram
 description: >
-  Creates or updates PlantUML use case diagrams defining actors, use cases,
+  Creates or updates Mermaid use case diagrams defining actors, use cases,
   and their relationships from requirements. Use when the user asks to
   "create a use case diagram", "draw a UML diagram", "map actors to use cases",
-  "generate a .puml file", or mentions PlantUML, use case overview, actor
-  diagram, or system use cases.
+  or mentions Mermaid, use case overview, actor diagram, or system use cases.
 ---
 
 # Use Case Diagram
 
 ## Instructions
 
-Create or update the PlantUML use case diagram at `docs/use_cases.puml` based on `docs/requirements.md`.
+Create or update the Mermaid use case diagram embedded in the resolved `requirements.html` based on the requirements catalog.
 
 ## DO NOT
 
 - Create diagrams without reading the requirements first
-- Use non-standard PlantUML syntax
+- Use non-standard Mermaid syntax
 - Include implementation details in use case names
+
+## Path Resolution
+
+If a service/module is in scope or cwd is inside a monorepo service, read and update `<service>/docs/requirements.html`; otherwise use `docs/requirements.html`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
 
 ## Template
 
-```plantuml
-@startuml Use Cases Overview
-left to right direction
+```Mermaid
+graph LR
+    user(("User"))
+    admin(("Administrator"))
 
-actor "User" as user
-actor "Administrator" as admin
+    subgraph "System Name"
+        UC001(["UC-001\nDescription"])
+        UC002(["UC-002\nDescription"])
+        UC003(["UC-003\nDescription"])
+    end
 
-rectangle "System Name" {
-    usecase "UC-001\nDescription" as UC001
-    usecase "UC-002\nDescription" as UC002
-    usecase "UC-003\nDescription" as UC003
-}
-
-admin --> UC001
-user --> UC002
-user --> UC003
-
-@enduml
+    admin --> UC001
+    user --> UC002
+    user --> UC003
 ```
 
 ## Conventions
@@ -51,12 +50,13 @@ user --> UC003
 
 ## Workflow
 
-1. Read the requirements at `docs/requirements.md`
-2. Read existing diagram at `docs/use_cases.puml` (if exists)
-3. Identify actors and use cases from requirements
-4. Create/update the PlantUML use case diagram
-5. Validate the diagram:
-    - Each use case traces to at least one functional requirement in `docs/requirements.md`
+1. Resolve docs path: `<service>/docs/requirements.html` for a scoped monorepo service, otherwise `docs/requirements.html`.
+2. Read the requirements catalog.
+3. Read the existing Mermaid diagram embedded in `requirements.html`, if present.
+4. Identify actors and use cases from requirements.
+5. Create/update the Mermaid use case diagram in `requirements.html`.
+6. Validate the diagram:
+    - Each use case traces to at least one functional requirement in `requirements.html`
     - All actors are connected to at least one use case
     - Use case IDs follow the UC-{3-digit} convention
-    - PlantUML syntax is valid (no missing `@enduml`, proper arrow syntax)
+    - Mermaid syntax is valid

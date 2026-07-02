@@ -24,7 +24,9 @@ marketplace/
 │       ├── entity-model/
 │       ├── reverse-engineer/
 │       ├── use-case-diagram/
-│       └── use-case-spec/
+│       ├── use-case-spec/
+│       ├── architecture/
+│       └── reference/
 ├── aiup-vaadin-jooq/             # Vaadin + jOOQ technology stack plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json
@@ -51,7 +53,7 @@ marketplace/
 
 ### Two-Layer Design
 
-- **aiup-core** — Stack-agnostic methodology: from vision to use case specification. Works with any tech stack.
+- **aiup-core** — Stack-agnostic methodology: from vision to use case specification, architecture, and project reference. Works with any tech stack.
 - **aiup-vaadin-jooq** — Stack-specific: implementation and testing for the Vaadin + jOOQ stack. Requires core.
 - **aiup-compose-ktor-exposed** — Stack-specific: implementation and testing for the Kotlin KMP + Compose + Ktor + Exposed stack. Requires core.
 
@@ -78,12 +80,13 @@ Skills follow the AI Unified Process phases: Inception, Elaboration, Constructio
 |--------------|-----------------------|----------------------------------------------------------------------|
 | Inception    | `/requirements`       | Generate requirements from vision                                    |
 | Elaboration  | `/entity-model`       | Create entity model with Mermaid ER                                  |
-| Elaboration  | `/use-case-diagram`   | Generate PlantUML use case diagrams                                  |
+| Elaboration  | `/use-case-diagram`   | Generate Mermaid use case diagrams                                   |
 | Construction | `/use-case-spec`      | Write detailed use case specifications                               |
 | Any          | `/reverse-engineer`   | Recover use case diagram, use case specs, and entity model from code |
+| Elaboration  | `/architecture`       | Create or update minimal architecture.html documentation             |
+| Any          | `/reference`          | Create or update docs/REFERENCE.md for project context               |
 | Construction | `/implement`          | Stack-agnostic dispatcher — detects the stack and delegates          |
 | Construction | `/test`               | Stack-agnostic dispatcher — server-side unit / integration tests     |
-| Construction | `/e2e`                | Stack-agnostic dispatcher — browser-based end-to-end tests           |
 
 ### Vaadin/jOOQ (stack-specific — invoked by the core dispatchers)
 
@@ -97,13 +100,14 @@ Skills follow the AI Unified Process phases: Inception, Elaboration, Constructio
 
 ### Compose/Ktor/Exposed (stack-specific)
 
-| Phase        | Skill (slash command) | Description                                              |
-|--------------|-----------------------|----------------------------------------------------------|
-| Construction | `/flyway-migration`   | Create Flyway PostgreSQL migrations from entity model    |
-| Construction | `/implement`          | Implement backend: shared DTOs + Exposed DSL + Ktor routes |
-| Construction | `/implement-ui`       | Implement UI: Compose Multiplatform screens + Ktor Client  |
-| Construction | `/ktor-test`          | Create Ktor testApplication API tests                    |
-| Construction | `/compose-test`       | Create Compose UI tests with runComposeUiTest            |
+| Phase        | Skill (slash command)    | Description                                                |
+|--------------|--------------------------|------------------------------------------------------------|
+| Construction | `/flyway-migration`      | Create Flyway PostgreSQL migrations from entity model      |
+| Construction | `/implement`             | Implement backend: shared DTOs + Exposed DSL + Ktor routes |
+| Construction | `/implement-ui`          | Implement UI: Compose Multiplatform screens + Ktor Client  |
+| Construction | `/ktor-test`             | Create Ktor testApplication API tests                      |
+| Construction | `/compose-test`          | Create Compose UI tests with runComposeUiTest              |
+| Construction | `/implementation-status` | Create entity/use-case implementation-status documentation |
 
 The core `/implement`, `/test`, and `/e2e` skills inspect the project's build files (`pom.xml`, `build.gradle`,
 `package.json`, etc.) to choose which stack-specific skill to invoke. New stack plugins (e.g. a future

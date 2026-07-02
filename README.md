@@ -91,9 +91,9 @@ CLI**, **Cursor**, **GitHub Copilot**, and **Gemini CLI**. Pair them with the
 ### Install via Tessl (any agent)
 
 [Tessl](https://tessl.io) is an agent-agnostic package manager and registry for skills: it installs versioned skills and
-wires the MCP servers into the correct per-agent directory for whichever coding agent it detects. Both plugins are
-published to the Tessl registry as `aiup/aiup-core` and `aiup/aiup-vaadin-jooq`, so this is the simplest way to adopt
-the workflow outside Claude Code — no manual cloning or per-tool MCP translation.
+wires the MCP servers into the correct per-agent directory for whichever coding agent it detects. All three plugins are
+published to the Tessl registry as `aiup/aiup-core`, `aiup/aiup-vaadin-jooq`, and `aiup/aiup-compose-ktor-exposed`, so
+this is the simplest way to adopt the workflow outside Claude Code — no manual cloning or per-tool MCP translation.
 
 ```sh
 # one-time: configure your agent(s) — creates a tessl.json manifest at the repo root
@@ -103,6 +103,7 @@ tessl init --agent claude-code          # or: cursor, gemini, codex, copilot, co
 # install the plugins from the registry (latest, or pin @version)
 tessl install aiup/aiup-core
 tessl install aiup/aiup-vaadin-jooq     # omit on non-Vaadin stacks
+tessl install aiup/aiup-compose-ktor-exposed  # omit on non-Compose/Ktor stacks
 ```
 
 Installed plugins land in `.tessl/plugins/` and are tracked in `tessl.json`, so versions are pinned and reproducible

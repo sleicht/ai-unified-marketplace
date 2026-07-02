@@ -21,8 +21,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'aiup-core/**'
-      - 'aiup-vaadin-jooq/**'
+      - "aiup-core/**"
+      - "aiup-vaadin-jooq/**"
+      - "aiup-compose-ktor-exposed/**"
   workflow_dispatch:
 
 jobs:
@@ -34,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin: [aiup-core, aiup-vaadin-jooq]
+        plugin: [aiup-core, aiup-vaadin-jooq, aiup-compose-ktor-exposed]
     steps:
       - uses: actions/checkout@v6
 

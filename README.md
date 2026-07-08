@@ -88,7 +88,7 @@ If Claude begins reading `docs/vision.md` and proposing a requirements catalog, 
 
 The AI Unified Process is a methodology, not a Claude-only product. Agent Skills (`SKILL.md`) is now an open standard,
 and the same skill folders in this marketplace work natively — with auto-triggering by description — in **OpenAI Codex
-CLI**, **Cursor**, **GitHub Copilot**, and **Gemini CLI**. Pair them with the
+CLI**, **Cursor**, **GitHub Copilot**, **Gemini CLI**, and **OpenCode**. Pair them with the
 [MCP](https://modelcontextprotocol.io) server configs and the whole workflow runs unchanged.
 
 ### Install via Tessl (any agent)
@@ -129,8 +129,8 @@ latest release.
 |------------------------------------------------------------|-----------|----------------------------------------------------------------------------------------|
 | `tessl install aiup/…`                                     | Yes       | Works on Claude Code, Cursor, Gemini, Codex, and Copilot — installs skills + MCP        |
 | MCP servers (`aiup-*/.mcp.json`)                           | Yes       | Standard MCP — reformat the config per host                                            |
-| `SKILL.md` skill folders (`aiup-*/skills/*/`)              | Yes       | Native support in Codex CLI, Cursor, Copilot, and Gemini CLI                           |
-| Auto-triggering by `description`                           | Yes       | All four tools above match user intent against the YAML frontmatter `description`      |
+| `SKILL.md` skill folders (`aiup-*/skills/*/`)              | Yes       | Native support in Codex CLI, Cursor, Copilot, Gemini CLI, and OpenCode                 |
+| Auto-triggering by `description`                           | Yes       | All tools above match user intent against the YAML frontmatter `description`           |
 | Workflow methodology (vision → requirements → … → tests)   | Yes       | The whole point — tool-agnostic                                                        |
 | `/plugin marketplace add …` install                        | Partial   | Works in Claude Code and GitHub Copilot; elsewhere use Tessl or clone this repo        |
 
@@ -212,11 +212,36 @@ See the [Codex skills docs](https://developers.openai.com/codex/skills) and the
 - **MCP**: `~/.gemini/settings.json` `mcpServers` object — same shape as Claude's `.mcp.json`, so it is a near-direct
   copy.
 
+### OpenCode
+
+- **Skills**: drop folders into project-local `.opencode/skills/` or global `~/.config/opencode/skills/`. OpenCode
+  also scans `.claude/skills/` and `.agents/skills/` (project and home directory), so skills already installed for
+  Claude Code — or via Tessl with `--agent claude-code` or `--agent agents` — are picked up without copying. Skills
+  are loaded on demand through OpenCode's built-in `skill` tool, matched against each skill's `description`; access
+  can be restricted per skill with `permission.skill` patterns in `opencode.json`.
+- **MCP**: `opencode.json` at the project root (or `~/.config/opencode/opencode.json` globally) under the `"mcp"`
+  key — use `"type": "remote"` with `url` for HTTP servers and `"type": "local"` with a `command` array for stdio.
+  Translate `aiup-vaadin-jooq/.mcp.json` like this:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "Vaadin": { "type": "remote", "url": "https://mcp.vaadin.com/docs" },
+    "playwright": { "type": "local", "command": ["npx", "@playwright/mcp@latest"] }
+  }
+}
+```
+
+See the [OpenCode skills docs](https://opencode.ai/docs/skills/) and the
+[OpenCode MCP docs](https://opencode.ai/docs/mcp-servers/) for the latest details.
+
 ### Caveats
 
-- **Argument passing** (`/use-case-spec UC-001`) works in all four tools but the syntax varies — Codex, Gemini CLI,
+- **Argument passing** (`/use-case-spec UC-001`) works everywhere but the syntax varies — Codex, Gemini CLI,
   and Cursor accept positional arguments after the skill name; in Copilot, pass the ID inline in the chat message
-  after invoking the skill.
+  after invoking the skill; in OpenCode, skills are not slash commands — state the ID in your prompt
+  ("specify use case UC-001") and the agent loads the matching skill itself.
 - **HTTP MCP servers**: most stack-plugin documentation servers are HTTP. Every tool listed above supports HTTP MCP. If you use
   a client that is stdio-only, you need an HTTP-to-stdio MCP bridge.
 - **Cursor has no global skills directory** — copy or symlink the marketplace skills into each project's

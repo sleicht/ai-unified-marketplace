@@ -1,16 +1,16 @@
 {
-  "context": "The agent reads docs/vision.md and writes docs/requirements.md containing functional requirements (user stories), non-functional requirements (measurable quality attributes), and constraints in separate Markdown tables. The grader checks format, ID conventions, measurability, structural separation, and table completeness.",
+  "context": "The agent reads docs/vision.md and writes canonical docs/requirements.html containing functional requirements, non-functional requirements, constraints, and the stable Mermaid diagram slot in semantic HTML.",
   "type": "weighted_checklist",
   "checklist": [
     {
       "name": "Correct output path",
-      "description": "The requirements catalog is written to docs/requirements.md (not any other path)",
+      "description": "The requirements catalog is written to docs/requirements.html (not Markdown or any other path)",
       "max_score": 5
     },
     {
       "name": "FR user story format",
       "description": "Every functional requirement row's description follows the exact format 'As a [role], I want [goal] so that [benefit]' — no plain-sentence FRs present",
-      "max_score": 15
+      "max_score": 12
     },
     {
       "name": "NFRs are measurable",
@@ -19,8 +19,8 @@
     },
     {
       "name": "Separate tables per type",
-      "description": "Functional requirements, non-functional requirements, and constraints each appear in their own dedicated table — FR, NFR, and C rows are NOT mixed into a single combined table",
-      "max_score": 10
+      "description": "Functional requirements, non-functional requirements, and constraints each appear in their own semantic HTML table — FR, NFR, and C rows are not mixed",
+      "max_score": 8
     },
     {
       "name": "FR ID prefix",
@@ -51,6 +51,11 @@
       "name": "NFR category column",
       "description": "The NFR table includes a Category column and every NFR row has a non-empty category value (e.g. Performance, Scalability, Availability, Security, Accessibility)",
       "max_score": 8
+    },
+    {
+      "name": "Stable Mermaid section",
+      "description": "The document contains exactly one section with id=\"use-case-diagram\" and one pre element with class=\"mermaid\" inside it",
+      "max_score": 5
     },
     {
       "name": "Singular requirements",

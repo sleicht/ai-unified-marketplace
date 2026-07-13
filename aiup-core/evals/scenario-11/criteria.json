@@ -1,0 +1,14 @@
+{
+  "context": "Tests concise, grounded REFERENCE.md creation without invented commands or duplicated artifacts.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {"name": "Output", "description": "docs/REFERENCE.md exists", "max_score": 10},
+    {"name": "Required sections", "description": "All 12 required sections or clear equivalents appear", "max_score": 20},
+    {"name": "Commands exact", "description": "Only commands present in inputs/mise.toml are documented", "max_score": 15},
+    {"name": "Layout grounded", "description": "Repository layout matches supplied modules and docs", "max_score": 15},
+    {"name": "Canonical links", "description": "Requirements and architecture are linked, not copied", "max_score": 10},
+    {"name": "Vocabulary", "description": "Invoice Batch and Settlement are defined from supplied docs", "max_score": 10},
+    {"name": "Unknowns", "description": "Undocumented deployment/security details are marked as unknown", "max_score": 10},
+    {"name": "Portable and concise", "description": "No secrets, machine paths, speculative roadmap, HTML, or copied long-form docs", "max_score": 10}
+  ]
+}

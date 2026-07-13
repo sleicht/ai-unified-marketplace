@@ -7,7 +7,9 @@ description: >
   the user asks to "write requirements", "create a PRD", "gather requirements",
   "document feature specs", "write user stories", "define NFRs", "list
   constraints", or mentions requirements catalog, requirements analysis,
-  product requirements document, or feature specification.
+  product requirements document, or feature specification. Use use-case-spec
+  instead when the request is for detailed actor scenarios, alternative flows,
+  or postconditions for an already identified use case.
 ---
 
 # Requirements
@@ -15,7 +17,28 @@ description: >
 ## Instructions
 
 Create or update the requirements catalog based on the project vision. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/requirements.html`; otherwise write `docs/requirements.html`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
-The document contains functional requirements, non-functional requirements, and constraints organized as Markdown tables. Detect existing docs language when updating; default to English for new docs unless the user asks for another language.
+The document contains functional requirements, non-functional requirements, constraints, and the stable use-case-diagram slot as semantic HTML. Detect existing docs language when updating; default to English for new docs unless the user asks for another language.
+
+## HTML Artifact Contract
+
+Use one valid, self-contained HTML document. Preserve these section IDs when updating because downstream skills use them as stable anchors:
+
+```html
+<main>
+  <h1>Requirements</h1>
+  <section id="functional-requirements"><h2>Functional Requirements</h2>...</section>
+  <section id="non-functional-requirements"><h2>Non-Functional Requirements</h2>...</section>
+  <section id="constraints"><h2>Constraints</h2>...</section>
+  <section id="requirements-notes"><h2>Requirements Notes</h2>...</section>
+  <section id="use-case-diagram">
+    <h2>Use Case Diagram</h2>
+    <pre class="mermaid">graph LR
+    </pre>
+  </section>
+</main>
+```
+
+Render each catalog as a semantic `<table>` with `<thead>`, `<tbody>`, `<tr>`, `<th>`, and `<td>` elements. Do not place Markdown tables inside the HTML file. Keep the Mermaid source as text inside the single `<pre class="mermaid">` under `#use-case-diagram`; leave it empty when no diagram exists yet.
 
 ## DO NOT
 
@@ -32,34 +55,26 @@ Define what the system should do. Always use the user story format:
 
 **Format:** As a [role], I want [goal] so that [benefit].
 
-| ID     | Title        | User Story                                                                                | Priority | Status |
-|--------|--------------|-------------------------------------------------------------------------------------------|----------|--------|
-| FR-001 | Create Task  | As a project manager, I want to create tasks so that I can track work items.              | High     | Open   |
-| FR-002 | Assign Task  | As a project manager, I want to assign tasks to team members so that work is distributed. | High     | Open   |
-| FR-003 | Filter Tasks | As a team member, I want to filter tasks by status so that I can focus on relevant items. | Medium   | Open   |
+```html
+<table>
+  <thead><tr><th>ID</th><th>Title</th><th>User Story</th><th>Priority</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>FR-001</td><td>Create Task</td><td>As a project manager, I want to create tasks so that I can track work items.</td><td>High</td><td>Open</td></tr>
+  </tbody>
+</table>
+```
 
 ### Non-Functional Requirements (NFR)
 
 Define quality attributes. Must be measurable.
 
-| ID      | Title            | Requirement                                                   | Category     | Priority | Status |
-|---------|------------------|---------------------------------------------------------------|--------------|----------|--------|
-| NFR-001 | Response Time    | All page loads must complete within 2 seconds.                | Performance  | High     | Open   |
-| NFR-002 | Availability     | System must maintain 99.9% uptime during business hours.      | Availability | High     | Open   |
-| NFR-003 | Concurrent Users | System must support 100 concurrent users without degradation. | Scalability  | Medium   | Open   |
-| NFR-004 | Data Encryption  | All data in transit must use TLS 1.3 encryption.              | Security     | High     | Open   |
+Use columns `ID`, `Title`, `Requirement`, `Category`, `Priority`, and `Status`. Example: `NFR-001 | Response Time | All page loads must complete within 2 seconds. | Performance | High | Open`, expressed as HTML cells.
 
 ### Constraints (C)
 
 Define limitations and boundaries imposed on the solution.
 
-| ID    | Title             | Constraint                                                       | Category  | Priority | Status |
-|-------|-------------------|------------------------------------------------------------------|-----------|----------|--------|
-| C-001 | Runtime Platform  | Backend must run on Java 21 LTS.                                 | Technical | High     | Open   |
-| C-002 | Database Platform | System must use PostgreSQL 16.                                   | Technical | High     | Open   |
-| C-003 | Browser Support   | UI must support Chrome, Firefox, and Safari (latest 2 versions). | Technical | High     | Open   |
-| C-004 | Budget Limit      | Total development cost must not exceed $50,000.                  | Business  | High     | Open   |
-| C-005 | Deadline          | System must be production-ready by Q2 2025.                      | Schedule  | High     | Open   |
+Use columns `ID`, `Title`, `Constraint`, `Category`, `Priority`, and `Status`. Example: `C-001 | Runtime Platform | Backend must run on Java 21 LTS. | Technical | High | Open`, expressed as HTML cells.
 
 ## Language Variants
 
@@ -90,6 +105,8 @@ Every requirement must pass these checks before finalizing:
 
 ## Error Recovery
 
+Record assumptions, rewrites, and unresolved conflicts under `<section id="requirements-notes">`; do not create a separate Markdown requirements or notes file.
+
 - **Incomplete source document**: List what is missing (roles, NFR categories, constraints) and ask the user to clarify
   before proceeding
 - **Ambiguous requirement from user**: Rewrite it as a measurable requirement and ask the user to confirm the threshold
@@ -109,7 +126,7 @@ Every requirement must pass these checks before finalizing:
 1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
 2. Detect existing docs language or user-requested language; default to English.
 3. Read the vision document or project brief from the resolved docs path.
-4. Use TodoWrite to create tasks for each requirement type.
+4. Track each requirement type with the available planning/task mechanism when the environment provides one.
 5. Write the document header.
 6. For functional requirements:
     - Identify user roles
@@ -130,4 +147,4 @@ Every requirement must pass these checks before finalizing:
       row; any row missing the role / goal / benefit clauses is rejected and
       rewritten before finalizing, no exceptions
     - All NFRs contain a measurable threshold
-10. Mark todos complete
+10. Validate the HTML structure, unique section IDs, semantic tables, and the single `#use-case-diagram` Mermaid slot.

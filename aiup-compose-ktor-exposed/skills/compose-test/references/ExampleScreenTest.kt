@@ -1,6 +1,7 @@
 package com.example.app.ui.api
 
-import com.example.app.shared.PatientListItem
+import com.example.app.shared.RecordListItem
+import com.example.app.ui.auth.AccessTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -18,8 +19,12 @@ import kotlinx.serialization.json.Json
 
 class ExampleApiClientTest {
 
+    private class FixedAccessTokenProvider(private val token: String?) : AccessTokenProvider {
+        override suspend fun currentAccessToken(): String? = token
+    }
+
     @Test
-    fun `listPatients sends bearer token and decodes response`() = runTest {
+    fun `listRecords sends bearer token and decodes response`() = runTest {
         lateinit var request: HttpRequestData
         val httpClient =
             HttpClient(
@@ -29,11 +34,12 @@ class ExampleApiClientTest {
                         content =
                             Json.encodeToString(
                                 listOf(
-                                    PatientListItem(
+                                    RecordListItem(
                                         id = 1,
-                                        partnerContractNumber = "P-1001",
-                                        firstName = "Ada",
-                                        lastName = "Lovelace",
+                                        externalReference = "REC-1001",
+                                        displayName = "Example",
+                                        category = "Record",
+                                        status = "ACTIVE",
                                         active = true,
                                     )
                                 )
@@ -44,14 +50,19 @@ class ExampleApiClientTest {
                 }
             ) { install(ContentNegotiation) { json() } }
 
-        val client = ServiceApiClient(baseUrl = "http://localhost:5600", httpClient = httpClient)
+        val client =
+            ServiceApiClient(
+                baseUrl = "https://service.invalid",
+                accessTokenProvider = FixedAccessTokenProvider("test-token"),
+                httpClient = httpClient,
+            )
 
-        val patients = client.listPatients(limit = 100)
+        val records = client.listRecords(limit = 100)
 
-        assertEquals("Bearer $DEFAULT_POC_EMPLOYEE_TOKEN", request.headers[HttpHeaders.Authorization])
-        assertEquals("/api/v1/patients", request.url.encodedPath)
+        assertEquals("Bearer test-token", request.headers[HttpHeaders.Authorization])
+        assertEquals("/api/v1/records", request.url.encodedPath)
         assertEquals("100", request.url.parameters["limit"])
-        assertEquals(1, patients.size)
-        assertEquals("Ada", patients.single().firstName)
+        assertEquals(1, records.size)
+        assertEquals("Example", records.single().displayName)
     }
 }

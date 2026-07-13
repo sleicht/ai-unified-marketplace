@@ -5,7 +5,9 @@ description: >
   tables defining entities, relationships, data types, and validation rules.
   Use when the user asks to "create an entity model", "design a data model",
   "draw an ERD", "define database schema", "model entities", or mentions
-  entity-relationship diagram, ER diagram, database design, or data modeling.
+  entity-relationship diagram, ER diagram, conceptual database design, or data
+  modelling. Use a stack migration skill instead when the entity model already
+  exists and the request is to generate executable migration SQL.
 ---
 
 # Entity Model
@@ -93,7 +95,7 @@ If validation spans multiple columns, add after the table:
 
 1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
 2. Read the requirements document from the resolved docs path.
-3. Use TodoWrite to create a task for each entity.
+3. Track entities with the available planning/task mechanism when useful.
 4. Write the document header and ER diagram (relationships only).
 5. For each entity:
     - Write ### heading

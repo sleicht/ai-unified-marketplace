@@ -1,0 +1,9 @@
+[
+  {"query":"Turn docs/vision.md into a measurable requirements catalogue with user stories and constraints.","expected_skill":"requirements"},
+  {"query":"Write the main and alternative flows plus postconditions for UC-007 Approve Claim.","expected_skill":"use-case-spec"},
+  {"query":"Add the Auditor actor and two existing FRs to the diagram in requirements.html.","expected_skill":"use-case-diagram"},
+  {"query":"Model Claim, Policy, and Payment as an ER diagram and attribute catalogue; no SQL yet.","expected_skill":"entity-model"},
+  {"query":"Recover actors, use cases, and entities from this inherited Express application.","expected_skill":"reverse-engineer"},
+  {"query":"Document this service's layers, data flow, deployment, risks, and ADR decisions.","expected_skill":"architecture"},
+  {"query":"Create a concise REFERENCE.md of repository commands, layout, vocabulary, and caveats.","expected_skill":"reference"}
+]

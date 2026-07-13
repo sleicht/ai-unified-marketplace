@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>User Account Requirements</title></head><body><main>
+<h1>User Account Requirements</h1>
+<section id="functional-requirements"><h2>Functional Requirements</h2><table><thead><tr><th>ID</th><th>User Story</th><th>Status</th></tr></thead><tbody>
+<tr><td>FR-001</td><td>As a visitor, I want to register with email and password so that I can access the platform.</td><td>Draft</td></tr>
+<tr><td>FR-002</td><td>As a visitor, I want my email verified so that the system confirms my identity.</td><td>Draft</td></tr>
+<tr><td>FR-003</td><td>As a visitor, I want to log in so that I can access my account.</td><td>Draft</td></tr>
+<tr><td>FR-004</td><td>As a registered user, I want account lockout after five failed attempts so that my account is protected.</td><td>Draft</td></tr>
+</tbody></table></section>
+<section id="non-functional-requirements"><h2>Non-Functional Requirements</h2><table><tbody><tr><td>NFR-001</td><td>Login loads within 2 seconds.</td><td>Draft</td></tr></tbody></table></section>
+<section id="constraints"><h2>Constraints</h2><table><tbody><tr><td>C-001</td><td>Passwords have at least eight characters and one digit.</td><td>Draft</td></tr></tbody></table></section>
+<section id="use-case-diagram"><h2>Use Case Diagram</h2><pre class="mermaid">graph LR
+    visitor(("Visitor"))
+    subgraph "User Account System"
+        UC001(["UC-001\nRegister Account"])
+        UC002(["UC-002\nLog In"])
+    end
+    visitor --> UC001
+    visitor --> UC002
+</pre></section>
+</main></body></html>

@@ -4,27 +4,27 @@
   "checklist": [
     {
       "name": "Ambiguous NFR rewritten",
-      "description": "The vague goal 'user-friendly and fast' (or equivalent) is NOT carried into docs/requirements.md as-is — it is replaced by at least one NFR containing a specific number or threshold (e.g., page load within X seconds, WCAG compliance level)",
+      "description": "The vague goal 'user-friendly and fast' is not carried into docs/requirements.html as-is; at least one NFR has a specific threshold",
       "max_score": 12
     },
     {
       "name": "Conflict flagged in notes",
-      "description": "docs/requirements_notes.md explicitly identifies the conflict between real-time notifications and the offline/batch constraint (e.g., references the two requirements by name or ID and states they conflict)",
+      "description": "The requirements-notes section explicitly identifies the conflict between real-time notifications and the offline/batch constraint",
       "max_score": 12
     },
     {
       "name": "Conflict resolution documented",
-      "description": "docs/requirements_notes.md explains how the conflict was resolved — either the requirement was rewritten, one was chosen over the other, or a compromise was described — and the catalog reflects that decision",
+      "description": "The requirements-notes section explains how the conflict was resolved and the catalogue reflects that decision",
       "max_score": 8
     },
     {
       "name": "Missing roles noted",
-      "description": "docs/requirements_notes.md acknowledges that the vision did not define distinct stakeholder roles and states what default roles (e.g., User, Admin, System) were used in their place",
+      "description": "The requirements-notes section acknowledges missing stakeholder roles and states the defaults used",
       "max_score": 8
     },
     {
       "name": "User story format",
-      "description": "Every row in the Functional Requirements table in docs/requirements.md uses the format 'As a [role], I want [goal] so that [benefit]' — no functional requirement is written in any other form",
+      "description": "Every row in the Functional Requirements HTML table uses 'As a [role], I want [goal] so that [benefit]'",
       "max_score": 10
     },
     {
@@ -34,7 +34,7 @@
     },
     {
       "name": "Separate requirement tables",
-      "description": "docs/requirements.md has three distinct Markdown tables: one for Functional Requirements, one for Non-Functional Requirements, and one for Constraints — requirement types are NOT mixed in a single table",
+      "description": "docs/requirements.html has three distinct semantic HTML tables in the stable requirement sections",
       "max_score": 8
     },
     {
@@ -44,22 +44,22 @@
     },
     {
       "name": "No duplicate IDs",
-      "description": "Every requirement ID across all three tables in docs/requirements.md is unique — there are no two rows with the same ID",
+      "description": "Every requirement ID across all three tables in docs/requirements.html is unique",
       "max_score": 6
     },
     {
       "name": "Status column filled",
-      "description": "Every row in every table in docs/requirements.md has a non-empty Status value — no Status cell is blank or missing",
+      "description": "Every row in every table in docs/requirements.html has a non-empty Status value",
       "max_score": 6
     },
     {
       "name": "Assumed threshold documented",
-      "description": "For each ambiguous NFR rewritten with an assumed threshold, docs/requirements_notes.md states the assumed value (e.g., '2 seconds assumed for page load') so a reviewer can confirm or override it",
+      "description": "For each ambiguous NFR rewritten with an assumed threshold, the requirements-notes section states the assumed value",
       "max_score": 6
     },
     {
       "name": "Notes file structure",
-      "description": "docs/requirements_notes.md is organized into at least two of the three categories: ambiguous/rewritten requirements, conflicts identified, missing information — not just a flat paragraph",
+      "description": "The requirements-notes section is organised into at least two categories: rewritten requirements, conflicts, missing information",
       "max_score": 6
     }
   ]

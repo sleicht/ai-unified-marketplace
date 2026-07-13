@@ -11,7 +11,7 @@ description: >
 
 ## Instructions
 
-Create or update `docs/REFERENCE.md` for $ARGUMENTS. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/REFERENCE.md`; otherwise write `<root>/docs/REFERENCE.md`.
+Create or update `docs/REFERENCE.md` for the project, service, or module named in the user's request. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/REFERENCE.md`; otherwise write `<root>/docs/REFERENCE.md`.
 
 `REFERENCE.md` is a durable project reference for future AI agents and maintainers. It should compress stable facts that reduce rediscovery: where things live, how to run checks, what terms mean, which docs are authoritative, and what conventions the codebase follows.
 

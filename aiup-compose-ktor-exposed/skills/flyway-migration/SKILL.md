@@ -7,17 +7,19 @@ description: >
   Exposed table compatibility. Use when the user asks to "create a migration",
   "generate SQL scripts", "set up database tables", "write a Flyway migration",
   or mentions schema migration, DB migration, database versioning, or SQL files.
+  Use entity-model instead when the user wants a conceptual ER model or entity
+  attribute catalogue without executable migration SQL.
 ---
 
 # Flyway Migration
 
 ## Instructions
 
-Create Flyway database migrations for PostgreSQL from `docs/entity_model.md` and the target project's existing migrations. Follow existing migration style first. When the project resembles reference service, use `references/service-style.md`.
+Create Flyway database migrations for PostgreSQL from `docs/entity_model.md` and the target project's existing migrations. Follow existing migration style first. When the project resembles the reference service, use `references/migration-style.md`.
 
 ## Required Reference
 
-Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before creating migrations. Apply its migration and Exposed compatibility rules.
+Read `references/migration-style.md`, resolved relative to this `SKILL.md`, before creating migrations. Apply its migration and Exposed compatibility rules.
 
 ## DO NOT
 
@@ -146,9 +148,9 @@ Use plain `Table`, not `LongIdTable`, when the project uses `Table("...")` and `
 7. Add `updated_at` triggers for tables with `updated_at` when the project uses trigger-based audit timestamps.
 8. Check Exposed compatibility: table names, column names, ID strategy, timestamp types.
 9. Validate SQL mentally against PostgreSQL syntax.
-10. Run LSP diagnostics for related Kotlin table files if touched.
+10. If language-server diagnostics are available, run them for related Kotlin table files that were touched.
 11. Verify with project command: prefer `mise run compile` and migration/test task if available; fallback to `./gradlew <server-module>:classes` or Flyway task.
 
 ## Resources
 
-- `references/service-style.md` — canonical migration style
+- `references/migration-style.md` — focused migration and Exposed compatibility style

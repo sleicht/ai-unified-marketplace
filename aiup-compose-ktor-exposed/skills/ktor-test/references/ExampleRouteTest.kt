@@ -4,6 +4,7 @@ import com.example.app.configureRouting
 import com.example.app.infrastructure.plugins.configureSerialization
 import com.example.app.modules.record.domain.model.Record
 import com.example.app.modules.record.domain.repository.RecordRepository
+import com.sanitas.libraries.auth.ktor.testutil.IntegrationTestHelper
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -21,6 +22,23 @@ import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 
 class ExampleRouteTest {
+
+    private val helper =
+        IntegrationTestHelper(
+            additionalConfig = {
+                clients {
+                    authorityBinding("ms-service-name") {
+                        realm = "microservices"
+                        authorities = setOf("MICROSERVICE")
+                    }
+                }
+                roles {
+                    additionalAuthority("DL_COMPANY_APP_ADMIN") {
+                        authorities = listOf("EMPLOYEE")
+                    }
+                }
+            },
+        )
 
     private val sampleRecord =
         Record(
@@ -45,6 +63,7 @@ class ExampleRouteTest {
     private fun ApplicationTestBuilder.configureTestApp(
         recordRepo: RecordRepository = fakeRecordRepository(),
     ) {
+        helper.installAuth(this)
         install(Koin) { modules(module { single<RecordRepository> { recordRepo } }) }
         application {
             configureSerialization()
@@ -52,7 +71,8 @@ class ExampleRouteTest {
         }
     }
 
-    private fun employeeToken(): String = "test-token"
+    private fun employeeToken() =
+        helper.employeeToken(cNumber = "C123456", roles = listOf("DL_COMPANY_APP_ADMIN"))
 
     @Test
     fun `GET records returns list`() = testApplication {

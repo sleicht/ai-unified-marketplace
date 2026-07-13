@@ -1,0 +1,19 @@
+{
+  "skill_name": "ktor-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add route tests for protected GET /api/v1/claims. The project uses testApplication, IntegrationTestHelper, kotlin.test, and repository fakes.",
+      "expected_output": "Focused route tests for success, unauthenticated, forbidden, and not-found behaviour without a real server/database.",
+      "files": [],
+      "expectations": ["Uses testApplication", "Uses the existing auth helper", "Uses a small fake repository", "Covers 401 and 403 separately"]
+    },
+    {
+      "id": 2,
+      "prompt": "Test ExposedClaimRepository against PostgreSQL. The build has src/testContainerTest with Flyway and Testcontainers.",
+      "expected_output": "Repository integration tests in the configured container suite.",
+      "files": [],
+      "expectations": ["Uses src/testContainerTest", "Applies real Flyway migrations", "Cleans child tables before parents", "Does not place the database test in src/test"]
+    }
+  ]
+}

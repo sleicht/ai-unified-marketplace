@@ -5,22 +5,24 @@ description: >
   main success scenarios, alternative flows, postconditions, and business rules.
   Use when the user asks to "write a use case", "specify a use case", "document
   system behavior", "define scenarios", "write a functional spec", or mentions
-  use case specification, acceptance criteria, or user scenarios.
+  use case specification, acceptance criteria, or user scenarios. Use
+  requirements instead for a requirements catalog, and use use-case-diagram
+  when the user only wants the actor/use-case overview updated.
 ---
 
 # Use Case Specification
 
 ## Instructions
 
-Create or update use case specification documents for $ARGUMENTS. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write under `<service>/docs/use_cases/`; otherwise write under `docs/use_cases/`. Each use case describes a complete interaction between an actor and the system to achieve a goal.
+Create or update the use case specification documents named or implied by the user's request. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write under `<service>/docs/use_cases/`; otherwise write under `docs/use_cases/`. Each use case describes a complete interaction between an actor and the system to achieve a goal.
 
 ## File naming (do this exactly)
 
 One file per use case, written to `docs/use_cases/UC-XXX-<kebab-case-name>.md` where:
 
 - `UC-XXX` is the use case's three-digit ID (e.g. `UC-001`).
-- `<kebab-case-name>` is the use case **name taken verbatim from the use case
-  diagram** (`docs/use_cases.puml`), lowercased with spaces replaced by hyphens.
+- `<kebab-case-name>` is the use case **name taken verbatim from the Mermaid use
+  case diagram** inside `requirements.html`, lowercased with spaces replaced by hyphens.
   Do not paraphrase, expand, or reorder the words.
 
 | Use case name in diagram | Correct filename                     |
@@ -66,11 +68,11 @@ see [references/example.md](references/example.md) for a complete worked example
    `docs/`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced
    tasks) or multiple sibling `settings.gradle.kts` builds.
 2. Detect the existing docs language or user-requested language; default to English.
-3. Read `docs/requirements.md` and the Mermaid use case diagram embedded in
-   `docs/requirements.html` (both at the resolved docs path).
+3. Read `requirements.html` at the resolved docs path, including the Mermaid
+   diagram under `<section id="use-case-diagram">`.
 4. Determine the set of use cases to document (one, several, or all in the
    diagram — see "Scope" above). Take each `UC-XXX` ID and name from the diagram.
-5. Use TodoWrite to track progress — one item per use case file.
+5. Track progress with the available planning/task mechanism when useful — one item per use case file.
 6. For each use case, derive the filename with the rule in "File naming" above.
 7. Write the Overview section: `Use Case ID`, primary actor, stakeholders, trigger,
    goal, and a `Status` from the template's list.

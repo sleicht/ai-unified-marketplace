@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Implement the Compose Multiplatform UI for use case $ARGUMENTS. Follow existing UI conventions first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
+Implement the Compose Multiplatform UI for the use case named or implied by the user's request. Follow existing UI conventions first. When the project resembles the reference service, use `references/ui-style.md` as the canonical style guide.
 
 Use:
 - `service-ui`/`*-ui` KMP module or discovered UI module
@@ -30,7 +30,7 @@ Do not create tests. Use `compose-test` for UI tests and Ktor MockEngine tests.
 
 ## Required Reference
 
-Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
+Read `references/ui-style.md`, resolved relative to this `SKILL.md`, before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
 
 Before adding auth or runtime configuration, inspect the UI module for an existing `auth/` package or OIDC/PKCE flow. Follow it when present; use the POC bearer-token pattern only when no auth stack exists.
 
@@ -86,10 +86,15 @@ class ServiceApiClient(
     suspend fun listRecords(limit: Int = 50): List<RecordListItem> =
         httpClient
             .get("$apiBase/records") {
-                bearerAuth(accessTokenProvider.accessToken())
+                authorization()
                 parameter("limit", limit)
             }
             .body()
+
+    private suspend fun HttpRequestBuilder.authorization() {
+        val accessToken = accessTokenProvider.currentAccessToken()
+        if (accessToken != null) bearerAuth(accessToken)
+    }
 }
 ```
 
@@ -151,7 +156,7 @@ Use private setters for state that only ViewModel actions mutate. Keep user inpu
 
 ```kotlin
 @Composable
-fun App(apiClient: ServiceApiClient = ServiceApiClient()) {
+fun App(apiClient: ServiceApiClient) {
     val scope: CoroutineScope = rememberCoroutineScope()
     val recordVm = remember { RecordViewModel(apiClient, scope) }
     val importVm = remember { ImportViewModel(apiClient, scope) }
@@ -210,8 +215,8 @@ Show loading only when there is no existing content, unless the use case require
 ## Workflow
 
 1. Read the use case spec from the resolved docs path (`<service>/docs/use_cases/` in a monorepo service, otherwise `docs/use_cases/`).
-2. Verify backend DTOs/routes exist in shared/server modules; if missing, run backend implementation first.
-3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
+2. Verify backend DTOs/routes exist in shared/server modules. If required prerequisites are missing, report the exact DTOs/routes and stop; do not implement backend scope automatically.
+3. Read `references/ui-style.md`.
 4. Discover the owning stack/service, UI module, package names, and platform targets from the stack's `settings.gradle.kts` and Gradle files.
 5. Inspect existing UI module for package names, screen structure, API client style, runtime config, and an `auth/` OIDC/PKCE stack.
 6. If an auth stack exists, route API calls through its token provider; otherwise preserve the existing POC token style.
@@ -220,9 +225,9 @@ Show loading only when there is no existing content, unless the use case require
 9. Add or extend a ViewModel with Compose state and coroutine actions.
 10. Add or extend screens using small private composables and Material 3.
 11. Wire the screen into `App.kt` or existing navigation/tabs.
-12. Run LSP diagnostics for touched Kotlin files.
+12. If language-server diagnostics are available, run them for touched Kotlin files.
 13. Verify with the detected project command: namespaced `mise run //<stack>:compile` from monorepo root, bare `mise run compile` inside a stack, or UI module Gradle tasks as fallback. Use desktop/wasm run tasks only when manual UI verification is needed.
 
 ## Resources
 
-- `references/service-style.md` — canonical UI style
+- `references/ui-style.md` — focused UI implementation style

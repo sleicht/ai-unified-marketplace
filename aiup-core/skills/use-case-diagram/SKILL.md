@@ -5,19 +5,22 @@ description: >
   and their relationships from requirements. Use when the user asks to
   "create a use case diagram", "draw a UML diagram", "map actors to use cases",
   or mentions Mermaid, use case overview, actor diagram, or system use cases.
+  Use requirements instead when the request is to create the requirements
+  catalog itself rather than visualise already documented functional requirements.
 ---
 
 # Use Case Diagram
 
 ## Instructions
 
-Create or update the Mermaid use case diagram embedded in the resolved `requirements.html` based on the requirements catalog.
+Create or update the Mermaid use case diagram embedded in the resolved `requirements.html` based on the requirements catalog. Update only the `<pre class="mermaid">` inside `<section id="use-case-diagram">`; preserve the rest of the document.
 
 ## DO NOT
 
 - Create diagrams without reading the requirements first
 - Use non-standard Mermaid syntax
 - Include implementation details in use case names
+- Create a second `use-case-diagram` section or Mermaid block
 
 ## Path Resolution
 
@@ -52,11 +55,12 @@ graph LR
 
 1. Resolve docs path: `<service>/docs/requirements.html` for a scoped monorepo service, otherwise `docs/requirements.html`.
 2. Read the requirements catalog.
-3. Read the existing Mermaid diagram embedded in `requirements.html`, if present.
+3. Locate the single `<section id="use-case-diagram">` and its `<pre class="mermaid">`. Create that stable section before `</main>` only if it is absent.
 4. Identify actors and use cases from requirements.
-5. Create/update the Mermaid use case diagram in `requirements.html`.
+5. Replace only the Mermaid text inside that stable section.
 6. Validate the diagram:
     - Each use case traces to at least one functional requirement in `requirements.html`
     - All actors are connected to at least one use case
     - Use case IDs follow the UC-{3-digit} convention
     - Mermaid syntax is valid
+    - Exactly one element has `id="use-case-diagram"`

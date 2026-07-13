@@ -4,12 +4,12 @@
   "checklist": [
     {
       "name": "All three artifacts",
-      "description": "All three output files are present: docs/use_cases.puml, at least one file in docs/use_cases/ matching UC-XXX-*.md, and docs/entity_model.md",
+      "description": "All three artifact types are present: docs/requirements.html, at least one docs/use_cases/UC-XXX-*.md file, and docs/entity_model.md",
       "max_score": 10
     },
     {
       "name": "No /health use case",
-      "description": "The /health endpoint is NOT represented as a use case in the diagram or as a spec file",
+      "description": "The /health endpoint is not represented in the embedded Mermaid diagram or a spec file",
       "max_score": 8
     },
     {
@@ -19,12 +19,12 @@
     },
     {
       "name": "Two actors identified",
-      "description": "The use case diagram declares at least two distinct actors (one unauthenticated or customer-level, one admin-level), derived from the auth middleware and role checks rather than invented",
+      "description": "The embedded Mermaid diagram declares at least two distinct actors derived from auth middleware and role checks",
       "max_score": 6
     },
     {
-      "name": "PlantUML format",
-      "description": "docs/use_cases.puml contains @startuml and @enduml, uses 'left to right direction', declares actors with 'actor', and places use cases inside a 'rectangle' block",
+      "name": "Canonical Mermaid section",
+      "description": "docs/requirements.html contains exactly one section id=\"use-case-diagram\" with one pre class=\"mermaid\" using graph LR",
       "max_score": 8
     },
     {
@@ -34,7 +34,7 @@
     },
     {
       "name": "Spec files match diagram",
-      "description": "Every UC-XXX ID that appears in docs/use_cases.puml has a corresponding file docs/use_cases/UC-XXX-*.md",
+      "description": "Every UC-XXX ID in the embedded Mermaid diagram has a corresponding docs/use_cases/UC-XXX-*.md file",
       "max_score": 8
     },
     {

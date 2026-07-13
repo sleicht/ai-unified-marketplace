@@ -12,7 +12,7 @@ Your task is to reverse-engineer this codebase into three structured artifacts t
 
 Produce exactly the following files in your working directory:
 
-1. **`docs/use_cases.puml`** — A PlantUML use case diagram listing all actors and the use cases they participate in. Use the system name from `starter/package.json`.
+1. **`docs/requirements.html`** — A minimal requirements page with the Mermaid use case diagram in `<section id="use-case-diagram">`. Use the system name from `starter/package.json`.
 
 2. **`docs/use_cases/`** — A folder of use case specification documents, one per use case, named `UC-XXX-short-name.md` (kebab-case, three-digit ID). Each file must describe the full interaction: who the actor is, what they're trying to achieve, the step-by-step success scenario, any alternative flows (including error conditions), and the business rules the system enforces.
 

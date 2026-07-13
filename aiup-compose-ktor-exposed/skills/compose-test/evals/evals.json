@@ -1,0 +1,19 @@
+{
+  "skill_name": "compose-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Test ServiceApiClient.listClaims in commonTest. It takes runtime baseUrl and AccessTokenProvider, and the project uses OIDC rather than the old POC token.",
+      "expected_output": "A deterministic MockEngine test with an injected token provider and non-local test URL.",
+      "files": [],
+      "expectations": ["Makes no real network call", "Uses https://service.invalid or equivalent", "Asserts the injected bearer token", "Does not reference DEFAULT_POC_EMPLOYEE_TOKEN"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a screen test for ClaimBrowserScreen, but this KMP module has no Compose UI test dependencies. API client and ViewModel tests already exist.",
+      "expected_output": "No dependency expansion; reports that semantics tests require existing setup or explicit scope.",
+      "files": [],
+      "expectations": ["Does not add Compose test dependencies", "Does not use Android createComposeRule", "Suggests the lightest existing test level"]
+    }
+  ]
+}

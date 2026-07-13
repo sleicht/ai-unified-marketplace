@@ -10,7 +10,7 @@ description: >
 
 ## Instructions
 
-Create or update implementation-status artefacts for $ARGUMENTS by reading the entity model, use case specs, source code, and Flyway migrations. Report what exists; do not mark something implemented unless code or migration evidence is present.
+Create or update implementation-status artefacts for the scope named or implied by the user's request by reading the entity model, use case specs, source code, and Flyway migrations. Report what exists; do not mark something implemented unless code or migration evidence is present.
 
 Outputs:
 
@@ -38,7 +38,7 @@ Read these before updating status:
 - shared module `src/commonMain/kotlin/**`
 - UI module only when UI implementation status is requested
 - Flyway migrations under `src/main/resources/db/migration`
-- `references/service-style.md` for module/source-set discovery and command shape
+- `references/service-discovery.md` for module/source-set discovery and command shape
 
 ## Entity Matrix
 
@@ -88,7 +88,7 @@ Required sections:
 ## Workflow
 
 1. Resolve service docs path and stack root.
-2. Read `references/service-style.md`.
+2. Read `references/service-discovery.md`, resolved relative to this `SKILL.md`.
 3. Read `entity_model.md` and requested use case specs.
 4. Discover server/shared/UI modules from the owning stack's `settings.gradle.kts`.
 5. Read Flyway migration filenames and SQL headers, especially `-- Source:` comments when present.
@@ -100,4 +100,4 @@ Required sections:
 
 ## Resources
 
-- `references/service-style.md` — canonical Compose/Ktor/Exposed module, source-set, and command style
+- `references/service-discovery.md` — focused module, source-set, evidence, and command guidance

@@ -11,7 +11,7 @@ description: >
 
 ## Instructions
 
-Create or update `architecture.html` for $ARGUMENTS. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/architecture.html`; otherwise write `docs/architecture.html`.
+Create or update `architecture.html` for the system, service, or module named in the user's request. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/architecture.html`; otherwise write `docs/architecture.html`.
 
 Output minimal, portable HTML: semantic headings, numbered sections, simple tables, embedded Mermaid where useful, and no brand-specific CSS or external assets.
 

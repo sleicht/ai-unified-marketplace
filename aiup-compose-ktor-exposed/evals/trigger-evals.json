@@ -1,0 +1,9 @@
+[
+  {"query":"Generate the next PostgreSQL Flyway migration from the approved entity model.","expected_skill":"flyway-migration"},
+  {"query":"Draw the conceptual claims ER model but do not write SQL.","expected_skill":"entity-model"},
+  {"query":"Implement backend UC-014 with Ktor routes, Exposed repository, and Koin wiring.","expected_skill":"implement"},
+  {"query":"Build the Compose Multiplatform screen and Ktor client for the existing claims API.","expected_skill":"implement-ui"},
+  {"query":"Add testApplication coverage for the protected claims routes.","expected_skill":"ktor-test"},
+  {"query":"Test the Compose ViewModel and API client with runTest and MockEngine.","expected_skill":"compose-test"},
+  {"query":"Audit which use cases, entities, migrations, and tests are actually implemented.","expected_skill":"implementation-status"}
+]

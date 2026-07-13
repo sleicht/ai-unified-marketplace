@@ -10,7 +10,7 @@ A standards document is available in the project's references folder — consult
 
 ## Your Task
 
-Read `docs/vision.md` and produce a complete requirements catalog saved at `docs/requirements.md`.
+Read `docs/vision.md` and produce a complete requirements catalog saved at `docs/requirements.html`.
 
 The catalog should cover:
 
@@ -18,6 +18,6 @@ The catalog should cover:
 - Non-functional requirements derived from the quality goals described in the vision
 - Constraints derived from the technical and delivery constraints in the vision
 
-Each requirement type must be presented in its own dedicated Markdown table with appropriate columns. Every requirement row must be fully filled in — no empty cells.
+Each requirement type must be presented in its own semantic HTML table with appropriate columns. Every requirement row must be fully filled in — no empty cells. Include the stable `<section id="use-case-diagram">` with one empty `<pre class="mermaid">` ready for the next workflow step.
 
 Once drafted, review the catalog for quality before saving the final version: check that every requirement is clear, testable, and unambiguous, that all identifiers are unique across the document, and that every row's status is recorded.

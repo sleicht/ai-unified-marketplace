@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ShopStream Checkout Requirements</title></head><body><main>
+<h1>ShopStream Checkout Requirements</h1>
+<section id="functional-requirements"><h2>Functional Requirements</h2><table><thead><tr><th>ID</th><th>User Story</th><th>Status</th></tr></thead><tbody>
+<tr><td>FR-001</td><td>As a Customer, I want to review my cart so that I can confirm my purchase.</td><td>Approved</td></tr>
+<tr><td>FR-002</td><td>As a Customer, I want to select a shipping address so that delivery reaches the correct location.</td><td>Approved</td></tr>
+<tr><td>FR-003</td><td>As a Customer, I want to choose shipping so that I can balance speed and cost.</td><td>Approved</td></tr>
+<tr><td>FR-004</td><td>As a Customer, I want to provide payment details so that I can complete my purchase.</td><td>Approved</td></tr>
+<tr><td>FR-005</td><td>As a Customer, I want confirmation so that I know my purchase succeeded.</td><td>Approved</td></tr>
+<tr><td>FR-006</td><td>As a Customer, I want to know when payment is declined so that I can try another method.</td><td>Approved</td></tr>
+<tr><td>FR-007</td><td>As a Customer, I want to know when an item becomes unavailable so that I can adjust my order.</td><td>Approved</td></tr>
+<tr><td>FR-008</td><td>As a Customer, I want to apply one promo code so that I receive a discount.</td><td>Approved</td></tr>
+</tbody></table></section>
+<section id="non-functional-requirements"><h2>Non-Functional Requirements</h2><table><tbody><tr><td>NFR-001</td><td>Checkout pages load within 2 seconds.</td><td>Approved</td></tr></tbody></table></section>
+<section id="constraints"><h2>Constraints</h2><table><tbody><tr><td>C-001</td><td>Use the approved payment gateway.</td><td>Approved</td></tr></tbody></table></section>
+<section id="use-case-diagram"><h2>Use Case Diagram</h2><pre class="mermaid">graph LR
+    customer(("Customer"))
+    subgraph "ShopStream Checkout"
+        UC001(["UC-001\nPlace Order"])
+        UC002(["UC-002\nApply Promo Code"])
+        UC003(["UC-003\nCancel Checkout"])
+    end
+    customer --> UC001
+    customer --> UC002
+    customer --> UC003
+</pre></section>
+</main></body></html>

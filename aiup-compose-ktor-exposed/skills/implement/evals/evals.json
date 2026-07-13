@@ -1,0 +1,19 @@
+{
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Implement backend UC-014 List Claims in our Compose/Ktor/Exposed service. Existing features use domain repository ports, Exposed v1 DSL, small authenticated routes, shared DTOs, Koin, and ArchitectureTest.",
+      "expected_output": "A backend-only vertical slice matching the nearest feature and architecture rules.",
+      "files": [],
+      "expectations": ["Keeps Exposed access out of routes", "Uses shared DTOs only at the boundary", "Updates DI and route wiring", "Runs or recommends focused ArchitectureTest verification"]
+    },
+    {
+      "id": 2,
+      "prompt": "Build the Compose screen for UC-014; the backend route already exists.",
+      "expected_output": "The backend skill does not expand into UI implementation.",
+      "files": [],
+      "expectations": ["Does not edit Compose UI", "Directs the task to implement-ui"]
+    }
+  ]
+}

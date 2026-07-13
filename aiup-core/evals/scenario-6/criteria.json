@@ -1,56 +1,15 @@
 {
-  "context": "Tests whether the agent produces a PlantUML use case diagram from a requirements document using the exact prescribed template format, follows all use case diagram conventions (UC-{3-digit} IDs, FR traceability, actor connectivity), and avoids prohibited patterns (non-standard syntax, implementation details in names).",
+  "context": "Tests whether the agent updates only the canonical Mermaid use-case section in requirements.html while preserving semantic requirement tables.",
   "type": "weighted_checklist",
   "checklist": [
-    {
-      "name": "@startuml / @enduml",
-      "description": "The file starts with '@startuml' and ends with '@enduml'",
-      "max_score": 10
-    },
-    {
-      "name": "Left to right direction",
-      "description": "The file contains the line 'left to right direction'",
-      "max_score": 10
-    },
-    {
-      "name": "Actor declaration syntax",
-      "description": "All actors are declared using 'actor \"Name\" as alias' syntax (not plain 'actor Name')",
-      "max_score": 10
-    },
-    {
-      "name": "Rectangle system block",
-      "description": "Use cases are wrapped inside a 'rectangle \"...\" { ... }' block",
-      "max_score": 10
-    },
-    {
-      "name": "UC-{3-digit} IDs",
-      "description": "Every use case alias and label follows the UC-{3-digit} convention (e.g. UC-001, UC-002)",
-      "max_score": 10
-    },
-    {
-      "name": "Usecase two-line format",
-      "description": "Use cases are declared using 'usecase \"UC-XXX\\nDescription\" as UCxxx' with the ID and description on separate lines within the string",
-      "max_score": 10
-    },
-    {
-      "name": "Arrow syntax",
-      "description": "Connections between actors and use cases use '-->' arrows",
-      "max_score": 10
-    },
-    {
-      "name": "All actors connected",
-      "description": "Every declared actor is connected to at least one use case via a '-->' arrow",
-      "max_score": 10
-    },
-    {
-      "name": "FR coverage (no NFR/constraint use cases)",
-      "description": "The number of use cases roughly matches the number of functional requirements (8), and does NOT include use cases derived from non-functional requirements (NFR-001 to NFR-004) or constraints (C-001 to C-003)",
-      "max_score": 10
-    },
-    {
-      "name": "No implementation details in names",
-      "description": "Use case labels do NOT contain technical identifiers such as HTTP methods (GET, POST, PUT, DELETE), controller names, class names, or SQL statements",
-      "max_score": 10
-    }
+    {"name": "Canonical output", "description": "docs/requirements.html remains the output and no separate diagram file is created", "max_score": 10},
+    {"name": "Stable section", "description": "Exactly one section has id=\"use-case-diagram\" and contains exactly one pre class=\"mermaid\"", "max_score": 10},
+    {"name": "Mermaid graph", "description": "The Mermaid source uses graph LR and valid node/edge syntax", "max_score": 10},
+    {"name": "UC IDs", "description": "Every use case label follows UC-{3-digit}", "max_score": 10},
+    {"name": "System subgraph", "description": "Use cases appear inside a Library Management System subgraph", "max_score": 10},
+    {"name": "All actors connected", "description": "Library Member and Librarian are each connected to at least one use case", "max_score": 10},
+    {"name": "FR coverage", "description": "The diagram represents the eight functional requirements and does not turn NFRs or constraints into use cases", "max_score": 15},
+    {"name": "Business names", "description": "Use case names contain no HTTP, controller, class, or SQL details", "max_score": 10},
+    {"name": "Requirements preserved", "description": "All three original requirement sections and their rows remain present", "max_score": 15}
   ]
 }

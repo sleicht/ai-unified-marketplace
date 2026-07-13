@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Project Tracker Requirements</title></head><body><main>
+<h1>Project Tracker Requirements</h1>
+<section id="functional-requirements"><h2>Functional Requirements</h2><table><thead><tr><th>ID</th><th>User Story</th><th>Priority</th><th>Status</th></tr></thead><tbody>
+<tr><td>FR-001</td><td>As a Project Manager, I want to create a project so that the team knows its goal.</td><td>High</td><td>Approved</td></tr>
+<tr><td>FR-002</td><td>As a Project Manager, I want to assign team members so that responsibilities are clear.</td><td>High</td><td>Approved</td></tr>
+<tr><td>FR-003</td><td>As a Team Member, I want to update task status so that progress is visible.</td><td>High</td><td>Approved</td></tr>
+<tr><td>FR-004</td><td>As an Auditor, I want to view the complete audit log so that I can verify compliance.</td><td>High</td><td>Approved</td></tr>
+<tr><td>FR-005</td><td>As an Auditor, I want to export an audit log date range so that I can submit it for review.</td><td>Medium</td><td>Approved</td></tr>
+</tbody></table></section>
+<section id="non-functional-requirements"><h2>Non-Functional Requirements</h2><table><tbody><tr><td>NFR-001</td><td>Dashboard loads in under 2 seconds for 200 users.</td><td>Approved</td></tr></tbody></table></section>
+<section id="constraints"><h2>Constraints</h2><table><tbody><tr><td>C-001</td><td>The system is deployable on premises.</td><td>Approved</td></tr></tbody></table></section>
+<section id="use-case-diagram"><h2>Use Case Diagram</h2><pre class="mermaid">graph LR
+    pm(("Project Manager"))
+    member(("Team Member"))
+    subgraph "Project Tracker"
+        UC001(["UC-001\nCreate Project"])
+        UC002(["UC-002\nAssign Team Members"])
+        UC003(["UC-003\nUpdate Task Status"])
+    end
+    pm --> UC001
+    pm --> UC002
+    member --> UC003
+</pre></section>
+</main></body></html>

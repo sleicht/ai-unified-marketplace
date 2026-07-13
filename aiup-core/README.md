@@ -27,7 +27,7 @@ written along the way, so you can inspect or edit any artifact before continuing
 |--------------|-----------------------|--------------------------------------------------------------------------|
 | Inception    | `/requirements`       | Generate a structured requirements catalog (user stories, NFRs, constraints) from `docs/vision.md` |
 | Elaboration  | `/entity-model`       | Create an entity model with a Mermaid ER diagram and attribute tables    |
-| Elaboration  | `/use-case-diagram`   | Generate a PlantUML use case diagram mapping actors to use cases         |
+| Elaboration  | `/use-case-diagram`   | Embed a Mermaid use case diagram mapping actors to use cases             |
 | Construction | `/use-case-spec`      | Write detailed use case specifications (flows, pre/postconditions, rules)|
 | Any          | `/reverse-engineer`   | Recover use case diagram, use case specs, and entity model from existing code |
 
@@ -42,13 +42,12 @@ Inception          Elaboration                          Construction
 The skills produce and consume a set of artifacts under `docs/`:
 
 - `docs/vision.md` — *input you provide* (product vision, target users, goals)
-- `docs/requirements.md`
+- `docs/requirements.html` — requirements catalog and embedded Mermaid use case diagram
 - `docs/entity_model.md`
-- `docs/use_cases.puml`
 - `docs/use_cases/UC-*.md`
 
 **Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
-schema and produces the same `docs/use_cases.puml`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
+schema and produces the same `docs/requirements.html`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
 ## MCP servers

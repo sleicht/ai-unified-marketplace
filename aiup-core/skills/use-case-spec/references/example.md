@@ -17,6 +17,8 @@ at `BR-004` here), and never restart at `BR-001`.
 **Primary Actor:** Front Desk Clerk
 **Goal:** Create a new room reservation for a guest
 **Status:** Approved
+**Stakeholders:** Front Desk Clerk, Guest, Hotel Operations
+**Trigger:** A guest asks the clerk to reserve a room
 
 ## Preconditions
 
@@ -52,8 +54,8 @@ at `BR-004` here), and never restart at `BR-001`.
 **Flow:**
 
 1. System displays "No availability" message.
-2. Clerk adjusts dates or cancels operation.
-3. Use case continues at step 4 or ends.
+2. Clerk chooses whether to adjust the dates or cancel the operation.
+3. If the clerk adjusts the dates, use case continues at step 4. Otherwise, use case ends.
 
 ### A3: Payment Required
 

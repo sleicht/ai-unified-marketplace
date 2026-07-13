@@ -7,14 +7,15 @@ description: >
   routes, Koin DI, and shared DTOs. Use when the user asks to "implement a use
   case", "build the backend", "create the API", "write the data access layer",
   or mentions Ktor implementation, Exposed repositories, REST endpoints, or
-  backend development.
+  backend development. This skill is backend-only; use implement-ui for Compose
+  screens or client-side work.
 ---
 
 # Implement Use Case (Backend)
 
 ## Instructions
 
-Implement the backend for use case $ARGUMENTS. Follow the target project's existing conventions first. When the target project resembles reference service, use `references/service-style.md` as the canonical style guide.
+Implement the backend for the use case named or implied by the user's request. Follow the target project's existing conventions first. When the target project resembles the reference service, use `references/backend-style.md` as the canonical style guide.
 
 Use:
 - Vertical server slices under `modules/<feature>/`
@@ -31,7 +32,7 @@ Do not create UI screens. Use `implement-ui` for UI.
 
 ## Required Reference
 
-Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before editing code. Apply its conventions for:
+Read `references/backend-style.md`, resolved relative to this `SKILL.md`, before editing code. Apply its conventions for:
 - Monorepo/stack module discovery from the owning `settings.gradle.kts`
 - Version detection from `libs.versions.toml` and existing build catalogs
 - Server package architecture
@@ -193,7 +194,7 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 
 1. Read the use case spec from the resolved docs path (`<service>/docs/use_cases/` in a monorepo service, otherwise `docs/use_cases/`).
 2. Read the resolved `entity_model.md` and `architecture.html` when present.
-3. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
+3. Read `references/backend-style.md`.
 4. Discover the owning stack/service, then discover module names from that stack's `settings.gradle.kts` and package names from existing files.
 5. Read version and toolchain constraints from `gradle/libs.versions.toml` or existing build files before editing dependencies.
 6. Inspect nearest existing feature module and mirror its structure, imports, formatting, auth, and error handling.
@@ -207,9 +208,9 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 14. Register repositories/services in Koin DI.
 15. Wire routes in top-level `Routing.kt` under existing `/api/v1` structure.
 16. Update or extend `ArchitectureTest.kt` when adding modules or enforced architectural boundaries.
-17. Run LSP diagnostics for touched Kotlin files.
+17. If language-server diagnostics are available, run them for touched Kotlin files.
 18. Verify with the detected project command: `mise run //<stack>:compile` / `mise run //<stack>:verify` from a monorepo root, bare `mise run compile` / `mise run verify` inside a stack, or module Gradle tasks as fallback. Include a focused `ArchitectureTest` run when present.
 
 ## Resources
 
-- `references/service-style.md` — canonical service style
+- `references/backend-style.md` — focused backend implementation style

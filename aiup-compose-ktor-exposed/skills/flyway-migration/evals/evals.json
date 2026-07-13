@@ -1,0 +1,19 @@
+{
+  "skill_name": "flyway-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our Ktor service has docs/entity_model.md defining CUSTOMER and ORDER. Existing Flyway files use V003 naming, BIGSERIAL IDs, TIMESTAMPTZ audit columns, and set_updated_at(). Add the next PostgreSQL migration only; do not add Exposed code.",
+      "expected_output": "One additive V004 migration matching existing schema conventions.",
+      "files": [],
+      "expectations": ["Creates V004 with explicit foreign key and required constraints", "Reuses set_updated_at() instead of redefining it", "Does not create Kotlin table definitions"]
+    },
+    {
+      "id": 2,
+      "prompt": "Please draw the conceptual entities and relationships for a new claims domain. We do not have an entity model yet and do not want SQL.",
+      "expected_output": "The skill recognises this as an entity-model request and does not create a Flyway migration.",
+      "files": [],
+      "expectations": ["Does not generate SQL", "Directs the request to entity-model"]
+    }
+  ]
+}

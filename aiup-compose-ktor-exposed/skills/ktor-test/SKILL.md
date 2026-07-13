@@ -14,7 +14,7 @@ description: >
 
 ## Instructions
 
-Create backend tests for use case $ARGUMENTS. Follow the target project's existing test style first. When the project resembles reference service, use `references/service-style.md` as the canonical style guide.
+Create backend tests for the use case named or implied by the user's request. Follow the target project's existing test style first. When the project resembles the reference service, use `references/backend-testing.md` as the canonical style guide.
 
 Use:
 - Ktor `testApplication {}` for route tests
@@ -30,7 +30,7 @@ Do not use a real database for route unit tests.
 
 ## Required Reference
 
-Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context) before writing tests. Apply its route-test, fake-dependency, auth-token, Testcontainers, ArchUnit, source-set, and command conventions.
+Read `references/backend-testing.md`, resolved relative to this `SKILL.md`, before writing tests. Apply its route-test, fake-dependency, auth-token, Testcontainers, ArchUnit, source-set, and command conventions.
 
 ## DO NOT
 
@@ -220,19 +220,19 @@ Derive tests from use case flows:
 ## Workflow
 
 1. Read the use case spec and acceptance scenarios from the resolved docs path.
-2. Read `references/service-style.md` (absolute path: prepend the "Base directory for this skill:" value from your system context).
+2. Read `references/backend-testing.md`.
 3. Inspect existing tests in the same module and mirror imports, assertions, auth helpers, source-set placement, and naming.
 4. Inspect `ArchitectureTest.kt` when present; extend it for new modules or boundaries.
 5. Decide test level: route unit test, application service unit test, outbound client test, ArchUnit rule, or Testcontainers repository integration test.
 6. Place route/unit/ArchUnit tests in `src/test`; place PostgreSQL/Flyway repository tests in `src/testContainerTest` when that suite exists.
 7. Create small fake implementations for ports used by route/service tests.
 8. Cover success, validation, not-found, auth, and key alternative flows.
-9. Run LSP diagnostics for touched Kotlin test files.
+9. If language-server diagnostics are available, run them for touched Kotlin test files.
 10. Run focused test command using detected shape: `mise run //<stack>:test <ClassName>` or bare `mise run test <ClassName>`; for Testcontainers use namespaced/bare `tc-test`. Fallback to Gradle module test tasks.
 11. Run `ArchitectureTest` when architecture rules changed.
 12. Run `mise run format-check` or project formatting check if available.
 
 ## Resources
 
-- `references/service-style.md` — canonical testing style
+- `references/backend-testing.md` — focused backend testing style
 - `references/ExampleRouteTest.kt` — route test skeleton in current style

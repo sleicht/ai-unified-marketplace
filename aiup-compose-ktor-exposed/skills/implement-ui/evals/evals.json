@@ -1,0 +1,19 @@
+{
+  "skill_name": "implement-ui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Implement the Compose Multiplatform Claims screen. Shared ClaimListItem and GET /api/v1/claims exist. The UI already has AccessTokenProvider, runtimeConfig.apiBaseUrl, jvm and wasm targets, and constructor injection.",
+      "expected_output": "API client method, plain ViewModel, small composables, and explicit App wiring using existing auth/config.",
+      "files": [],
+      "expectations": ["Does not hardcode localhost", "Reuses AccessTokenProvider", "ServiceApiClient construction supplies required arguments", "Keeps platform APIs out of commonMain"]
+    },
+    {
+      "id": 2,
+      "prompt": "Create the Claims UI, but the shared DTO and backend route have not been implemented yet.",
+      "expected_output": "A concise prerequisite report with no backend or speculative UI implementation.",
+      "files": [],
+      "expectations": ["Names the missing DTO and route", "Does not implement backend code", "Does not invent duplicate UI DTOs"]
+    }
+  ]
+}

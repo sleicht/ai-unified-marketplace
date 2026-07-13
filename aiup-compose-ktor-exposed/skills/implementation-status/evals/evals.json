@@ -1,0 +1,19 @@
+{
+  "skill_name": "implementation-status",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Update status for UC-014. Migration V006 creates claim, Claim domain model and route exist, only the repository interface exists, and there are no tests.",
+      "expected_output": "Conservative matrix and UC HTML status page showing partial repository and missing tests with exact evidence.",
+      "files": [],
+      "expectations": ["Marks repository Partial", "Reports V006 exactly", "Does not infer tests", "Creates semantic UC-014 implementation-status HTML"]
+    },
+    {
+      "id": 2,
+      "prompt": "Tell me what is implemented for all use cases. Several classes have matching names, but you may only open files; do not run a broad build or change source code.",
+      "expected_output": "Read-only evidence audit using discovered modules and conservative statuses.",
+      "files": [],
+      "expectations": ["Opens evidence files before claims", "Does not modify production code", "Does not run broad verification", "Uses Missing or Partial where evidence is incomplete"]
+    }
+  ]
+}

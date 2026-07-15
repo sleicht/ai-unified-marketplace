@@ -105,10 +105,9 @@
         <p class="eyebrow">AI Unified Process Marketplace</p>
         <h1>How to Use AIUP</h1>
         <p class="lead">
-          A guided walkthrough of the <strong>AI Unified Process</strong>: from a written vision to fully
-          implemented, tested code &mdash; with requirements at the centre at every step. This guide covers the
-          stack-agnostic <strong>core methodology</strong> and the <strong>Compose / Ktor / Exposed</strong>
-          implementation path.
+          A monorepo-first walkthrough of the <strong>AI Unified Process</strong>: scope one service, turn its written
+          vision into traceable requirements, then implement and test it with the <strong>Compose / Ktor / Exposed</strong>
+          stack. The same skills also work in a standalone repository.
         </p>
         <div class="pills">
           <span class="pill">Inception</span>
@@ -136,9 +135,8 @@
         </p>
         <div class="note">
           <strong>The contract between steps is files.</strong> Each skill picks up where the previous one left off
-          using the artifacts on disk (<code>docs/vision.md</code>, <code>docs/requirements.html</code>,
-          <code>docs/entity_model.md</code>, <code>docs/use_cases/UC-*.md</code>, <code>docs/architecture.html</code>,
-          <code>docs/REFERENCE.md</code>). You can inspect or hand-edit any of them before continuing.
+          using artifacts on disk. In a monorepo these live under <code>&lt;service&gt;/docs/</code>; in a standalone
+          repository they live under <code>docs/</code>. You can inspect or hand-edit any artifact before continuing.
         </div>
       </section>
 
@@ -148,8 +146,8 @@
         <div class="grid">
           <div class="card">
             <h3>You need</h3>
-            <p>Claude Code running in your project, and a <code>docs/vision.md</code> describing the product vision,
-              target users, and goals. The richer the vision, the better the generated requirements.</p>
+            <p>Claude Code running in your repository, and a <code>&lt;service&gt;/docs/vision.md</code> describing the
+              service vision, target users, and goals. Use <code>docs/vision.md</code> only for a standalone project.</p>
           </div>
           <div class="card">
             <h3>For the Compose stack</h3>
@@ -163,14 +161,77 @@
 <pre><code>claude plugin marketplace add "git@gitlab.sanet17.ch:base/sanitas-llm-plugins.git#master"
 claude plugin install aiup-core@sanitas-llm-plugins
 claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
-        <p>Verify by running <code>/requirements</code> &mdash; if Claude reads <code>docs/vision.md</code> and proposes
-          a requirements catalog, the skills are installed correctly.</p>
+        <p>Verify from the monorepo root with <code>/requirements in payments-service</code>. It should read
+          <code>payments-service/docs/vision.md</code> and write the catalogue beside it.</p>
+      </section>
+
+      <!-- ───────────────────────── Monorepo first ───────────────────────── -->
+      <section>
+        <h2>Start Here: One Service in a Monorepo</h2>
+        <p>
+          Name the service or stack in every request. Explicit scope wins over the current directory and keeps the
+          complete requirements-to-tests chain under that service. You can instead <code>cd</code> into the service and
+          omit <code>in payments-service</code>, but root-scoped prompts are clearer and easier to repeat.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>How scope is detected</h3>
+            <p>The core skills recognise <code>mise.toml</code> with <code>monorepo_root</code> or namespaced tasks, and
+              repositories with multiple sibling <code>settings.gradle.kts</code> builds. Existing service-local
+              <code>docs/</code> directories also guide <code>/reference</code>.</p>
+          </div>
+          <div class="card">
+            <h3>How modules are discovered</h3>
+            <p>Stack skills locate the owning build first, then read that build's <code>settings.gradle.kts</code>.
+              They do not assume names such as <code>server</code>, <code>shared</code>, or <code>ui</code>.</p>
+          </div>
+          <div class="card">
+            <h3>How commands are run</h3>
+            <p>From the root, verification uses <code>mise run //&lt;stack&gt;:&lt;task&gt;</code>. Inside the stack it uses
+              <code>mise run &lt;task&gt;</code>; the owning Gradle wrapper is the fallback.</p>
+          </div>
+        </div>
+        <h3 style="margin-top:1.5rem">Recommended service workflow</h3>
+<pre><code>/requirements in payments-service
+/entity-model in payments-service
+/use-case-diagram in payments-service
+/use-case-spec UC-001 in payments-service
+/architecture in payments-service
+/flyway-migration in payments-service
+/implement UC-001 in payments-service
+/implement-ui UC-001 in payments-service
+/ktor-test UC-001 in payments-service
+/compose-test UC-001 in payments-service
+/implementation-status UC-001 in payments-service
+/reference in payments-service</code></pre>
+        <div class="note">
+          <strong>Keep scopes independent.</strong> Use root <code>docs/</code> only for cross-cutting or portfolio
+          documentation. Each deployable service should own its vision, requirements, entity model, architecture,
+          use cases, and implementation-status pages.
+        </div>
+<pre><code>monorepo-root/
+├── docs/                          ← optional cross-cutting documentation
+├── mise.toml                      ← monorepo and namespaced task definitions
+├── payments-service/
+│   ├── docs/
+│   │   ├── vision.md
+│   │   ├── requirements.html
+│   │   ├── entity_model.md
+│   │   ├── architecture.html
+│   │   ├── REFERENCE.md
+│   │   └── use_cases/
+│   │       ├── UC-001-charge-card.md
+│   │       └── UC-001-implementation-status.html
+│   └── settings.gradle.kts
+└── billing-service/
+    ├── docs/…
+    └── settings.gradle.kts</code></pre>
       </section>
 
       <!-- ───────────────────────── Workflow map ───────────────────────── -->
       <section>
         <h2>The Workflow at a Glance</h2>
-        <p>The forward path, left to right. Each arrow consumes the previous step's artifact.</p>
+        <p>The forward path, left to right. Each arrow consumes artifacts from the same explicitly scoped service.</p>
 <pre><code>Inception        Elaboration                          Construction
 ─────────────    ──────────────────────────────────   ──────────────────────────────
 /requirements →  /entity-model → /use-case-diagram  →  /use-case-spec → /architecture
@@ -190,15 +251,16 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
 
       <!-- ───────────────────────── Part 1: Core ───────────────────────── -->
       <section>
-        <h2>Part 1 &mdash; Core Methodology <span class="badge core">aiup-core</span></h2>
-        <p>Stack-agnostic. These steps run identically regardless of your implementation toolchain.</p>
+        <h2>Part 1 &mdash; Core Methodology <span class="badge core">aiup-core 103.5.0</span></h2>
+        <p>Stack-agnostic. These steps run identically regardless of your implementation toolchain. Paths below are
+          relative to the scoped service unless stated otherwise.</p>
         <ol class="steps">
           <li>
             <h3><code>/requirements</code> — Requirements catalog</h3>
             <p>Reads <code>docs/vision.md</code> and writes <code>docs/requirements.html</code> as three separate
               tables: functional requirements (user stories, <code>FR-001</code>…), non-functional requirements
-              (measurable quality attributes, <code>NFR-001</code>…), and constraints (<code>CON-001</code>…). Each
-              gets a stable ID and a status. Review before continuing.</p>
+              (measurable quality attributes, <code>NFR-001</code>…), and constraints (<code>C-001</code>…). It also
+              creates the stable HTML slot later updated by <code>/use-case-diagram</code>. Review before continuing.</p>
             <p class="mono"><span class="tag">monorepo</span> <code>/requirements payments-service</code> &rarr; writes <code>payments-service/docs/requirements.html</code></p>
           </li>
           <li>
@@ -209,8 +271,9 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
           </li>
           <li>
             <h3><code>/use-case-diagram</code> — Use case diagram</h3>
-            <p>Identifies actors and use cases, writing a Mermaid diagram into <code>docs/requirements.html</code>. Each
-              use case gets a stable ID (<code>UC-001</code>…) tracing back to one or more functional requirements.</p>
+            <p>Identifies actors and use cases, then updates the single Mermaid block under
+              <code>#use-case-diagram</code> in <code>requirements.html</code>. Each use case gets a stable ID
+              (<code>UC-001</code>…) tracing back to one or more functional requirements.</p>
             <p class="mono"><span class="tag">monorepo</span> <code>/use-case-diagram in payments-service</code> &rarr; updates the diagram in <code>payments-service/docs/requirements.html</code></p>
           </li>
           <li>
@@ -235,26 +298,34 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
               canonical docs rather than duplicating them, and marks gaps as <em>Not documented yet</em>.</p>
             <p class="mono"><span class="tag">monorepo</span> <code>/reference payments-service</code> &rarr; writes <code>payments-service/docs/REFERENCE.md</code></p>
           </li>
+          <li>
+            <h3><code>/reverse-engineer</code> — Existing-code baseline</h3>
+            <p>An alternative starting point for an inherited service. It reads source, build configuration, APIs,
+              tests, and schema evidence, then creates the canonical <code>requirements.html</code>, one
+              <code>UC-*.md</code> specification per use case, and <code>entity_model.md</code>. Review the recovered
+              business intent before continuing with implementation.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/reverse-engineer payments-service</code> &rarr; writes the baseline under <code>payments-service/docs/</code></p>
+          </li>
         </ol>
       </section>
 
       <!-- ───────────────────────── Part 2: Compose construction ───────────────────────── -->
       <section>
-        <h2>Part 2 &mdash; Implementation: Compose / Ktor / Exposed <span class="badge stack">aiup-compose-ktor-exposed</span></h2>
+        <h2>Part 2 &mdash; Implementation: Compose / Ktor / Exposed <span class="badge stack">aiup-compose-ktor-exposed 1.4.0</span></h2>
         <p>
-          The Construction phase for a Kotlin Multiplatform project. The core <code>/implement</code> dispatcher
-          inspects your build files and delegates to this stack automatically. Run each step per use case ID.
+          The Construction phase for a Kotlin Multiplatform project. These skills are provided directly by
+          <code>aiup-compose-ktor-exposed</code>. They discover the scoped stack and its modules before changing code;
+          run implementation and test skills per use case ID.
         </p>
         <ol class="steps">
           <li>
             <h3><code>/flyway-migration</code> — PostgreSQL migrations</h3>
             <p>Reads <code>docs/entity_model.md</code> and existing migrations and writes versioned Flyway scripts
-              (<code>V001__create_*.sql</code>…) under the discovered migration directory (typically
-              <code>src/main/resources/db/migration</code>). Uses <code>BIGSERIAL</code> primary keys, explicit
-              constraints, indexes, <code>TIMESTAMPTZ</code> audit columns, and <code>updated_at</code> triggers &mdash;
-              all kept compatible with Exposed <code>Table("…")</code> definitions. Won't drop tables without
-              confirmation.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/flyway-migration in payments-service</code> &rarr; writes <code>payments-service/src/main/resources/db/migration/V*.sql</code></p>
+              (<code>V001__create_*.sql</code>…) under the discovered server module's migration directory. Existing
+              migration conventions win; <code>BIGSERIAL</code>, <code>TIMESTAMPTZ</code>, constraints, indexes, and
+              <code>updated_at</code> triggers are reference defaults only when they match the project. Mappings remain
+              compatible with Exposed.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/flyway-migration in payments-service</code> &rarr; writes <code>payments-service/&lt;server-module&gt;/src/main/resources/db/migration/V*.sql</code></p>
           </li>
           <li>
             <h3><code>/implement UC-001</code> — Backend implementation</h3>
@@ -269,7 +340,7 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
             <p>Implements Compose Multiplatform UI: typed suspend functions on the Ktor API client with JSON
               serialization, plain ViewModel classes holding Compose state with constructor-injected dependencies, and
               small accessible Material 3 composables wired into the existing navigation &mdash; no global service
-              locators.</p>
+              locators. It stops and reports the missing prerequisites if the backend DTOs or routes do not exist.</p>
             <p class="mono"><span class="tag">monorepo</span> <code>/implement-ui UC-001 in payments-service</code> &rarr; Compose screen, ViewModel &amp; API client under the service's UI module</p>
           </li>
           <li>
@@ -279,7 +350,7 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
               outbound clients, extends <code>ArchitectureTest.kt</code> for new modules, and adds Testcontainers +
               Flyway integration tests under <code>src/testContainerTest</code> when persistence behaviour needs a real
               PostgreSQL.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/ktor-test UC-001 in payments-service</code> &rarr; tests under <code>payments-service/src/test/…</code> and <code>src/testContainerTest</code></p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/ktor-test UC-001 in payments-service</code> &rarr; tests under the discovered server module's <code>src/test</code> and <code>src/testContainerTest</code></p>
           </li>
           <li>
             <h3><code>/compose-test UC-001</code> — UI tests</h3>
@@ -287,7 +358,7 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
               <code>commonTest</code>, coroutine ViewModel tests with fakes and <code>runTest</code>, OIDC/PKCE or
               <code>expect</code>/<code>actual</code> platform tests in <code>jvmTest</code>/<code>wasmJsTest</code>, and
               Compose semantics tests with <code>runComposeUiTest</code> when dependencies exist. No real network calls.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/compose-test UC-001 in payments-service</code> &rarr; UI tests under the service's <code>commonTest</code> / matching source set</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/compose-test UC-001 in payments-service</code> &rarr; tests under the discovered UI module's <code>commonTest</code> or platform source set</p>
           </li>
           <li>
             <h3><code>/implementation-status UC-001</code> — Status &amp; traceability</h3>
@@ -308,94 +379,28 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
             <tr><th>Skill</th><th>Phase</th><th>Input</th><th>Output</th><th>Plugin</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>/requirements</code></td><td>Inception</td><td><code>docs/vision.md</code></td><td><code>docs/requirements.html</code></td><td>core</td></tr>
-            <tr><td><code>/entity-model</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>docs/entity_model.md</code></td><td>core</td></tr>
-            <tr><td><code>/use-case-diagram</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>requirements.html</code> (diagram)</td><td>core</td></tr>
-            <tr><td><code>/use-case-spec</code></td><td>Construction</td><td>UC ID(s)</td><td><code>docs/use_cases/UC-*.md</code></td><td>core</td></tr>
-            <tr><td><code>/architecture</code></td><td>Construction</td><td>docs + source tree</td><td><code>docs/architecture.html</code></td><td>core</td></tr>
-            <tr><td><code>/reference</code></td><td>Any</td><td>docs + source tree</td><td><code>docs/REFERENCE.md</code></td><td>core</td></tr>
-            <tr><td><code>/reverse-engineer</code></td><td>Any</td><td>existing source</td><td>requirements + specs + model</td><td>core</td></tr>
-            <tr><td><code>/flyway-migration</code></td><td>Construction</td><td><code>entity_model.md</code></td><td><code>V*.sql</code></td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/requirements</code></td><td>Inception</td><td><code>&lt;service&gt;/docs/vision.md</code></td><td><code>requirements.html</code></td><td>core</td></tr>
+            <tr><td><code>/entity-model</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>entity_model.md</code></td><td>core</td></tr>
+            <tr><td><code>/use-case-diagram</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td>same file's Mermaid slot</td><td>core</td></tr>
+            <tr><td><code>/use-case-spec</code></td><td>Construction</td><td>UC ID(s) + requirements</td><td><code>docs/use_cases/UC-*.md</code></td><td>core</td></tr>
+            <tr><td><code>/architecture</code></td><td>Construction</td><td>service docs + source</td><td><code>architecture.html</code></td><td>core</td></tr>
+            <tr><td><code>/reference</code></td><td>Any</td><td>service docs + source</td><td><code>REFERENCE.md</code></td><td>core</td></tr>
+            <tr><td><code>/reverse-engineer</code></td><td>Any</td><td>existing service source</td><td>requirements + specs + model</td><td>core</td></tr>
+            <tr><td><code>/flyway-migration</code></td><td>Construction</td><td>model + use cases</td><td>server module <code>V*.sql</code></td><td>compose-ktor-exposed</td></tr>
             <tr><td><code>/implement</code></td><td>Construction</td><td>UC ID</td><td>Ktor backend + shared DTOs</td><td>compose-ktor-exposed</td></tr>
             <tr><td><code>/implement-ui</code></td><td>Construction</td><td>UC ID</td><td>Compose screen + ViewModel + client</td><td>compose-ktor-exposed</td></tr>
-            <tr><td><code>/ktor-test</code></td><td>Construction</td><td>UC ID</td><td>backend tests</td><td>compose-ktor-exposed</td></tr>
-            <tr><td><code>/compose-test</code></td><td>Construction</td><td>UC ID</td><td>UI / ViewModel tests</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/ktor-test</code></td><td>Construction</td><td>UC ID + backend</td><td>route / unit / integration tests</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/compose-test</code></td><td>Construction</td><td>UC ID + UI</td><td>client / ViewModel / UI tests</td><td>compose-ktor-exposed</td></tr>
             <tr><td><code>/implementation-status</code></td><td>Construction</td><td>UC ID(s)</td><td>status matrix + HTML pages</td><td>compose-ktor-exposed</td></tr>
           </tbody>
         </table>
       </section>
 
-      <!-- ───────────────────────── Monorepo ───────────────────────── -->
-      <section>
-        <h2>Working in a Monorepo</h2>
-        <p>
-          Every skill resolves its output path before writing. In a multi-service repository each service keeps its
-          <strong>own</strong> <code>docs/</code> tree, so requirements, entity models, use case specs, architecture,
-          and reference docs never collide across services.
-        </p>
-        <div class="grid">
-          <div class="card">
-            <h3>How scope is resolved</h3>
-            <p>A skill writes to <code>&lt;service&gt;/docs/…</code> when <strong>a service/module is named</strong> as
-              an argument <em>or</em> the current working directory is <strong>inside a monorepo service</strong>.
-              Otherwise it falls back to the repo-root <code>docs/…</code>.</p>
-          </div>
-          <div class="card">
-            <h3>How a monorepo is detected</h3>
-            <p>From <code>mise.toml</code> (a <code>monorepo_root</code> key or namespaced tasks), multiple sibling
-              <code>settings.gradle.kts</code> builds, or existing service-local <code>docs/</code> directories.</p>
-          </div>
-          <div class="card">
-            <h3>Target a service from the root</h3>
-            <p>You don't need to <code>cd</code>. <strong>Name the service in the prompt</strong> and the skill writes
-              to <code>&lt;service&gt;/docs/…</code> &mdash; this works for <em>every</em> skill, including the ones
-              whose argument is a use case ID: <code>/implement UC-001 in payments-service</code>. An explicit name
-              takes precedence over the current directory.</p>
-          </div>
-        </div>
-        <div class="note" style="margin-top:1.25rem">
-          <strong>Naming vs. <code>cd</code> — same result.</strong> Two equivalent ways to scope any run:
-          name the service from the repo root (<code>/use-case-spec UC-001 in payments-service</code>), or
-          <code>cd payments-service</code> first and run the skill plain (<code>/use-case-spec UC-001</code>).
-          The per-step examples below use the root-naming form so you can drive the whole chain without leaving
-          the repo root.
-        </div>
-        <p style="margin-top:1.25rem">
-          Construction-phase skills follow the same resolution: <code>/flyway-migration</code> writes under the
-          scoped service's migration directory, and <code>/implementation-status</code> writes its HTML pages under
-          <code>&lt;service&gt;/docs/use_cases/</code>. Run the whole chain from inside the service you're working on
-          and every artifact lands in the right place.
-        </p>
-        <div class="note">
-          <strong>Mixed layouts are fine.</strong> If both a root-level and a service-level <code>docs/REFERENCE.md</code>
-          exist, the <code>/reference</code> skill updates the one matching the current scope and links to the other.
-          Keep the root <code>docs/</code> for cross-cutting context and the service <code>docs/</code> for that
-          service's requirements-to-tests chain.
-        </div>
-<pre><code>monorepo-root/
-├── docs/                          ← cross-cutting / portfolio docs (optional)
-├── mise.toml                      ← monorepo_root marker
-├── payments-service/
-│   ├── docs/                      ← scoped artifacts for this service
-│   │   ├── requirements.html
-│   │   ├── entity_model.md
-│   │   ├── architecture.html
-│   │   ├── REFERENCE.md
-│   │   └── use_cases/
-│   │       ├── UC-001-charge-card.md
-│   │       └── UC-001-implementation-status.html
-│   ├── src/…
-│   └── settings.gradle.kts
-└── billing-service/
-    ├── docs/…                     ← its own independent chain
-    └── settings.gradle.kts</code></pre>
-      </section>
-
       <!-- ───────────────────────── Resulting tree ───────────────────────── -->
       <section>
-        <h2>What Your Project Looks Like</h2>
-        <p>After running the full workflow, the artifacts settle into a predictable tree:</p>
-<pre><code>your-project/
+        <h2>What the Scoped Service Looks Like</h2>
+        <p>After the full workflow, one service has a predictable documentation and implementation tree:</p>
+<pre><code>payments-service/
 ├── docs/
 │   ├── vision.md                 ← you maintain this
 │   ├── requirements.html         ← /requirements + /use-case-diagram
@@ -405,12 +410,14 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
 │   └── use_cases/                ← /use-case-spec + /implementation-status
 │       ├── UC-001-create-reservation.md
 │       └── UC-001-implementation-status.html
-├── src/
+├── &lt;server-module&gt;/src/
 │   ├── main/
-│   │   ├── kotlin/               ← /implement, /implement-ui
+│   │   ├── kotlin/               ← /implement
 │   │   └── resources/db/migration/  ← /flyway-migration  (V001__*.sql …)
-│   └── test/                     ← /ktor-test, /compose-test
-└── CLAUDE.md</code></pre>
+│   └── test/                     ← /ktor-test
+├── &lt;shared-module&gt;/src/commonMain/  ← shared DTOs from /implement
+├── &lt;ui-module&gt;/src/commonMain/      ← /implement-ui
+└── settings.gradle.kts</code></pre>
       </section>
 
       <!-- ───────────────────────── Tips ───────────────────────── -->

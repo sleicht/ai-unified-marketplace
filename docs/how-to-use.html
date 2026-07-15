@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Use AIUP — Core + Compose/Ktor/Exposed</title>
+    <style>
+      :root {
+        --sanitas-black: #191919;
+        --sanitas-white: #ffffff;
+        --sanitas-warm-grey: #f3f2f0;
+        --sanitas-dark-green: #004435;
+        --sanitas-green: #00765a;
+        --sanitas-light-green: #5bac26;
+        --sanitas-light-green-60: #b5d6a0;
+        --sanitas-light-green-30: #dbead1;
+        --sanitas-light-green-15: #ebf5e5;
+        --sanitas-red: #e9333a;
+        --sanitas-orange: #f78e1e;
+        --sanitas-yellow: #f6b830;
+        --sanitas-grey-1: #666666;
+        --sanitas-grey-2: #999999;
+        --sanitas-grey-3: #d7d7d7;
+        --radius: 8px;
+        --shadow: 0 8px 24px rgba(25, 25, 25, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--sanitas-black); background: var(--sanitas-white); font: 16px/1.6 "Open Sans", Arial, sans-serif; }
+      a { color: var(--sanitas-green); }
+
+      .hero {
+        color: var(--sanitas-dark-green);
+        background:
+          radial-gradient(circle at 85% 20%, rgba(91, 172, 38, 0.28), transparent 32rem),
+          linear-gradient(135deg, #cdfad1 0%, var(--sanitas-light-green-15) 58%, var(--sanitas-white) 100%);
+        padding: 4rem 1.5rem 3rem;
+      }
+      .hero-inner, main { max-width: 1040px; margin: 0 auto; }
+      .eyebrow { margin: 0 0 0.75rem; color: var(--sanitas-green); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+      .lead { max-width: 70ch; font-size: 1.05rem; }
+
+      h1, h2, h3 { color: var(--sanitas-dark-green); font-family: "TheMix Bold", "Open Sans", Arial, sans-serif; font-weight: 700; }
+      h1 { margin: 0 0 1rem; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.05; }
+      h2 { margin: 0 0 1rem; font-size: clamp(1.4rem, 2vw, 1.9rem); line-height: 1.2; }
+      h2::after { content: ""; display: block; width: 56px; height: 4px; margin-top: 0.6rem; border-radius: 999px; background: var(--sanitas-light-green); }
+      h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+
+      main { padding: 2.5rem 1.5rem 4rem; }
+      section { margin-bottom: 3rem; }
+
+      .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+      .pill { display: inline-block; border-radius: 25px; padding: 0.35rem 0.85rem; background: var(--sanitas-light-green); color: var(--sanitas-dark-green); font-weight: 700; font-size: 0.85rem; }
+      .pill.hollow { background: transparent; border: 1.5px solid var(--sanitas-dark-green); }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+      .card { border: 1px solid var(--sanitas-grey-3); border-radius: var(--radius); background: var(--sanitas-white); box-shadow: var(--shadow); padding: 1.25rem; }
+      .card p { margin: 0.25rem 0 0; color: var(--sanitas-grey-1); font-size: 0.95rem; }
+
+      code, pre { font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace; }
+      code { background: var(--sanitas-light-green-15); color: var(--sanitas-dark-green); padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.9em; }
+      pre { background: var(--sanitas-black); color: #e8efe9; padding: 1rem 1.25rem; border-radius: var(--radius); overflow-x: auto; line-height: 1.5; }
+      pre code { background: transparent; color: inherit; padding: 0; }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.94rem; }
+      thead th { background: var(--sanitas-dark-green); color: var(--sanitas-white); text-align: left; padding: 0.7rem 0.85rem; font-weight: 700; }
+      tbody td { border-bottom: 1px solid var(--sanitas-grey-3); padding: 0.65rem 0.85rem; vertical-align: top; }
+      tbody tr:nth-child(even) { background: var(--sanitas-warm-grey); }
+
+      .steps { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+      .steps > li { counter-increment: step; position: relative; padding: 0 0 1.75rem 3.25rem; border-left: 2px solid var(--sanitas-light-green-30); margin-left: 1rem; }
+      .steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+      .steps > li::before { content: counter(step); position: absolute; left: -1.05rem; top: -0.2rem; width: 2.1rem; height: 2.1rem; border-radius: 50%; background: var(--sanitas-light-green); color: var(--sanitas-dark-green); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+      .steps h3 { margin-bottom: 0.35rem; }
+
+      .badge { display: inline-block; border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+      .badge.core { background: var(--sanitas-light-green-30); color: var(--sanitas-dark-green); }
+      .badge.stack { background: var(--sanitas-dark-green); color: var(--sanitas-white); }
+
+      .note { border-left: 4px solid var(--sanitas-light-green); background: var(--sanitas-light-green-15); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.25rem; }
+      .note strong { color: var(--sanitas-dark-green); }
+
+      .mono { margin: 0.6rem 0 0; padding: 0.5rem 0.75rem; background: var(--sanitas-warm-grey); border-radius: 6px; font-size: 0.85rem; color: var(--sanitas-grey-1); }
+      .mono .tag { display: inline-block; margin-right: 0.5rem; padding: 0.1rem 0.45rem; border-radius: 5px; background: var(--sanitas-dark-green); color: var(--sanitas-white); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; }
+
+      footer { border-top: 1px solid var(--sanitas-grey-3); color: var(--sanitas-grey-1); font-size: 0.85rem; padding: 1.5rem; text-align: center; }
+
+      @media (max-width: 600px) {
+        .hero { padding: 2.5rem 1.25rem 2rem; }
+        .steps > li { padding-left: 2.75rem; }
+      }
+
+      @media print {
+        body { font-size: 12px; }
+        .hero { background: none; padding: 1rem 0; }
+        .card, pre { box-shadow: none; }
+        pre { background: var(--sanitas-warm-grey); color: var(--sanitas-black); }
+        section { page-break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">AI Unified Process Marketplace</p>
+        <h1>How to Use AIUP</h1>
+        <p class="lead">
+          A guided walkthrough of the <strong>AI Unified Process</strong>: from a written vision to fully
+          implemented, tested code &mdash; with requirements at the centre at every step. This guide covers the
+          stack-agnostic <strong>core methodology</strong> and the <strong>Compose / Ktor / Exposed</strong>
+          implementation path.
+        </p>
+        <div class="pills">
+          <span class="pill">Inception</span>
+          <span class="pill">Elaboration</span>
+          <span class="pill">Construction</span>
+          <span class="pill hollow">Transition</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ───────────────────────── What is AIUP ───────────────────────── -->
+      <section>
+        <h2>What is the AI Unified Process?</h2>
+        <p>
+          AIUP is a disciplined, AI-assisted development methodology. Every project starts with a written vision,
+          proceeds through requirements, an entity model, and use case specifications, and <em>only then</em> enters
+          implementation. <strong>Nothing gets built without a use case. Nothing reaches production without tests
+          traceable to requirements.</strong>
+        </p>
+        <p>
+          This prevents the common failure mode of AI-assisted development: jumping straight to code from a vague
+          prompt, producing something that half-works and can't be maintained. The phases mirror the Rational Unified
+          Process &mdash; Inception, Elaboration, Construction, Transition &mdash; adapted for AI-driven workflows.
+        </p>
+        <div class="note">
+          <strong>The contract between steps is files.</strong> Each skill picks up where the previous one left off
+          using the artifacts on disk (<code>docs/vision.md</code>, <code>docs/requirements.html</code>,
+          <code>docs/entity_model.md</code>, <code>docs/use_cases/UC-*.md</code>, <code>docs/architecture.html</code>,
+          <code>docs/REFERENCE.md</code>). You can inspect or hand-edit any of them before continuing.
+        </div>
+      </section>
+
+      <!-- ───────────────────────── Prerequisites & install ───────────────────────── -->
+      <section>
+        <h2>Prerequisites &amp; Installation</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>You need</h3>
+            <p>Claude Code running in your project, and a <code>docs/vision.md</code> describing the product vision,
+              target users, and goals. The richer the vision, the better the generated requirements.</p>
+          </div>
+          <div class="card">
+            <h3>For the Compose stack</h3>
+            <p>A Kotlin Multiplatform Gradle project with Compose Multiplatform, Ktor, Exposed, Flyway, and PostgreSQL
+              conventions already present or planned.</p>
+          </div>
+        </div>
+        <p style="margin-top:1.25rem">Install the core methodology plus the Compose/Ktor/Exposed stack plugin from the
+          <code>sanitas-llm-plugins</code> marketplace &mdash; the one that ships the Compose/Ktor/Exposed
+          plugin:</p>
+<pre><code>claude plugin marketplace add "git@gitlab.sanet17.ch:base/sanitas-llm-plugins.git#master"
+claude plugin install aiup-core@sanitas-llm-plugins
+claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
+        <p>Verify by running <code>/requirements</code> &mdash; if Claude reads <code>docs/vision.md</code> and proposes
+          a requirements catalog, the skills are installed correctly.</p>
+      </section>
+
+      <!-- ───────────────────────── Workflow map ───────────────────────── -->
+      <section>
+        <h2>The Workflow at a Glance</h2>
+        <p>The forward path, left to right. Each arrow consumes the previous step's artifact.</p>
+<pre><code>Inception        Elaboration                          Construction
+─────────────    ──────────────────────────────────   ──────────────────────────────
+/requirements →  /entity-model → /use-case-diagram  →  /use-case-spec → /architecture
+                                                     ↘  /reference
+                                                     ↘  /flyway-migration
+                                                     ↘  /implement
+                                                     ↘  /implement-ui
+                                                     ↘  /ktor-test
+                                                     ↘  /compose-test
+                                                     ↘  /implementation-status</code></pre>
+        <div class="note">
+          <strong>Inheriting a legacy codebase?</strong> Start with <code>/reverse-engineer</code> &mdash; it walks the
+          existing code, configuration, and schema and produces the same use case diagram, use case specs, and entity
+          model the forward workflow would have, giving you a documented baseline.
+        </div>
+      </section>
+
+      <!-- ───────────────────────── Part 1: Core ───────────────────────── -->
+      <section>
+        <h2>Part 1 &mdash; Core Methodology <span class="badge core">aiup-core</span></h2>
+        <p>Stack-agnostic. These steps run identically regardless of your implementation toolchain.</p>
+        <ol class="steps">
+          <li>
+            <h3><code>/requirements</code> — Requirements catalog</h3>
+            <p>Reads <code>docs/vision.md</code> and writes <code>docs/requirements.html</code> as three separate
+              tables: functional requirements (user stories, <code>FR-001</code>…), non-functional requirements
+              (measurable quality attributes, <code>NFR-001</code>…), and constraints (<code>CON-001</code>…). Each
+              gets a stable ID and a status. Review before continuing.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/requirements payments-service</code> &rarr; writes <code>payments-service/docs/requirements.html</code></p>
+          </li>
+          <li>
+            <h3><code>/entity-model</code> — Entity model</h3>
+            <p>Reads the requirements and writes <code>docs/entity_model.md</code> with a Mermaid ER diagram plus one
+              attribute table per entity (data type, length/precision, validation rules). Approve before moving on.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/entity-model in payments-service</code> &rarr; writes <code>payments-service/docs/entity_model.md</code></p>
+          </li>
+          <li>
+            <h3><code>/use-case-diagram</code> — Use case diagram</h3>
+            <p>Identifies actors and use cases, writing a Mermaid diagram into <code>docs/requirements.html</code>. Each
+              use case gets a stable ID (<code>UC-001</code>…) tracing back to one or more functional requirements.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/use-case-diagram in payments-service</code> &rarr; updates the diagram in <code>payments-service/docs/requirements.html</code></p>
+          </li>
+          <li>
+            <h3><code>/use-case-spec UC-001</code> — Use case specification</h3>
+            <p>Writes one detailed document per use case under <code>docs/use_cases/</code>: actors, stakeholders,
+              trigger, preconditions, main success scenario (numbered steps), alternative flows, postconditions, and
+              business rules. Pass several IDs at once: <code>/use-case-spec UC-001 UC-002 UC-003</code>. One use case
+              per file &mdash; never bundled.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/use-case-spec UC-001 in payments-service</code> &rarr; writes <code>payments-service/docs/use_cases/UC-001-*.md</code></p>
+          </li>
+          <li>
+            <h3><code>/architecture</code> — Architecture documentation</h3>
+            <p>Creates or updates <code>docs/architecture.html</code> covering context, structure, layering, data flow,
+              ADRs, tech stack, scaling, failure modes, security, observability, deployment, and cross-cutting concerns
+              &mdash; with embedded Mermaid diagrams where they clarify structure.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/architecture payments-service</code> &rarr; writes <code>payments-service/docs/architecture.html</code></p>
+          </li>
+          <li>
+            <h3><code>/reference</code> — Project reference</h3>
+            <p>Creates or updates <code>docs/REFERENCE.md</code>: repository layout, authoritative docs, commands,
+              module boundaries, domain vocabulary, integrations, testing strategy, and operational notes. Links to
+              canonical docs rather than duplicating them, and marks gaps as <em>Not documented yet</em>.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/reference payments-service</code> &rarr; writes <code>payments-service/docs/REFERENCE.md</code></p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ───────────────────────── Part 2: Compose construction ───────────────────────── -->
+      <section>
+        <h2>Part 2 &mdash; Implementation: Compose / Ktor / Exposed <span class="badge stack">aiup-compose-ktor-exposed</span></h2>
+        <p>
+          The Construction phase for a Kotlin Multiplatform project. The core <code>/implement</code> dispatcher
+          inspects your build files and delegates to this stack automatically. Run each step per use case ID.
+        </p>
+        <ol class="steps">
+          <li>
+            <h3><code>/flyway-migration</code> — PostgreSQL migrations</h3>
+            <p>Reads <code>docs/entity_model.md</code> and existing migrations and writes versioned Flyway scripts
+              (<code>V001__create_*.sql</code>…) under the discovered migration directory (typically
+              <code>src/main/resources/db/migration</code>). Uses <code>BIGSERIAL</code> primary keys, explicit
+              constraints, indexes, <code>TIMESTAMPTZ</code> audit columns, and <code>updated_at</code> triggers &mdash;
+              all kept compatible with Exposed <code>Table("…")</code> definitions. Won't drop tables without
+              confirmation.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/flyway-migration in payments-service</code> &rarr; writes <code>payments-service/src/main/resources/db/migration/V*.sql</code></p>
+          </li>
+          <li>
+            <h3><code>/implement UC-001</code> — Backend implementation</h3>
+            <p>Reads the use case spec, entity model, migrations, and existing conventions, then implements a
+              vertical slice: shared <code>@Serializable</code> DTOs in the KMP module, domain models, repository ports,
+              Exposed tables/repositories, application services, Ktor route functions, and Koin DI wiring. Runs focused
+              build checks after each layer. Does <strong>not</strong> write tests.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/implement UC-001 in payments-service</code> &rarr; backend + shared DTOs land under <code>payments-service/</code> modules</p>
+          </li>
+          <li>
+            <h3><code>/implement-ui UC-001</code> — Compose UI</h3>
+            <p>Implements Compose Multiplatform UI: typed suspend functions on the Ktor API client with JSON
+              serialization, plain ViewModel classes holding Compose state with constructor-injected dependencies, and
+              small accessible Material 3 composables wired into the existing navigation &mdash; no global service
+              locators.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/implement-ui UC-001 in payments-service</code> &rarr; Compose screen, ViewModel &amp; API client under the service's UI module</p>
+          </li>
+          <li>
+            <h3><code>/ktor-test UC-001</code> — Backend tests</h3>
+            <p>Generates Ktor <code>testApplication</code> route tests with fake repository/service ports covering
+              success, validation, not-found, auth, and key alternative flows. Adds <code>MockEngine</code> tests for
+              outbound clients, extends <code>ArchitectureTest.kt</code> for new modules, and adds Testcontainers +
+              Flyway integration tests under <code>src/testContainerTest</code> when persistence behaviour needs a real
+              PostgreSQL.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/ktor-test UC-001 in payments-service</code> &rarr; tests under <code>payments-service/src/test/…</code> and <code>src/testContainerTest</code></p>
+          </li>
+          <li>
+            <h3><code>/compose-test UC-001</code> — UI tests</h3>
+            <p>Generates UI-side tests in the lightest useful layer: Ktor <code>MockEngine</code> API-client tests in
+              <code>commonTest</code>, coroutine ViewModel tests with fakes and <code>runTest</code>, OIDC/PKCE or
+              <code>expect</code>/<code>actual</code> platform tests in <code>jvmTest</code>/<code>wasmJsTest</code>, and
+              Compose semantics tests with <code>runComposeUiTest</code> when dependencies exist. No real network calls.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/compose-test UC-001 in payments-service</code> &rarr; UI tests under the service's <code>commonTest</code> / matching source set</p>
+          </li>
+          <li>
+            <h3><code>/implementation-status UC-001</code> — Status &amp; traceability</h3>
+            <p>Reads the entity model, use case specs, source, tests, and migrations and maintains an entity
+              implementation-status matrix (Entity / DB Table / Domain Model / Repository / Service / Migrations). Writes
+              per-use-case HTML status pages under <code>docs/use_cases/</code>, cross-referencing migration version
+              ranges and code/test evidence. Reports missing or partial implementation honestly.</p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/implementation-status UC-001 in payments-service</code> &rarr; writes <code>payments-service/docs/use_cases/UC-001-implementation-status.html</code></p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ───────────────────────── Skills reference table ───────────────────────── -->
+      <section>
+        <h2>Skills Reference</h2>
+        <table>
+          <thead>
+            <tr><th>Skill</th><th>Phase</th><th>Input</th><th>Output</th><th>Plugin</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/requirements</code></td><td>Inception</td><td><code>docs/vision.md</code></td><td><code>docs/requirements.html</code></td><td>core</td></tr>
+            <tr><td><code>/entity-model</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>docs/entity_model.md</code></td><td>core</td></tr>
+            <tr><td><code>/use-case-diagram</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>requirements.html</code> (diagram)</td><td>core</td></tr>
+            <tr><td><code>/use-case-spec</code></td><td>Construction</td><td>UC ID(s)</td><td><code>docs/use_cases/UC-*.md</code></td><td>core</td></tr>
+            <tr><td><code>/architecture</code></td><td>Construction</td><td>docs + source tree</td><td><code>docs/architecture.html</code></td><td>core</td></tr>
+            <tr><td><code>/reference</code></td><td>Any</td><td>docs + source tree</td><td><code>docs/REFERENCE.md</code></td><td>core</td></tr>
+            <tr><td><code>/reverse-engineer</code></td><td>Any</td><td>existing source</td><td>requirements + specs + model</td><td>core</td></tr>
+            <tr><td><code>/flyway-migration</code></td><td>Construction</td><td><code>entity_model.md</code></td><td><code>V*.sql</code></td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/implement</code></td><td>Construction</td><td>UC ID</td><td>Ktor backend + shared DTOs</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/implement-ui</code></td><td>Construction</td><td>UC ID</td><td>Compose screen + ViewModel + client</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/ktor-test</code></td><td>Construction</td><td>UC ID</td><td>backend tests</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/compose-test</code></td><td>Construction</td><td>UC ID</td><td>UI / ViewModel tests</td><td>compose-ktor-exposed</td></tr>
+            <tr><td><code>/implementation-status</code></td><td>Construction</td><td>UC ID(s)</td><td>status matrix + HTML pages</td><td>compose-ktor-exposed</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ───────────────────────── Monorepo ───────────────────────── -->
+      <section>
+        <h2>Working in a Monorepo</h2>
+        <p>
+          Every skill resolves its output path before writing. In a multi-service repository each service keeps its
+          <strong>own</strong> <code>docs/</code> tree, so requirements, entity models, use case specs, architecture,
+          and reference docs never collide across services.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>How scope is resolved</h3>
+            <p>A skill writes to <code>&lt;service&gt;/docs/…</code> when <strong>a service/module is named</strong> as
+              an argument <em>or</em> the current working directory is <strong>inside a monorepo service</strong>.
+              Otherwise it falls back to the repo-root <code>docs/…</code>.</p>
+          </div>
+          <div class="card">
+            <h3>How a monorepo is detected</h3>
+            <p>From <code>mise.toml</code> (a <code>monorepo_root</code> key or namespaced tasks), multiple sibling
+              <code>settings.gradle.kts</code> builds, or existing service-local <code>docs/</code> directories.</p>
+          </div>
+          <div class="card">
+            <h3>Target a service from the root</h3>
+            <p>You don't need to <code>cd</code>. <strong>Name the service in the prompt</strong> and the skill writes
+              to <code>&lt;service&gt;/docs/…</code> &mdash; this works for <em>every</em> skill, including the ones
+              whose argument is a use case ID: <code>/implement UC-001 in payments-service</code>. An explicit name
+              takes precedence over the current directory.</p>
+          </div>
+        </div>
+        <div class="note" style="margin-top:1.25rem">
+          <strong>Naming vs. <code>cd</code> — same result.</strong> Two equivalent ways to scope any run:
+          name the service from the repo root (<code>/use-case-spec UC-001 in payments-service</code>), or
+          <code>cd payments-service</code> first and run the skill plain (<code>/use-case-spec UC-001</code>).
+          The per-step examples below use the root-naming form so you can drive the whole chain without leaving
+          the repo root.
+        </div>
+        <p style="margin-top:1.25rem">
+          Construction-phase skills follow the same resolution: <code>/flyway-migration</code> writes under the
+          scoped service's migration directory, and <code>/implementation-status</code> writes its HTML pages under
+          <code>&lt;service&gt;/docs/use_cases/</code>. Run the whole chain from inside the service you're working on
+          and every artifact lands in the right place.
+        </p>
+        <div class="note">
+          <strong>Mixed layouts are fine.</strong> If both a root-level and a service-level <code>docs/REFERENCE.md</code>
+          exist, the <code>/reference</code> skill updates the one matching the current scope and links to the other.
+          Keep the root <code>docs/</code> for cross-cutting context and the service <code>docs/</code> for that
+          service's requirements-to-tests chain.
+        </div>
+<pre><code>monorepo-root/
+├── docs/                          ← cross-cutting / portfolio docs (optional)
+├── mise.toml                      ← monorepo_root marker
+├── payments-service/
+│   ├── docs/                      ← scoped artifacts for this service
+│   │   ├── requirements.html
+│   │   ├── entity_model.md
+│   │   ├── architecture.html
+│   │   ├── REFERENCE.md
+│   │   └── use_cases/
+│   │       ├── UC-001-charge-card.md
+│   │       └── UC-001-implementation-status.html
+│   ├── src/…
+│   └── settings.gradle.kts
+└── billing-service/
+    ├── docs/…                     ← its own independent chain
+    └── settings.gradle.kts</code></pre>
+      </section>
+
+      <!-- ───────────────────────── Resulting tree ───────────────────────── -->
+      <section>
+        <h2>What Your Project Looks Like</h2>
+        <p>After running the full workflow, the artifacts settle into a predictable tree:</p>
+<pre><code>your-project/
+├── docs/
+│   ├── vision.md                 ← you maintain this
+│   ├── requirements.html         ← /requirements + /use-case-diagram
+│   ├── entity_model.md           ← /entity-model, updated by /implementation-status
+│   ├── architecture.html         ← /architecture
+│   ├── REFERENCE.md              ← /reference
+│   └── use_cases/                ← /use-case-spec + /implementation-status
+│       ├── UC-001-create-reservation.md
+│       └── UC-001-implementation-status.html
+├── src/
+│   ├── main/
+│   │   ├── kotlin/               ← /implement, /implement-ui
+│   │   └── resources/db/migration/  ← /flyway-migration  (V001__*.sql …)
+│   └── test/                     ← /ktor-test, /compose-test
+└── CLAUDE.md</code></pre>
+      </section>
+
+      <!-- ───────────────────────── Tips ───────────────────────── -->
+      <section>
+        <h2>Tips for Success</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Maintain traceability</h3>
+            <p>Every entity maps to a functional requirement; every use case traces to one or more FRs; every test
+              references a UC ID. Keep the stable IDs the skills produce.</p>
+          </div>
+          <div class="card">
+            <h3>Edit between steps</h3>
+            <p>The intermediate documents are designed to be reviewed and corrected by hand. Don't skip the review.</p>
+          </div>
+          <div class="card">
+            <h3>Re-run upstream skills</h3>
+            <p>When a requirement changes, re-run <code>/entity-model</code> and <code>/use-case-diagram</code> so
+              downstream artifacts stay consistent. Re-running is cheap; fixing drift later is not.</p>
+          </div>
+          <div class="card">
+            <h3>Commit <code>docs/</code></h3>
+            <p>The vision, requirements, entity model, and specs are your project's institutional memory &mdash; they
+              explain <em>why</em> the code is the way it is.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      AI Unified Process Marketplace · Core + Compose/Ktor/Exposed ·
+      <a href="https://unifiedprocess.ai">unifiedprocess.ai</a>
+    </footer>
+  </body>
+</html>

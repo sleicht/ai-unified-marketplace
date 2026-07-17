@@ -35,12 +35,12 @@ Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |
 end
 
 legacy_files = skill_files +
-  Dir.glob(ROOT.join("aiup-core/evals/scenario-{2,3,4,5,6,7,8,9,10,11}/**/*.{md,json,html}")) +
+  Dir.glob(ROOT.join("aiup-core/evals/scenario-{2,3,4,5,6,7,8,9,10,11}/**/*.{md,json}")) +
   [ROOT.join("aiup-core/README.md").to_s]
 legacy_files.each do |file|
   next unless File.file?(file)
   text = File.read(file)
-  if text.match?(/requirements\.md|use_cases\.puml/)
+  if text.match?(/requirements\.html|architecture\.html|implementation-status\.html|use_cases\.puml/)
     errors << "legacy artefact name: #{Pathname.new(file).relative_path_from(ROOT)}"
   end
 end
@@ -50,17 +50,14 @@ skill_files.each do |file|
   errors << "capability-specific wording: #{Pathname.new(file).relative_path_from(ROOT)}" if File.read(file).match?(neutrality)
 end
 
-Dir.glob(ROOT.join("aiup-core/evals/**/*.html")).each do |file|
+Dir.glob(ROOT.join("aiup-core/evals/scenario-{6,7,8,9,10,11}/**/requirements.md")).each do |file|
   text = File.read(file)
-  ids = text.scan(/\bid=["']([^"']+)["']/).flatten
-  duplicates = ids.tally.select { |_id, count| count > 1 }.keys
-  errors << "duplicate HTML IDs #{duplicates.join(', ')}: #{Pathname.new(file).relative_path_from(ROOT)}" unless duplicates.empty?
-
-  next unless File.basename(file) == "requirements.html"
-  %w[functional-requirements non-functional-requirements constraints use-case-diagram].each do |id|
-    count = ids.count(id)
-    errors << "requirements section ##{id} count #{count}: #{Pathname.new(file).relative_path_from(ROOT)}" unless count == 1
+  ["Functional Requirements", "Non-Functional Requirements", "Constraints", "Use Case Diagram"].each do |heading|
+    count = text.scan(/^## #{Regexp.escape(heading)}\s*$/).length
+    errors << "requirements heading #{heading.inspect} count #{count}: #{Pathname.new(file).relative_path_from(ROOT)}" unless count == 1
   end
+  mermaid_count = text.scan(/^```mermaid\s*$/).length
+  errors << "requirements Mermaid fence count #{mermaid_count}: #{Pathname.new(file).relative_path_from(ROOT)}" unless mermaid_count == 1
 end
 
 Dir.glob(ROOT.join("aiup-compose-ktor-exposed/skills/*/evals/evals.json")).each do |file|

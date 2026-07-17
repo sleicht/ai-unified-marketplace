@@ -26,7 +26,7 @@ The document contains an ER diagram and attribute tables. Treat it as the schema
 ## Path and Language Resolution
 
 - Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
-- Read `requirements.html` from the same resolved docs directory.
+- Read `requirements.md` from the same resolved docs directory.
 - Detect existing docs language when updating; default to English for new docs.
 - If the Compose/Ktor/Exposed stack plugin is installed, its `implementation-status` skill may add an implementation-status matrix to this file after code/migrations exist.
 

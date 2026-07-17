@@ -6,10 +6,6 @@ cd "$repo_root"
 
 ruby scripts/validate-skills.rb
 
-while IFS= read -r -d '' file; do
-  xmllint --html --noout "$file" 2>/dev/null
-done < <(fd --type f --extension html . aiup-core/evals --print0)
-
 compile_dir="$(mktemp -d)"
 trap 'rm -rf "$compile_dir"' EXIT
 kotlinc aiup-compose-ktor-exposed/evals/compile/ApiClientConstruction.kt -d "$compile_dir/example.jar"
@@ -41,4 +37,4 @@ if rg -n 'partnerContractNumber|PatientListItem' \
   exit 1
 fi
 
-echo "HTML and Kotlin example validation passed"
+echo "Documentation and Kotlin example validation passed"

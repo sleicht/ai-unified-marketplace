@@ -4,19 +4,20 @@ Use these formats after discovery and aggregation. They mirror the forward AIUP 
 
 ## Contents
 
-- Requirements HTML and use-case diagram
+- Requirements Markdown and use-case diagram
 - Use-case specification files
 - Entity model
 - Type and relationship mapping
 
-## Requirements HTML and Use-Case Diagram
+## Requirements Markdown and Use-Case Diagram
 
-Create or update `docs/requirements.html` as valid semantic HTML. Preserve existing requirements content. The diagram has one stable location:
+Create or update `docs/requirements.md`. Preserve existing requirements content. The diagram has one stable location:
 
-```html
-<section id="use-case-diagram">
-  <h2>Use Case Diagram</h2>
-  <pre class="mermaid">graph LR
+````markdown
+## Use Case Diagram
+
+```mermaid
+graph LR
     customer(("Customer"))
     admin(("Administrator"))
 
@@ -27,18 +28,25 @@ Create or update `docs/requirements.html` as valid semantic HTML. Preserve exist
 
     customer --> UC001
     admin --> UC002
-  </pre>
-</section>
 ```
+````
 
-Keep exactly one element with `id="use-case-diagram"` and one `<pre class="mermaid">` inside it. Connect every actor and use case. Do not create a separate diagram file.
+Keep exactly one `## Use Case Diagram` heading and one fenced `mermaid` block below it. Connect every actor and use case. Do not create a separate diagram file.
 
 When no prior requirements catalog exists, create minimal provenance sections before the diagram:
 
-```html
-<section id="functional-requirements"><h2>Functional Requirements</h2><p>Recovered from existing behaviour; see use-case specifications.</p></section>
-<section id="non-functional-requirements"><h2>Non-Functional Requirements</h2><p>Not recovered unless directly evidenced by code or configuration.</p></section>
-<section id="constraints"><h2>Constraints</h2><p>Not recovered unless directly evidenced by the repository.</p></section>
+```markdown
+## Functional Requirements
+
+Recovered from existing behaviour; see use-case specifications.
+
+## Non-Functional Requirements
+
+Not recovered unless directly evidenced by code or configuration.
+
+## Constraints
+
+Not recovered unless directly evidenced by the repository.
 ```
 
 ## Use-Case Specification Files

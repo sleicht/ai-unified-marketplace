@@ -48,7 +48,7 @@ Keep sections empty only when the information is genuinely not discoverable; in 
 Read only what is needed to ground the reference:
 
 - Existing `REFERENCE.md`, `README.md`, `CLAUDE.md`, and files under `docs/`
-- AIUP artifacts: `docs/requirements.html`, `docs/entity_model.md`, `docs/use_cases/`, `docs/architecture.html`
+- AIUP artifacts: `docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases/`, `docs/architecture.md`
 - Build and task files: `mise.toml`, `Justfile`, `Makefile`, Gradle/Maven/npm config, CI files
 - Source tree layout and package/module names
 - Existing tests and architecture tests

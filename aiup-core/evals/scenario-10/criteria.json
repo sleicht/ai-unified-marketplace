@@ -2,7 +2,7 @@
   "context": "Tests architecture output path, required sections, evidence grounding, Mermaid use, and explicit gaps.",
   "type": "weighted_checklist",
   "checklist": [
-    {"name": "Output", "description": "docs/architecture.html exists and is valid semantic HTML", "max_score": 10},
+    {"name": "Output", "description": "docs/architecture.md exists and uses valid structured Markdown", "max_score": 10},
     {"name": "Required sections", "description": "All 12 required architecture sections appear in order", "max_score": 25},
     {"name": "Grounded stack", "description": "Ktor, Exposed, PostgreSQL, and module claims cite evidence present in inputs", "max_score": 15},
     {"name": "No invention", "description": "No cloud, queue, cache, security control, or observability implementation is claimed without evidence", "max_score": 15},

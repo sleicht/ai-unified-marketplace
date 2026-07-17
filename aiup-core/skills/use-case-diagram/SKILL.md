@@ -13,18 +13,18 @@ description: >
 
 ## Instructions
 
-Create or update the Mermaid use case diagram embedded in the resolved `requirements.html` based on the requirements catalog. Update only the `<pre class="mermaid">` inside `<section id="use-case-diagram">`; preserve the rest of the document.
+Create or update the Mermaid use case diagram embedded in the resolved `requirements.md` based on the requirements catalog. Update only the fenced `mermaid` block directly under `## Use Case Diagram`; preserve the rest of the document.
 
 ## DO NOT
 
 - Create diagrams without reading the requirements first
 - Use non-standard Mermaid syntax
 - Include implementation details in use case names
-- Create a second `use-case-diagram` section or Mermaid block
+- Create a second `Use Case Diagram` section or Mermaid block
 
 ## Path Resolution
 
-If a service/module is in scope or cwd is inside a monorepo service, read and update `<service>/docs/requirements.html`; otherwise use `docs/requirements.html`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
+If a service/module is in scope or cwd is inside a monorepo service, read and update `<service>/docs/requirements.md`; otherwise use `docs/requirements.md`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
 
 ## Template
 
@@ -53,14 +53,14 @@ graph LR
 
 ## Workflow
 
-1. Resolve docs path: `<service>/docs/requirements.html` for a scoped monorepo service, otherwise `docs/requirements.html`.
+1. Resolve docs path: `<service>/docs/requirements.md` for a scoped monorepo service, otherwise `docs/requirements.md`.
 2. Read the requirements catalog.
-3. Locate the single `<section id="use-case-diagram">` and its `<pre class="mermaid">`. Create that stable section before `</main>` only if it is absent.
+3. Locate `## Use Case Diagram` and its fenced `mermaid` block. Append that stable section only if it is absent.
 4. Identify actors and use cases from requirements.
 5. Replace only the Mermaid text inside that stable section.
 6. Validate the diagram:
-    - Each use case traces to at least one functional requirement in `requirements.html`
+    - Each use case traces to at least one functional requirement in `requirements.md`
     - All actors are connected to at least one use case
     - Use case IDs follow the UC-{3-digit} convention
     - Mermaid syntax is valid
-    - Exactly one element has `id="use-case-diagram"`
+    - Exactly one `## Use Case Diagram` heading and one fenced `mermaid` block exist

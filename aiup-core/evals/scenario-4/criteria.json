@@ -4,7 +4,7 @@
   "checklist": [
     {
       "name": "All three artifacts",
-      "description": "All three artifact types are present: docs/requirements.html, at least one docs/use_cases/UC-XXX-*.md file, and docs/entity_model.md",
+      "description": "All three artifact types are present: docs/requirements.md, at least one docs/use_cases/UC-XXX-*.md file, and docs/entity_model.md",
       "max_score": 10
     },
     {
@@ -24,7 +24,7 @@
     },
     {
       "name": "Canonical Mermaid section",
-      "description": "docs/requirements.html contains exactly one section id=\"use-case-diagram\" with one pre class=\"mermaid\" using graph LR",
+      "description": "docs/requirements.md contains exactly one ## Use Case Diagram heading with one fenced mermaid block using graph LR",
       "max_score": 8
     },
     {

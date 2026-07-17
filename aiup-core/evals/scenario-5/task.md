@@ -12,7 +12,7 @@ The codebase is in the `inputs/` directory. It contains a `pom.xml`, Spring Secu
 
 Reverse-engineer the ArtisanShop codebase into the three AIUP artifacts:
 
-1. `docs/requirements.html` — requirements page with the Mermaid use case diagram in the stable `use-case-diagram` section
+1. `docs/requirements.md` — requirements document with the Mermaid use case diagram in the stable `Use Case Diagram` section
 2. `docs/use_cases/` — one specification file per use case (e.g. `UC-001-place-order.md`)
 3. `docs/entity_model.md` — entity model with Mermaid ER diagram and attribute tables
 
@@ -29,7 +29,7 @@ Produce the `docs/PLAN.md` file first, then generate the three AIUP artifacts.
 All output files go under `docs/`:
 
 - `docs/PLAN.md` — clustering plan (controller list, feature groups, excluded tables)
-- `docs/requirements.html` — canonical requirements page and Mermaid diagram
+- `docs/requirements.md` — canonical requirements document and Mermaid diagram
 - `docs/use_cases/UC-XXX-short-name.md` — one file per use case (kebab-case filenames)
 - `docs/entity_model.md` — entity model
 

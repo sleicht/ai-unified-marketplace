@@ -83,7 +83,7 @@ Skills follow the AI Unified Process phases: Inception, Elaboration, Constructio
 | Elaboration  | `/use-case-diagram`   | Generate Mermaid use case diagrams                                   |
 | Construction | `/use-case-spec`      | Write detailed use case specifications                               |
 | Any          | `/reverse-engineer`   | Recover use case diagram, use case specs, and entity model from code |
-| Elaboration  | `/architecture`       | Create or update minimal architecture.html documentation             |
+| Elaboration  | `/architecture`       | Create or update architecture.md documentation                       |
 | Any          | `/reference`          | Create or update docs/REFERENCE.md for project context               |
 | Construction | `/implement`          | Stack-agnostic dispatcher — detects the stack and delegates          |
 | Construction | `/test`               | Stack-agnostic dispatcher — server-side unit / integration tests     |

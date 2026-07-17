@@ -2,7 +2,7 @@
 name: reverse-engineer
 description: >
   Reverse-engineers an existing software project into AI Unified Process
-  artifacts: requirements.html with an embedded Mermaid use case diagram,
+  artifacts: requirements.md with an embedded Mermaid use case diagram,
   per-use-case specifications, and an entity model with a Mermaid ER diagram.
   Use when the user asks to "reverse engineer this codebase", "extract use
   cases from existing code", "document the system we already have", "generate
@@ -17,7 +17,7 @@ description: >
 
 Recover business intent from code and produce the same canonical artifacts as the forward skills:
 
-1. `docs/requirements.html` with its Mermaid diagram under `#use-case-diagram`
+1. `docs/requirements.md` with its Mermaid diagram under `## Use Case Diagram`
 2. `docs/use_cases/UC-XXX-name.md`, one specification per use case
 3. `docs/entity_model.md` with Mermaid ER relationships and attribute tables
 
@@ -88,9 +88,9 @@ Map implementation types and validation into the AIUP vocabulary defined in the 
 
 ### 6. Write and cross-validate
 
-Write `requirements.html`, the scoped use-case files, and `entity_model.md` using the bundled contract. Then verify:
+Write `requirements.md`, the scoped use-case files, and `entity_model.md` using the bundled contract. Then verify:
 
-- exactly one `#use-case-diagram` section and Mermaid block exist;
+- exactly one `## Use Case Diagram` section and fenced Mermaid block exist;
 - every diagram actor is primary actor for at least one spec;
 - every diagram `UC-XXX` has exactly one correctly named spec;
 - every alternative flow references a main step and ends or resumes explicitly;

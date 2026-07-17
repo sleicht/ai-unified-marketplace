@@ -2,7 +2,7 @@
 name: implementation-status
 description: >
   Produces and maintains implementation-status documentation for Compose/Ktor/Exposed projects: entity coverage matrices,
-  migration version ranges, and per-use-case minimal HTML status pages. Use when the user asks for implementation status,
+  migration version ranges, and per-use-case Markdown status pages. Use when the user asks for implementation status,
   coverage, traceability, "what is implemented", entity-to-code mapping, migration coverage, or status pages for use cases.
 ---
 
@@ -15,9 +15,9 @@ Create or update implementation-status artefacts for the scope named or implied 
 Outputs:
 
 - `entity_model.md` implementation-status matrix, appended or refreshed near the relevant entities
-- `<service>/docs/use_cases/UC-XXX-implementation-status.html` for each requested use case in a monorepo service, otherwise `docs/use_cases/UC-XXX-implementation-status.html`
+- `<service>/docs/use_cases/UC-XXX-implementation-status.md` for each requested use case in a monorepo service, otherwise `docs/use_cases/UC-XXX-implementation-status.md`
 
-Use minimal HTML for status pages: semantic headings, one small table per section, inline Mermaid only when it clarifies traceability, and no brand-specific CSS.
+Use Markdown for status pages: semantic headings, one small table per section, and fenced Mermaid only when it clarifies traceability.
 
 ## Path Resolution
 
@@ -59,12 +59,12 @@ Column rules:
 
 Use conservative statuses: `Missing`, `Partial`, `Implemented`, `Not needed`, or exact symbol names. Do not infer implementation from names alone; open the files.
 
-## Per-Use-Case HTML
+## Per-Use-Case Markdown
 
 For each requested use case, create/update:
 
 ```text
-<docs>/use_cases/UC-XXX-implementation-status.html
+<docs>/use_cases/UC-XXX-implementation-status.md
 ```
 
 Required sections:
@@ -94,7 +94,7 @@ Required sections:
 5. Read Flyway migration filenames and SQL headers, especially `-- Source:` comments when present.
 6. Search source files for entity model classes, repositories, services, routes, DTOs, and tests.
 7. Update the entity implementation-status matrix in `entity_model.md`.
-8. Write or refresh per-use-case implementation-status HTML.
+8. Write or refresh per-use-case implementation-status Markdown.
 9. Verify links point to existing relative paths and matrix columns line up.
 10. If commands are needed, use detected command shape: `mise run //<stack>:<task>` from monorepo root, bare `mise run <task>` inside a stack, or Gradle fallback.
 

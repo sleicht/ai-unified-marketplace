@@ -215,13 +215,13 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
 ├── payments-service/
 │   ├── docs/
 │   │   ├── vision.md
-│   │   ├── requirements.html
+│   │   ├── requirements.md
 │   │   ├── entity_model.md
-│   │   ├── architecture.html
+│   │   ├── architecture.md
 │   │   ├── REFERENCE.md
 │   │   └── use_cases/
 │   │       ├── UC-001-charge-card.md
-│   │       └── UC-001-implementation-status.html
+│   │       └── UC-001-implementation-status.md
 │   └── settings.gradle.kts
 └── billing-service/
     ├── docs/…
@@ -257,11 +257,11 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
         <ol class="steps">
           <li>
             <h3><code>/requirements</code> — Requirements catalog</h3>
-            <p>Reads <code>docs/vision.md</code> and writes <code>docs/requirements.html</code> as three separate
+            <p>Reads <code>docs/vision.md</code> and writes <code>docs/requirements.md</code> as three separate
               tables: functional requirements (user stories, <code>FR-001</code>…), non-functional requirements
               (measurable quality attributes, <code>NFR-001</code>…), and constraints (<code>C-001</code>…). It also
               creates the stable HTML slot later updated by <code>/use-case-diagram</code>. Review before continuing.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/requirements payments-service</code> &rarr; writes <code>payments-service/docs/requirements.html</code></p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/requirements payments-service</code> &rarr; writes <code>payments-service/docs/requirements.md</code></p>
           </li>
           <li>
             <h3><code>/entity-model</code> — Entity model</h3>
@@ -272,9 +272,9 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
           <li>
             <h3><code>/use-case-diagram</code> — Use case diagram</h3>
             <p>Identifies actors and use cases, then updates the single Mermaid block under
-              <code>#use-case-diagram</code> in <code>requirements.html</code>. Each use case gets a stable ID
+              <code>## Use Case Diagram</code> in <code>requirements.md</code>. Each use case gets a stable ID
               (<code>UC-001</code>…) tracing back to one or more functional requirements.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/use-case-diagram in payments-service</code> &rarr; updates the diagram in <code>payments-service/docs/requirements.html</code></p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/use-case-diagram in payments-service</code> &rarr; updates the diagram in <code>payments-service/docs/requirements.md</code></p>
           </li>
           <li>
             <h3><code>/use-case-spec UC-001</code> — Use case specification</h3>
@@ -286,10 +286,10 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
           </li>
           <li>
             <h3><code>/architecture</code> — Architecture documentation</h3>
-            <p>Creates or updates <code>docs/architecture.html</code> covering context, structure, layering, data flow,
+            <p>Creates or updates <code>docs/architecture.md</code> covering context, structure, layering, data flow,
               ADRs, tech stack, scaling, failure modes, security, observability, deployment, and cross-cutting concerns
               &mdash; with embedded Mermaid diagrams where they clarify structure.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/architecture payments-service</code> &rarr; writes <code>payments-service/docs/architecture.html</code></p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/architecture payments-service</code> &rarr; writes <code>payments-service/docs/architecture.md</code></p>
           </li>
           <li>
             <h3><code>/reference</code> — Project reference</h3>
@@ -301,7 +301,7 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
           <li>
             <h3><code>/reverse-engineer</code> — Existing-code baseline</h3>
             <p>An alternative starting point for an inherited service. It reads source, build configuration, APIs,
-              tests, and schema evidence, then creates the canonical <code>requirements.html</code>, one
+              tests, and schema evidence, then creates the canonical <code>requirements.md</code>, one
               <code>UC-*.md</code> specification per use case, and <code>entity_model.md</code>. Review the recovered
               business intent before continuing with implementation.</p>
             <p class="mono"><span class="tag">monorepo</span> <code>/reverse-engineer payments-service</code> &rarr; writes the baseline under <code>payments-service/docs/</code></p>
@@ -364,9 +364,9 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
             <h3><code>/implementation-status UC-001</code> — Status &amp; traceability</h3>
             <p>Reads the entity model, use case specs, source, tests, and migrations and maintains an entity
               implementation-status matrix (Entity / DB Table / Domain Model / Repository / Service / Migrations). Writes
-              per-use-case HTML status pages under <code>docs/use_cases/</code>, cross-referencing migration version
+              per-use-case Markdown status pages under <code>docs/use_cases/</code>, cross-referencing migration version
               ranges and code/test evidence. Reports missing or partial implementation honestly.</p>
-            <p class="mono"><span class="tag">monorepo</span> <code>/implementation-status UC-001 in payments-service</code> &rarr; writes <code>payments-service/docs/use_cases/UC-001-implementation-status.html</code></p>
+            <p class="mono"><span class="tag">monorepo</span> <code>/implementation-status UC-001 in payments-service</code> &rarr; writes <code>payments-service/docs/use_cases/UC-001-implementation-status.md</code></p>
           </li>
         </ol>
       </section>
@@ -379,11 +379,11 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
             <tr><th>Skill</th><th>Phase</th><th>Input</th><th>Output</th><th>Plugin</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>/requirements</code></td><td>Inception</td><td><code>&lt;service&gt;/docs/vision.md</code></td><td><code>requirements.html</code></td><td>core</td></tr>
-            <tr><td><code>/entity-model</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td><code>entity_model.md</code></td><td>core</td></tr>
-            <tr><td><code>/use-case-diagram</code></td><td>Elaboration</td><td><code>requirements.html</code></td><td>same file's Mermaid slot</td><td>core</td></tr>
+            <tr><td><code>/requirements</code></td><td>Inception</td><td><code>&lt;service&gt;/docs/vision.md</code></td><td><code>requirements.md</code></td><td>core</td></tr>
+            <tr><td><code>/entity-model</code></td><td>Elaboration</td><td><code>requirements.md</code></td><td><code>entity_model.md</code></td><td>core</td></tr>
+            <tr><td><code>/use-case-diagram</code></td><td>Elaboration</td><td><code>requirements.md</code></td><td>same file's Mermaid slot</td><td>core</td></tr>
             <tr><td><code>/use-case-spec</code></td><td>Construction</td><td>UC ID(s) + requirements</td><td><code>docs/use_cases/UC-*.md</code></td><td>core</td></tr>
-            <tr><td><code>/architecture</code></td><td>Construction</td><td>service docs + source</td><td><code>architecture.html</code></td><td>core</td></tr>
+            <tr><td><code>/architecture</code></td><td>Construction</td><td>service docs + source</td><td><code>architecture.md</code></td><td>core</td></tr>
             <tr><td><code>/reference</code></td><td>Any</td><td>service docs + source</td><td><code>REFERENCE.md</code></td><td>core</td></tr>
             <tr><td><code>/reverse-engineer</code></td><td>Any</td><td>existing service source</td><td>requirements + specs + model</td><td>core</td></tr>
             <tr><td><code>/flyway-migration</code></td><td>Construction</td><td>model + use cases</td><td>server module <code>V*.sql</code></td><td>compose-ktor-exposed</td></tr>
@@ -403,13 +403,13 @@ claude plugin install aiup-compose-ktor-exposed@sanitas-llm-plugins</code></pre>
 <pre><code>payments-service/
 ├── docs/
 │   ├── vision.md                 ← you maintain this
-│   ├── requirements.html         ← /requirements + /use-case-diagram
+│   ├── requirements.md           ← /requirements + /use-case-diagram
 │   ├── entity_model.md           ← /entity-model, updated by /implementation-status
-│   ├── architecture.html         ← /architecture
+│   ├── architecture.md           ← /architecture
 │   ├── REFERENCE.md              ← /reference
 │   └── use_cases/                ← /use-case-spec + /implementation-status
 │       ├── UC-001-create-reservation.md
-│       └── UC-001-implementation-status.html
+│       └── UC-001-implementation-status.md
 ├── &lt;server-module&gt;/src/
 │   ├── main/
 │   │   ├── kotlin/               ← /implement

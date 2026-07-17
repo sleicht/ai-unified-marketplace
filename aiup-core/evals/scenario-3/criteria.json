@@ -4,7 +4,7 @@
   "checklist": [
     {
       "name": "Ambiguous NFR rewritten",
-      "description": "The vague goal 'user-friendly and fast' is not carried into docs/requirements.html as-is; at least one NFR has a specific threshold",
+      "description": "The vague goal 'user-friendly and fast' is not carried into docs/requirements.md as-is; at least one NFR has a specific threshold",
       "max_score": 12
     },
     {
@@ -24,7 +24,7 @@
     },
     {
       "name": "User story format",
-      "description": "Every row in the Functional Requirements HTML table uses 'As a [role], I want [goal] so that [benefit]'",
+      "description": "Every row in the Functional Requirements Markdown table uses 'As a [role], I want [goal] so that [benefit]'",
       "max_score": 10
     },
     {
@@ -34,7 +34,7 @@
     },
     {
       "name": "Separate requirement tables",
-      "description": "docs/requirements.html has three distinct semantic HTML tables in the stable requirement sections",
+      "description": "docs/requirements.md has three distinct Markdown tables under the stable requirement headings",
       "max_score": 8
     },
     {
@@ -44,12 +44,12 @@
     },
     {
       "name": "No duplicate IDs",
-      "description": "Every requirement ID across all three tables in docs/requirements.html is unique",
+      "description": "Every requirement ID across all three tables in docs/requirements.md is unique",
       "max_score": 6
     },
     {
       "name": "Status column filled",
-      "description": "Every row in every table in docs/requirements.html has a non-empty Status value",
+      "description": "Every row in every table in docs/requirements.md has a non-empty Status value",
       "max_score": 6
     },
     {

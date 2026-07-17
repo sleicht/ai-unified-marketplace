@@ -4,9 +4,9 @@
     {
       "id": 1,
       "prompt": "Update status for UC-014. Migration V006 creates claim, Claim domain model and route exist, only the repository interface exists, and there are no tests.",
-      "expected_output": "Conservative matrix and UC HTML status page showing partial repository and missing tests with exact evidence.",
+      "expected_output": "Conservative matrix and UC Markdown status page showing partial repository and missing tests with exact evidence.",
       "files": [],
-      "expectations": ["Marks repository Partial", "Reports V006 exactly", "Does not infer tests", "Creates semantic UC-014 implementation-status HTML"]
+      "expectations": ["Marks repository Partial", "Reports V006 exactly", "Does not infer tests", "Creates structured UC-014 implementation-status Markdown"]
     },
     {
       "id": 2,

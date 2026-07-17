@@ -1,5 +1,5 @@
 {
-  "context": "Tests preservation and extension of the stable Mermaid diagram in requirements.html.",
+  "context": "Tests preservation and extension of the stable Mermaid diagram in requirements.md.",
   "type": "weighted_checklist",
   "checklist": [
     {"name": "Existing use cases", "description": "UC-001 Create Project, UC-002 Assign Team Members, and UC-003 Update Task Status are preserved", "max_score": 18},
@@ -7,7 +7,7 @@
     {"name": "Audit use cases", "description": "Viewing and exporting the audit log are both represented", "max_score": 15},
     {"name": "Auditor actor", "description": "Auditor is declared and connected to both new use cases", "max_score": 15},
     {"name": "Existing actors", "description": "Project Manager and Team Member remain connected", "max_score": 10},
-    {"name": "Stable section", "description": "Exactly one #use-case-diagram section and one Mermaid pre remain", "max_score": 10},
+    {"name": "Stable section", "description": "Exactly one ## Use Case Diagram section and one fenced Mermaid block remain", "max_score": 10},
     {"name": "Requirements preserved", "description": "All original functional, non-functional, and constraint rows remain", "max_score": 10},
     {"name": "Business names", "description": "No HTTP, endpoint, class, method, or SQL details appear in use case names", "max_score": 10}
   ]

@@ -42,12 +42,12 @@ Inception          Elaboration                          Construction
 The skills produce and consume a set of artifacts under `docs/`:
 
 - `docs/vision.md` — *input you provide* (product vision, target users, goals)
-- `docs/requirements.html` — requirements catalog and embedded Mermaid use case diagram
+- `docs/requirements.md` — requirements catalog and embedded Mermaid use case diagram
 - `docs/entity_model.md`
 - `docs/use_cases/UC-*.md`
 
 **Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
-schema and produces the same `docs/requirements.html`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
+schema and produces the same `docs/requirements.md`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
 forward workflow would have produced, giving you a documented baseline to work from.
 
 ## MCP servers

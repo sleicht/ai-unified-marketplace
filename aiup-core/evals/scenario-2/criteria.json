@@ -1,10 +1,10 @@
 {
-  "context": "The agent reads docs/vision.md and writes canonical docs/requirements.html containing functional requirements, non-functional requirements, constraints, and the stable Mermaid diagram slot in semantic HTML.",
+  "context": "The agent reads docs/vision.md and writes canonical docs/requirements.md containing functional requirements, non-functional requirements, constraints, and the stable fenced Mermaid diagram slot.",
   "type": "weighted_checklist",
   "checklist": [
     {
       "name": "Correct output path",
-      "description": "The requirements catalog is written to docs/requirements.html (not Markdown or any other path)",
+      "description": "The requirements catalog is written to docs/requirements.md",
       "max_score": 5
     },
     {
@@ -19,7 +19,7 @@
     },
     {
       "name": "Separate tables per type",
-      "description": "Functional requirements, non-functional requirements, and constraints each appear in their own semantic HTML table — FR, NFR, and C rows are not mixed",
+      "description": "Functional requirements, non-functional requirements, and constraints each appear in their own Markdown table — FR, NFR, and C rows are not mixed",
       "max_score": 8
     },
     {
@@ -54,7 +54,7 @@
     },
     {
       "name": "Stable Mermaid section",
-      "description": "The document contains exactly one section with id=\"use-case-diagram\" and one pre element with class=\"mermaid\" inside it",
+      "description": "The document contains exactly one ## Use Case Diagram heading and one fenced mermaid block below it",
       "max_score": 5
     },
     {

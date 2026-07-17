@@ -1,9 +1,9 @@
 {
-  "context": "Tests whether the agent updates only the canonical Mermaid use-case section in requirements.html while preserving semantic requirement tables.",
+  "context": "Tests whether the agent updates only the canonical fenced Mermaid use-case section in requirements.md while preserving requirement tables.",
   "type": "weighted_checklist",
   "checklist": [
-    {"name": "Canonical output", "description": "docs/requirements.html remains the output and no separate diagram file is created", "max_score": 10},
-    {"name": "Stable section", "description": "Exactly one section has id=\"use-case-diagram\" and contains exactly one pre class=\"mermaid\"", "max_score": 10},
+    {"name": "Canonical output", "description": "docs/requirements.md remains the output and no separate diagram file is created", "max_score": 10},
+    {"name": "Stable section", "description": "Exactly one ## Use Case Diagram heading contains exactly one fenced mermaid block", "max_score": 10},
     {"name": "Mermaid graph", "description": "The Mermaid source uses graph LR and valid node/edge syntax", "max_score": 10},
     {"name": "UC IDs", "description": "Every use case label follows UC-{3-digit}", "max_score": 10},
     {"name": "System subgraph", "description": "Use cases appear inside a Library Management System subgraph", "max_score": 10},

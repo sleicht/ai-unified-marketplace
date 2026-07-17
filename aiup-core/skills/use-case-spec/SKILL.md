@@ -22,7 +22,7 @@ One file per use case, written to `docs/use_cases/UC-XXX-<kebab-case-name>.md` w
 
 - `UC-XXX` is the use case's three-digit ID (e.g. `UC-001`).
 - `<kebab-case-name>` is the use case **name taken verbatim from the Mermaid use
-  case diagram** inside `requirements.html`, lowercased with spaces replaced by hyphens.
+  case diagram** inside `requirements.md`, lowercased with spaces replaced by hyphens.
   Do not paraphrase, expand, or reorder the words.
 
 | Use case name in diagram | Correct filename                     |
@@ -68,8 +68,8 @@ see [references/example.md](references/example.md) for a complete worked example
    `docs/`. Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced
    tasks) or multiple sibling `settings.gradle.kts` builds.
 2. Detect the existing docs language or user-requested language; default to English.
-3. Read `requirements.html` at the resolved docs path, including the Mermaid
-   diagram under `<section id="use-case-diagram">`.
+3. Read `requirements.md` at the resolved docs path, including the fenced Mermaid
+   diagram under `## Use Case Diagram`.
 4. Determine the set of use cases to document (one, several, or all in the
    diagram — see "Scope" above). Take each `UC-XXX` ID and name from the diagram.
 5. Track progress with the available planning/task mechanism when useful — one item per use case file.

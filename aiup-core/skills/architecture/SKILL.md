@@ -1,7 +1,7 @@
 ---
 name: architecture
 description: >
-  Creates or updates minimal architecture.html documentation for a service: context, high-level structure, internal
+  Creates or updates minimal architecture.md documentation for a service: context, high-level structure, internal
   layering, data flow, decisions/ADRs, tech stack, scaling, failure modes, security, observability, deployment, and
   cross-cutting concerns. Use when the user asks for architecture documentation, architecture diagrams, ADR summaries,
   system design docs, C4-style overviews, or service architecture pages.
@@ -11,14 +11,14 @@ description: >
 
 ## Instructions
 
-Create or update `architecture.html` for the system, service, or module named in the user's request. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/architecture.html`; otherwise write `docs/architecture.html`.
+Create or update `architecture.md` for the system, service, or module named in the user's request. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/architecture.md`; otherwise write `docs/architecture.md`.
 
-Output minimal, portable HTML: semantic headings, numbered sections, simple tables, embedded Mermaid where useful, and no brand-specific CSS or external assets.
+Output portable Markdown: semantic headings, numbered sections, simple tables, and fenced Mermaid diagrams where useful.
 
 ## Path and Language Resolution
 
 - Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
-- Read docs from the same resolved docs directory: `vision.md`, `requirements.html`, `entity_model.md`, and `use_cases/` when present.
+- Read docs from the same resolved docs directory: `vision.md`, `requirements.md`, `entity_model.md`, and `use_cases/` when present.
 - Detect existing docs language when updating; default to English for new docs.
 - For German docs, translate generic headings but keep domain terms, package names, module names, and technology names unchanged.
 
@@ -41,14 +41,16 @@ Use these numbered sections unless an existing architecture page already has an 
 
 Include inline ADR subsections when decisions are known:
 
-```html
-<section id="adr-001">
-  <h3>ADR-001: Decision title</h3>
-  <p><strong>Status:</strong> Proposed | Accepted | Superseded | Rejected</p>
-  <p><strong>Context:</strong> ...</p>
-  <p><strong>Decision:</strong> ...</p>
-  <p><strong>Consequences:</strong> ...</p>
-</section>
+```markdown
+### ADR-001: Decision title
+
+**Status:** Proposed | Accepted | Superseded | Rejected
+
+**Context:** ...
+
+**Decision:** ...
+
+**Consequences:** ...
 ```
 
 ## Mermaid Guidance
@@ -76,7 +78,7 @@ Read the project before writing stack details:
 
 ## DO NOT
 
-- Add brand styling, company-specific colours, or external CSS
+- Add brand styling or presentation scaffolding
 - Hardcode a stack the project does not use
 - Claim a quality attribute is implemented without source/config evidence
 - Create a separate ADR skill or ADR workflow; inline only the decisions needed for the architecture page
@@ -85,15 +87,15 @@ Read the project before writing stack details:
 ## Workflow
 
 1. Resolve docs path and service/module scope.
-2. Read existing `architecture.html` if present.
-3. Read `vision.md`, `requirements.html`, `entity_model.md`, and relevant use cases when present.
+2. Read existing `architecture.md` if present.
+3. Read `vision.md`, `requirements.md`, `entity_model.md`, and relevant use cases when present.
 4. Inspect build/module layout and dependency files for actual tech stack.
 5. Inspect source package layout and architecture tests for layering.
 6. Inspect deployment/observability/security config when present.
-7. Write or update the numbered minimal HTML sections.
+7. Write or update the numbered Markdown sections.
 8. Embed Mermaid diagrams only where they add useful structure.
 9. Validate links and referenced files exist.
-10. If rendering is available, open the HTML in a browser for a quick sanity check.
+10. Validate heading order, links, tables, and Mermaid fences.
 
 ## Output Contract
 

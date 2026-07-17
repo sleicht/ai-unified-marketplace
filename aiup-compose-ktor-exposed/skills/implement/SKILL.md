@@ -193,7 +193,7 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 ## Workflow
 
 1. Read the use case spec from the resolved docs path (`<service>/docs/use_cases/` in a monorepo service, otherwise `docs/use_cases/`).
-2. Read the resolved `entity_model.md` and `architecture.html` when present.
+2. Read the resolved `entity_model.md` and `architecture.md` when present.
 3. Read `references/backend-style.md`.
 4. Discover the owning stack/service, then discover module names from that stack's `settings.gradle.kts` and package names from existing files.
 5. Read version and toolchain constraints from `gradle/libs.versions.toml` or existing build files before editing dependencies.

@@ -291,6 +291,27 @@ When changing shell scripts, also run:
 shellcheck -S warning scripts/*.sh
 ```
 
+## Upstream integration baseline
+
+This fork was reconciled against `upstream/main` at commit
+`557900e18ee0deebac3b7f07871a94a7678e9fe3` (`refactor: move author
+instructions out of templates into SKILL.md files`). The shared ancestor used
+for that review was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`.
+
+Future upstream reviews should compare from the recorded upstream commit, not
+merge `upstream/main` wholesale:
+
+```sh
+git fetch upstream main
+git log --oneline 557900e18ee0deebac3b7f07871a94a7678e9fe3..upstream/main
+git diff --stat 557900e18ee0deebac3b7f07871a94a7678e9fe3..upstream/main
+```
+
+Selectively port improvements that preserve this fork's retained core and
+Compose plugins, Mermaid/monorepo documentation contract, internal-Git
+distribution, and stable `aiup` names. After each completed reconciliation,
+replace the recorded upstream commit above with the reviewed upstream tip.
+
 ## Release
 
 1. Make the coherent plugin change and update its executable validation where needed.

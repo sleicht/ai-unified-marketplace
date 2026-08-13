@@ -1,1033 +1,306 @@
 # AI Unified Process Marketplace
 
-A collection of Claude Code plugins that automate the [**AI Unified Process (AIUP)**](https://unifiedprocess.ai) — a
-structured workflow for taking a software project from raw vision to fully implemented, tested code, with requirements
-at the center at every step.
+Internal Claude Code marketplace for the AI Unified Process methodology and the Sanitas Kotlin Multiplatform stack.
 
-## What is the AI Unified Process?
+The repository deliberately contains two plugins:
 
-AI Unified Process is a disciplined AI-assisted development methodology where every project starts with a written
-vision, proceeds
-through requirements, an entity model, and use case specifications, and only then enters implementation. Nothing gets
-built without a use case. Nothing reaches production without tests traceable to requirements.
+| Plugin | Version | Scope |
+|---|---:|---|
+| `aiup-core` | `103.6.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` | `1.5.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
 
-This prevents the common failure mode of AI-assisted development: jumping straight to code from a vague prompt,
-producing something that half-works and can't be maintained.
+## Distribution contract
 
-The methodology is based on the phases of
-the [Rational Unified Process](https://en.wikipedia.org/wiki/Rational_unified_process) — **Inception, Elaboration,
-Construction, Transition** — but adapted for AI-driven workflows.
+Sanitas distributes this marketplace directly from internal Git:
 
-## AIUP Workflow
+- `.claude-plugin/marketplace.json` lists the retained plugins;
+- each `.claude-plugin/plugin.json` is the plugin metadata and sole version authority;
+- each retained `.mcp.json` configures optional MCP servers loaded with that plugin;
+- `skills/`, rules, and references are shipped from the same Git revision.
 
-```
+Tessl manifests and publishing are intentionally not retained because no retained Sanitas delivery or validation tool consumes them. GitHub Actions generation/publishing is likewise outside this distribution model.
+
+## Workflow
+
+```text
 Inception          Elaboration                          Construction
-─────────────────  ──────────────────────────────────   ────────────────────────────────────────────────
-/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  /architecture
-                                                                          ↘  /reference
-                                                                          ↘  /flyway-migration
-                                                                          ↘  /implement
-                                                                          ↘  /implement-ui  (Compose/Ktor)
-                                                                          ↘  /browserless-test or /ktor-test
-                                                                          ↘  /playwright-test or /compose-test
-                                                                          ↘  /implementation-status (Compose/Ktor)
+─────────────────  ──────────────────────────────────   ─────────────────────────────────────────
+/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec
+                                                        ↘ /architecture
+                                                        ↘ /reference
+                                                        ↘ /flyway-migration
+                                                        ↘ /implement
+                                                        ↘ /implement-ui
+                                                        ↘ /ktor-test
+                                                        ↘ /compose-test
+                                                        ↘ /implementation-status
 ```
 
-Each skill picks up where the previous one left off using the files produced along the way (`docs/vision.md`,
-`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.md`, `docs/REFERENCE.md`). At any point you can
-inspect or manually edit these files before continuing.
+Skills exchange portable Markdown artefacts:
 
-**Inheriting a legacy codebase?** Start with `/reverse-engineer` — it walks the existing code, configuration, and
-schema and produces the same mermaid diagram in `docs/requirements.md`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
-forward workflow would have produced, giving you a documented baseline to work from.
+- `docs/vision.md`
+- `docs/requirements.md`, including the canonical Mermaid use-case diagram
+- `docs/entity_model.md`, including the Mermaid ER diagram
+- `docs/use_cases/UC-*.md`
+- `docs/architecture.md`
+- `docs/REFERENCE.md`
 
-|                               | Inception       | Elaboration                            | Construction                                                                                                          | Transition |
-|-------------------------------|-----------------|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------|------------|
-| **aiup-core**                 | `/requirements` | `/entity-model`<br>`/use-case-diagram` | `/use-case-spec`<br>`/architecture` <br>`/reference`                                                                  |            |
-| **aiup-vaadin-jooq**          |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/browserless-test`<br>`/playwright-test`                                      |            |
-| **aiup-compose-ktor-exposed** |                 |                                        | `/flyway-migration`<br>`/implement`<br>`/implement-ui`<br>`/ktor-test`<br>`/compose-test`<br>`/implementation-status` |            |
-
----
-
-## Prerequisites
-
-- [Claude Code](https://claude.ai/code) installed and running in your project
-- A `docs/vision.md` file at the root of your project describing the product vision, target users, and high-level
-  goals (the `/requirements` skill reads this file to derive your requirements catalog — the richer it is, the better
-  the results)
-- For the Vaadin/jOOQ plugin: a Maven or Gradle project with Vaadin and jOOQ already on the classpath
-- For the Compose/Ktor/Exposed plugin: a Kotlin Multiplatform Gradle project with Compose Multiplatform, Ktor, Exposed,
-  Flyway, and PostgreSQL conventions already present or planned
+In a monorepo, skills resolve these paths under the selected service's `docs/` directory.
 
 ## Installation
 
-```
-/plugin marketplace add ai-unified-process/marketplace
+Add this internal Git repository as a Claude Code marketplace, then install core and the Compose stack plugin:
+
+```text
+/plugin marketplace add <internal-git-repository-url>
 /plugin install aiup-core
-/plugin install aiup-vaadin-jooq              # Vaadin/jOOQ projects
-/plugin install aiup-compose-ktor-exposed    # Compose/Ktor/Exposed projects
+/plugin install aiup-compose-ktor-exposed
 ```
 
-Install `aiup-core` plus the stack plugin you need. Use `aiup-vaadin-jooq` for Vaadin/jOOQ projects and
-`aiup-compose-ktor-exposed` for Kotlin Multiplatform / Compose / Ktor / Exposed projects. Install only `aiup-core` if
-using a different tech stack — the methodology skills are stack-agnostic.
+Install only `aiup-core` when a project uses another technology stack.
 
-### Verify installation
+Start Claude Code in the target project and invoke `/requirements` or ask it to write requirements. A successful installation discovers the core skill and reads the scoped `docs/vision.md`.
 
-Start Claude Code in your project and run:
+## Skills
 
-```
-/requirements
-```
-
-If Claude begins reading `docs/vision.md` and proposing a requirements catalog, the skills are installed correctly.
-
----
-
-## Using AIUP with other AI coding tools
-
-The AI Unified Process is a methodology, not a Claude-only product. Agent Skills (`SKILL.md`) is now an open standard,
-and the same skill folders in this marketplace work natively — with auto-triggering by description — in **OpenAI Codex
-CLI**, **Cursor**, **GitHub Copilot**, **Gemini CLI**, and **OpenCode**. Pair them with the
-[MCP](https://modelcontextprotocol.io) server configs and the whole workflow runs unchanged.
-
-### Install via Tessl (any agent)
-
-[Tessl](https://tessl.io) is an agent-agnostic package manager and registry for skills: it installs versioned skills and
-wires the MCP servers into the correct per-agent directory for whichever coding agent it detects. All three plugins are
-published to the Tessl registry as `aiup/aiup-core`, `aiup/aiup-vaadin-jooq`, and `aiup/aiup-compose-ktor-exposed`, so
-this is the simplest way to adopt the workflow outside Claude Code — no manual cloning or per-tool MCP translation.
-
-```sh
-# one-time: configure your agent(s) — creates a tessl.json manifest at the repo root
-tessl init --agent claude-code          # or: cursor, gemini, codex, copilot, copilot-vscode, agents
-                                        # (repeat --agent to set up several at once)
-
-# install the plugins from the registry (latest, or pin @version)
-tessl install aiup/aiup-core
-tessl install aiup/aiup-vaadin-jooq     # omit on non-Vaadin stacks
-tessl install aiup/aiup-compose-ktor-exposed  # omit on non-Compose/Ktor stacks
-```
-
-Installed plugins land in `.tessl/plugins/` and are tracked in `tessl.json`, so versions are pinned and reproducible
-across your team. New versions are published automatically on every change by
-[`.github/workflows/publish-tessl.yml`](.github/workflows/publish-tessl.yml), so `tessl install` always resolves the
-latest release.
-
-**What transfers across agents:**
-
-- **Skills and methodology** — fully portable; every supported agent auto-triggers them by their `description`.
-- **MCP servers** — Tessl wires them into any agent that supports MCP. Most `aiup-vaadin-jooq` servers are HTTP (fine on
-  the agents listed above); a stdio-only client needs an HTTP↔stdio bridge (see [Caveats](#caveats)).
-- **Slash-command routing** — the dispatcher behavior (`/implement` → stack-specific skill) is a Claude Code idiom.
-  Other agents read the same Markdown but may not honor `/`-routing identically — invoke skills by intent instead
-  (say "implement UC-001" rather than relying on the dispatcher).
-
-### Portability at a glance
-
-| Component                                                  | Portable? | Notes                                                                                  |
-|------------------------------------------------------------|-----------|----------------------------------------------------------------------------------------|
-| `tessl install aiup/…`                                     | Yes       | Works on Claude Code, Cursor, Gemini, Codex, and Copilot — installs skills + MCP        |
-| MCP servers (`aiup-*/.mcp.json`)                           | Yes       | Standard MCP — reformat the config per host                                            |
-| `SKILL.md` skill folders (`aiup-*/skills/*/`)              | Yes       | Native support in Codex CLI, Cursor, Copilot, Gemini CLI, and OpenCode                 |
-| Auto-triggering by `description`                           | Yes       | All tools above match user intent against the YAML frontmatter `description`           |
-| Workflow methodology (vision → requirements → … → tests)   | Yes       | The whole point — tool-agnostic                                                        |
-| `/plugin marketplace add …` install                        | Partial   | Works in Claude Code and GitHub Copilot; elsewhere use Tessl or clone this repo        |
-
-### Manual adoption recipe (without Tessl)
-
-Prefer not to use Tessl? You can wire the skills in by hand:
-
-1. `git clone https://github.com/ai-unified-process/marketplace.git` next to your project (or add as a submodule).
-2. Make the skill folders visible to your tool — either copy `aiup-core/skills/*/`, `aiup-vaadin-jooq/skills/*/`,
-   and/or `aiup-compose-ktor-exposed/skills/*/` into your tool's skills directory, or symlink them
-   (e.g. `ln -s /path/to/marketplace/aiup-core/skills/requirements ~/.codex/skills/requirements`).
-3. Configure the MCP servers from `aiup-core/.mcp.json` plus the stack plugin you installed
-   (`aiup-vaadin-jooq/.mcp.json` or `aiup-compose-ktor-exposed/.mcp.json`) in your tool's MCP config file.
-4. Trigger skills the same way you would in Claude Code — say "write requirements" or invoke `/requirements`. The tool
-   matches your prompt against each skill's `description` and loads the matching `SKILL.md`. File outputs
-   (`docs/requirements.md`, `docs/entity_model.md`, `docs/use_cases/UC-*.md`, `docs/architecture.md`, `docs/REFERENCE.md`) are identical
-   regardless of tool, so the chain composes even if you mix tools across steps.
-
-### OpenAI Codex CLI
-
-- **Skills**: drop folders into `~/.codex/skills/` (user-global, default `$CODEX_HOME/skills`) or repo-local
-  `.agents/skills/`. Codex matches user prompts against each skill's `description` automatically; toggle per skill
-  with `allow_implicit_invocation`.
-- **MCP**: `~/.codex/config.toml` under `[mcp_servers.<name>]` blocks. Translate `aiup-vaadin-jooq/.mcp.json` like
-  this:
-
-```toml
-[mcp_servers.Vaadin]
-url = "https://mcp.vaadin.com/docs"
-
-[mcp_servers.playwright]
-command = "npx"
-args = ["@playwright/mcp@latest"]
-```
-
-See the [Codex skills docs](https://developers.openai.com/codex/skills) and the
-[Codex config reference](https://developers.openai.com/codex/config-reference) for the latest details.
-
-### Cursor
-
-- **Skills**: drop folders into project-local `.cursor/skills/` (Cursor 2.4+). Cursor matches against each skill's
-  `description` automatically. Note: there is no global skills directory yet — copy or symlink the marketplace skills
-  into each project.
-- **MCP**: project-level `.cursor/mcp.json` or global `~/.cursor/mcp.json` — uses `mcpServers` with the same shape
-  as Claude's `.mcp.json` (`url` for HTTP servers, `command` / `args` for stdio). Drop in the contents of
-  `aiup-vaadin-jooq/.mcp.json` directly.
-
-### GitHub Copilot
-
-- **Plugin marketplace**: Copilot understands Claude Code's marketplace commands directly, so you can install the
-  plugins the same way as in Claude Code — no manual skill copying or MCP translation:
-
-  ```
-  /plugin marketplace add ai-unified-process/marketplace
-  /plugin install aiup-core
-  /plugin install aiup-vaadin-jooq
-  ```
-
-  This pulls in the skills *and* the MCP server configs from each plugin's `.mcp.json`.
-- **Skills** (manual alternative): Copilot reads from `.github/skills/`, `.claude/skills/`, and `.agents/skills/` —
-  pick one. Available in Copilot for VS Code, Visual Studio 2026, and the cloud agent.
-- **MCP** (manual alternative): workspace-level `.vscode/mcp.json` (commit it for your team), or user-level via
-  *MCP: Open User Configuration*. Use `"type": "http"` for remote servers and `"command"` / `"args"` for stdio.
-
-```jsonc
-// .vscode/mcp.json
-{
-  "servers": {
-    "Vaadin": { "type": "http", "url": "https://mcp.vaadin.com/docs" },
-    "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
-  }
-}
-```
-
-### Gemini CLI
-
-- **Skills**: drop folders into `.gemini/skills/` (project) or `~/.gemini/skills/` (global). Gemini CLI matches
-  prompts against each skill's `description` automatically.
-- **MCP**: `~/.gemini/settings.json` `mcpServers` object — same shape as Claude's `.mcp.json`, so it is a near-direct
-  copy.
-
-### OpenCode
-
-- **Skills**: drop folders into project-local `.opencode/skills/` or global `~/.config/opencode/skills/`. OpenCode
-  also scans `.claude/skills/` and `.agents/skills/` (project and home directory), so skills already installed for
-  Claude Code — or via Tessl with `--agent claude-code` or `--agent agents` — are picked up without copying. Skills
-  are loaded on demand through OpenCode's built-in `skill` tool, matched against each skill's `description`; access
-  can be restricted per skill with `permission.skill` patterns in `opencode.json`.
-- **MCP**: `opencode.json` at the project root (or `~/.config/opencode/opencode.json` globally) under the `"mcp"`
-  key — use `"type": "remote"` with `url` for HTTP servers and `"type": "local"` with a `command` array for stdio.
-  Translate `aiup-vaadin-jooq/.mcp.json` like this:
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "Vaadin": { "type": "remote", "url": "https://mcp.vaadin.com/docs" },
-    "playwright": { "type": "local", "command": ["npx", "@playwright/mcp@latest"] }
-  }
-}
-```
-
-See the [OpenCode skills docs](https://opencode.ai/docs/skills/) and the
-[OpenCode MCP docs](https://opencode.ai/docs/mcp-servers/) for the latest details.
-
-### Caveats
-
-- **Argument passing** (`/use-case-spec UC-001`) works everywhere but the syntax varies — Codex, Gemini CLI,
-  and Cursor accept positional arguments after the skill name; in Copilot, pass the ID inline in the chat message
-  after invoking the skill; in OpenCode, skills are not slash commands — state the ID in your prompt
-  ("specify use case UC-001") and the agent loads the matching skill itself.
-- **HTTP MCP servers**: most stack-plugin documentation servers are HTTP. Every tool listed above supports HTTP MCP. If you use
-  a client that is stdio-only, you need an HTTP-to-stdio MCP bridge.
-- **Cursor has no global skills directory** — copy or symlink the marketplace skills into each project's
-  `.cursor/skills/`.
-- **Methodology stays the same**: the file artifacts (`docs/*.md`, `docs/use_cases/UC-*.md`, Flyway migrations) are
-  the contract between steps. As long as a step produces the right file, the next step works regardless of which
-  tool ran the previous one.
-
----
-
-## How to use?
-
-Here is a complete end-to-end example of building a hotel reservation system.
-
-### Step 1 — Generate the requirements catalog
-
-```
-/requirements
-```
-
-Claude reads `docs/vision.md`, identifies functional requirements (as user stories), non-functional requirements (
-measurable quality attributes), and constraints, then writes them into `docs/requirements.md` as three separate tables.
-Every requirement gets a stable ID (FR-001, NFR-001, CON-001) and a status. Review the catalog before continuing.
-
----
-
-### Step 2 — Design the entity model
-
-```
-/entity-model
-```
-
-Claude reads `docs/requirements.md`, identifies the domain entities and their relationships, then writes
-`docs/entity_model.md` with a Mermaid ER diagram and one attribute table per entity (data type, length/precision,
-validation rules). Approve the model before moving to use cases.
-
----
-
-### Step 3 — Draw the use case diagram
-
-```
-/use-case-diagram
-```
-
-Claude reads `docs/requirements.md`, identifies actors and use cases, then writes a Mermaid diagram in
-`docs/requirements.md`. Each use case gets a stable ID (UC-001, UC-002, …) that traces back to one or more functional
-requirements.
-
----
-
-### Step 4 — Specify the use cases
-
-```
-/use-case-spec UC-001
-/use-case-spec UC-001 UC-002 UC-003     # multiple at once
-```
-
-Claude writes a detailed specification per use case into `docs/use_cases/` covering actors, stakeholders, trigger,
-preconditions, the main success scenario as numbered steps, alternative flows for error conditions, postconditions, and
-business rules. Each spec is a single document — Claude will not bundle multiple use cases together.
-
----
-### Step 4a — Document architecture
-
-```
-/architecture
-```
-
-Claude creates or updates `docs/architecture.md` (or `<service>/docs/architecture.md` in a monorepo service) with a
-Markdown architecture document covering context, high-level structure, layering, data flow, decisions/ADRs, tech stack,
-scaling, failure modes, security, observability, deployment, and cross-cutting concerns.
-
----
-
-### Step 4b — Capture project reference
-
-```
-/reference
-```
-
-Claude creates or updates `docs/REFERENCE.md` (or `<service>/docs/REFERENCE.md` in a monorepo service) with concise project context: repository layout, authoritative docs, commands, architecture boundaries, domain vocabulary, integrations, testing strategy, and operational notes.
-
----
-
-
-### Step 5 — Create the database migrations
-
-```
-/flyway-migration
-```
-
-Claude reads `docs/entity_model.md` and writes versioned Flyway migrations (`V001__create_*.sql`, `V002__…`) into
-the stack's migration directory.
-
-- Vaadin/jOOQ projects use the existing Maven/Gradle layout and jOOQ-compatible SQL.
-- Compose/Ktor/Exposed projects use PostgreSQL/Flyway style with `BIGSERIAL` primary keys, explicit constraints,
-  indexes, `TIMESTAMPTZ` audit columns, `updated_at` triggers, and Exposed table compatibility.
-
----
-
-### Step 6 — Implement the use case
-
-```
-/implement UC-001
-```
-
-Claude reads the use case spec, the entity model, and existing code to learn your conventions, then implements the use
-case in the active stack plugin.
-
-- Vaadin/jOOQ: implements the data access layer with jOOQ and the UI with Vaadin.
-- Compose/Ktor/Exposed: implements backend code using shared DTOs, domain models, repository ports, Exposed
-  persistence, application services, Ktor routes, and Koin wiring.
-
-It compiles after each layer and stops on errors. It does **not** write tests — those have dedicated skills.
-
----
-
-### Step 7 — Implement Compose UI *(Compose/Ktor/Exposed only)*
-
-```
-/implement-ui UC-001
-```
-
-Claude implements Compose Multiplatform UI code for the use case: Ktor API client calls, plain ViewModel state,
-constructor-injected dependencies, small Material 3 composables, and shared DTO usage.
-
----
-
-### Step 8 — Write server-side unit tests
-
-```
-/browserless-test UC-001   # Vaadin/jOOQ
-/ktor-test UC-001          # Compose/Ktor/Exposed
-```
-
-For Vaadin/jOOQ, Claude generates server-side Vaadin tests using the official **Vaadin Browserless** framework
-(`com.vaadin:browserless-test-junit6`) — no browser required. Tests cover navigation, component interactions, form
-validation, grid operations, and notifications. Test data is seeded via Flyway migrations under
-`src/test/resources/db/migration`; transaction boundaries are preserved (no `@Transactional` on tests).
-
-For Compose/Ktor/Exposed, Claude generates Ktor `testApplication` tests with fake ports, route auth checks, and
-Testcontainers/Flyway integration tests when persistence behavior needs a real PostgreSQL database.
-
-> Browserless Testing is free and open source under Apache 2.0 since Vaadin 25.1. It is the official successor to UI
-> Unit Testing (formerly part of the commercial TestBench) and replaces the community Karibu Testing library as the
-> recommended server-side testing approach. The legacy `/karibu-test` skill is still installed for existing projects
-> but is **no longer recommended** for new code — use `/browserless-test`.
-
----
-
-### Step 9 — Write UI / end-to-end tests
-
-```
-/playwright-test UC-001    # Vaadin/jOOQ
-/compose-test UC-001       # Compose/Ktor/Exposed
-```
-
-For Vaadin/jOOQ, Claude generates browser-based end-to-end tests against the running application (default:
-`http://localhost:8080`) using the Drama Finder library for type-safe, accessibility-first element wrappers. Tests are
-written black-box — they do not look at the implementation — and never use raw Playwright locators or `Thread.sleep()`.
-
-For Compose/Ktor/Exposed, Claude generates UI-side tests in the lightest useful layer: Ktor `MockEngine` API-client
-tests, coroutine ViewModel tests, and Compose Multiplatform semantics tests when screen-test dependencies exist.
-
----
-
-## Skills Reference
-
-### `/requirements` — Requirements Catalog
-
-**Purpose:** Turns a `docs/vision.md` document into a structured `docs/requirements.md` catalog with functional
-requirements, non-functional requirements, and constraints. In monorepos it writes under the scoped service's `docs/`.
-
-**Usage:**
-
-```
-/requirements
-```
-
-**What it does:**
-
-1. Reads `docs/vision.md` to understand product mission, users, and goals
-2. Extracts functional requirements as user stories (`As a [role], I want [goal] so that [benefit]`) with stable IDs (
-   FR-001, FR-002, …), priority, and status
-3. Extracts non-functional requirements as measurable quality attributes with category (Performance, Security,
-   Availability, …), priority, and status
-4. Extracts constraints (technical, regulatory, business) with stable IDs (CON-001, CON-002, …)
-5. Writes all three as separate tables in `docs/requirements.md` — never mixing requirement types in one table
-
-**Input:** `docs/vision.md`
-**Output:** `docs/requirements.md`
-**Plugin:** `aiup-core`
-
----
-
-### `/entity-model` — Entity Model
-
-**Purpose:** Designs the domain entity model with a Mermaid ER diagram and per-entity attribute tables.
-
-**Usage:**
-
-```
-/entity-model
-```
-
-**What it does:**
-
-1. Reads `docs/requirements.md` to identify the domain entities implied by the user stories
-2. Draws a Mermaid `erDiagram` showing entities and their relationships (cardinality, role names) — without listing
-   attributes inside the diagram
-3. Produces one attribute table per entity with columns for attribute name, description, data type, length/precision,
-   and validation rules (Primary Key, Sequence, NOT NULL, UNIQUE, foreign keys, check constraints)
-4. Writes the result to `docs/entity_model.md` or the scoped service's `docs/entity_model.md`
-
-**Input:** `docs/requirements.md`
-**Output:** `docs/entity_model.md`
-**Plugin:** `aiup-core`
-
----
-
-### `/use-case-diagram` — Use Case Diagram
-
-**Purpose:** Generates a Mermaid use case diagram showing actors, use cases, and their relationships derived from the
-requirements catalog.
-
-**Usage:**
-
-```
-/use-case-diagram
-```
-
-**What it does:**
-
-1. Reads `docs/requirements.md` to identify actors and the use cases they participate in
-2. Assigns stable IDs (UC-001, UC-002, …), each tracing to at least one functional requirement
-3. Writes a Mermaid diagram in `docs/requirements.md`
-   boundary
-4. Uses standard Mermaid syntax only — no implementation details in use case names
-
-**Input:** `docs/requirements.md`
-**Output:** `docs/requirements.md`
-**Plugin:** `aiup-core`
-
----
-
-### `/use-case-spec` — Use Case Specification
-
-**Purpose:** Writes detailed specifications for one or more use cases, each as a separate document under
-`docs/use_cases/`.
-
-**Usage:**
-
-```
-/use-case-spec UC-001
-/use-case-spec UC-001 UC-002 UC-003     # multiple use cases at once
-```
-
-**What it does:**
-
-1. Reads `docs/requirements.md` to scope the use case
-2. Writes one document per use case under `docs/use_cases/` using a fixed template covering: Overview (ID, name, primary
-   actor, goal, status), Stakeholders, Trigger, Preconditions, Main Success Scenario (numbered steps), Alternative Flows
-   (for error conditions), Postconditions, and Business Rules
-3. Keeps flow steps free of implementation details
-4. Refuses to bundle multiple use cases into a single document
-
-**Input:** Use case ID(s) as argument
-**Output:** `docs/use_cases/UC-XXX-*.md` (one file per use case)
-**Plugin:** `aiup-core`
-
----
-
-### `/architecture` — Architecture Documentation
-
-**Purpose:** Creates or updates an `architecture.md` document for the project or scoped service.
-
-**Usage:**
-
-```
-/architecture
-```
-
-**What it does:**
-
-1. Resolves `docs/architecture.md` or `<service>/docs/architecture.md` in monorepos
-2. Reads existing docs, build files, source layout, deployment config, and architecture tests when present
-3. Documents context, high-level structure, layering, data flow, ADRs, tech stack, scaling, failure modes, security, observability, deployment, and cross-cutting concerns
-4. Embeds Mermaid diagrams where they clarify structure or flow
-5. Uses minimal portable HTML with no brand-specific CSS
-
-**Input:** Existing project docs and source tree
-**Output:** `docs/architecture.md` or `<service>/docs/architecture.md`
-**Plugin:** `aiup-core`
-
----
-
-### `/reference` — Project Reference
-
-**Purpose:** Creates or updates `docs/REFERENCE.md` as a concise project reference for future AI agents and maintainers.
-
-**Usage:**
-
-```
-/reference
-```
-
-**What it does:**
-
-1. Resolves `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md` in monorepos
-2. Reads existing docs, AIUP artifacts, build/task files, and source layout
-3. Captures repository layout, authoritative documentation, commands, module boundaries, vocabulary, persistence, integrations, testing strategy, conventions, and operational notes
-4. Links to canonical docs instead of duplicating long requirements, use case specs, entity models, or architecture pages
-5. Marks missing but important information as `Not documented yet` rather than inventing facts
-
-**Input:** Existing project docs and source tree
-**Output:** `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md`
-**Plugin:** `aiup-core`
-
----
-
-
-### `/reverse-engineer` — Reverse Engineer Existing Project
-
-**Purpose:** Recovers AIUP artifacts (use case diagram, per-use-case specifications, entity model) from an existing
-codebase so legacy projects can join the AIUP workflow without rewriting documentation by hand.
-
-**Usage:**
-
-```
-/reverse-engineer
-```
-
-**What it does:**
-
-1. Detects the stack and locates entry points (controllers, routes, view classes), the data layer (ORM models or
-   schema migrations), and authentication/authorization configuration
-2. Identifies actors from role/authority definitions, authentication boundaries, and external system integrations
-3. Groups entry points by user goal — not one use case per HTTP endpoint — and assigns stable IDs (`UC-001`, `UC-002`, …)
-4. Writes a Mermaid use case diagram, one specification document per use case, and an entity model with a Mermaid ER
-   diagram, all in the exact formats produced by `/use-case-diagram`, `/use-case-spec`, and `/entity-model`
-5. Cross-validates that the three documents agree (every actor has a spec, every UC ID has a file, every entity
-   referenced in a spec exists in the model)
-6. Reports gaps honestly — endpoints it couldn't classify, use cases where the success scenario was hard to recover
-
-**Input:** Existing source tree
-**Output:** `docs/requirements.md`, `docs/use_cases/UC-XXX-*.md`, `docs/entity_model.md`
-**Plugin:** `aiup-core`
-
----
-
-### `/flyway-migration` — Flyway Database Migrations
-
-**Purpose:** Generates versioned Flyway migration scripts (`V*.sql`) that create the schema described in
-`docs/entity_model.md`.
-
-**Usage:**
-
-```
-/flyway-migration
-```
-
-**What it does:**
-
-1. Reads `docs/entity_model.md` and translates each entity into a `CREATE TABLE` statement
-2. Creates a `CREATE SEQUENCE` for every primary key (no auto-increment)
-3. Adds NOT NULL, UNIQUE, CHECK, and foreign key constraints from the entity model's validation rules
-4. Names files using the Flyway convention `V001__create_<table>_table.sql`, `V002__…`
-5. Writes scripts to `src/main/resources/db/migration`
-6. Will not drop existing tables without explicit confirmation
-
-**Input:** `docs/entity_model.md`
-**Output:** `src/main/resources/db/migration/V*.sql`
-**Plugin:** `aiup-vaadin-jooq`
-
----
-
-### `/flyway-migration` — Flyway Migrations for Compose/Ktor/Exposed
-
-**Purpose:** Generates PostgreSQL Flyway migrations compatible with Exposed table definitions.
-
-**Usage:**
-
-```
-/flyway-migration
-```
-
-**What it does:**
-
-1. Reads `docs/entity_model.md` and existing migrations to preserve naming and migration style
-2. Creates tables with `BIGSERIAL` primary keys, explicit constraints, indexes, and `TIMESTAMPTZ` audit columns
-3. Adds `updated_at` trigger functions when the project uses automatic update timestamps
-4. Keeps SQL compatible with Exposed `Table("...")`, `long("id").autoIncrement()`, and explicit mapper code
-5. Writes migrations under the discovered Flyway migration directory, typically `src/main/resources/db/migration`
-
-**Input:** `docs/entity_model.md`
-**Output:** `V*.sql` Flyway migrations
-**Plugin:** `aiup-compose-ktor-exposed`
-
----
-
-### `/implement` — Use Case Implementation
-
-**Purpose:** Implements a use case end-to-end using Vaadin for the UI layer and jOOQ for the data access layer.
-
-**Usage:**
-
-```
-/implement UC-001
-```
-
-**What it does:**
-
-1. Reads the use case specification from `docs/use_cases/` and the entity model from `docs/entity_model.md`
-2. Reads existing code first to match conventions before creating new files
-3. Implements the data access layer using jOOQ — verifies it compiles before continuing
-4. Implements the Vaadin view, wires it to the data access layer, and verifies the full implementation compiles
-5. Consults the Vaadin, jOOQ, and JavaDocs MCP servers for current API documentation
-6. Does **not** create test classes — use `/browserless-test` and `/playwright-test` for that
-
-**Input:** Use case ID as argument
-**Output:** Vaadin view + jOOQ data access classes
-**Plugin:** `aiup-vaadin-jooq`
-
----
-
-### `/implement` — Backend Implementation for Compose/Ktor/Exposed
-
-**Purpose:** Implements backend use cases using shared DTOs, Ktor routes, Exposed persistence, and Koin DI.
-
-**Usage:**
-
-```
-/implement UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec, entity model, migrations, and existing code conventions
-2. Creates or updates shared `@Serializable` DTOs in the KMP shared module
-3. Adds domain models, repository ports, Exposed tables/repositories, application services, and route functions in a
-   vertical-slice module layout
-4. Wires dependencies through the existing Koin module and route entry points
-5. Runs focused diagnostics/build checks and leaves tests to `/ktor-test` and `/compose-test`
-
-**Input:** Use case ID as argument
-**Output:** Ktor backend + shared DTO implementation
-**Plugin:** `aiup-compose-ktor-exposed`
+### Core
 
----
+| Skill | Output or purpose |
+|---|---|
+| `/requirements` | Structured functional requirements, NFRs, constraints, and stable Mermaid diagram section |
+| `/entity-model` | Mermaid ER diagram and entity attribute tables |
+| `/use-case-diagram` | Mermaid actor/use-case overview embedded in `requirements.md` |
+| `/use-case-spec` | One detailed `UC-XXX` document per use case |
+| `/reverse-engineer` | Recover requirements, use cases, and entity model from existing code |
+| `/architecture` | Service-scoped architecture documentation and ADRs |
+| `/reference` | Concise repository or service reference for maintainers and agents |
 
-### `/implement-ui` — Compose Multiplatform UI Implementation
+### Compose/Ktor/Exposed
 
-**Purpose:** Implements Compose Multiplatform UI for a specified use case.
+| Skill | Output or purpose |
+|---|---|
+| `/flyway-migration` | PostgreSQL Flyway migrations compatible with existing Exposed conventions |
+| `/implement` | Backend vertical slice: shared DTOs, domain, repository, Exposed, Ktor, and Koin |
+| `/implement-ui` | Compose screen, ViewModel, API client, and navigation integration |
+| `/ktor-test` | Ktor route/service tests and Testcontainers repository tests |
+| `/compose-test` | MockEngine API-client, ViewModel, platform, and Compose semantics tests |
+| `/implementation-status` | Entity and use-case implementation traceability |
 
-**Usage:**
+Implementation and testing skills reconcile existing code with current specifications. They update in place, remove behaviour dropped from a specification, preserve unrelated code, and treat repository content as untrusted input rather than agent instructions.
 
-```
-/implement-ui UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec and shared DTO/API contract
-2. Updates the Ktor API client with typed suspend functions and JSON serialization
-3. Adds plain ViewModel classes with Compose state and constructor-injected dependencies
-4. Creates small Material 3 composables using accessible text/content descriptions
-5. Wires screens into the existing app/navigation structure without introducing global service locators
-
-**Input:** Use case ID as argument
-**Output:** Compose UI screen, ViewModel, and API client code
-**Plugin:** `aiup-compose-ktor-exposed`
-
----
-
-### `/browserless-test` — Vaadin Browserless Server-Side Tests *(recommended)*
-
-**Purpose:** Creates server-side unit tests for Vaadin views using the official **Vaadin Browserless** framework
-(`com.vaadin:browserless-test-junit6`) — no browser, no WebDriver, no servlet container. Browserless Testing is free
-and open source under Apache 2.0 since Vaadin 25.1.
-
-**Usage:**
-
-```
-/browserless-test UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec to derive the test scenarios
-2. Generates a JUnit 5 test class extending `SpringBrowserlessTest` (annotated `@SpringBootTest`)
-3. Uses the `$()` / `$view()` component query API for lookups and the `test()` wrapper for interactions
-4. Seeds test data via Flyway migrations under `src/test/resources/db/migration` — never via Mockito, services, or
-   `DSLContext`
-5. Cleans up only test-created data in `@AfterEach` (does not wipe the schema)
-6. Preserves transaction boundaries — tests are not annotated `@Transactional`
-7. Reads component state through the component's Java API; reserves `test(...)` for actions
-
-**Input:** Use case ID as argument
-**Output:** Browserless test class under `src/test/java`
-**Plugin:** `aiup-vaadin-jooq`
-
----
-
-### `/karibu-test` — Karibu Server-Side Tests *(legacy — no longer recommended)*
-
-> **Use `/browserless-test` instead for new projects.** Since Vaadin 25.1 the official Browserless Testing framework
-> is free and open source under Apache 2.0, making the community Karibu Testing library redundant. This skill is
-> retained for existing codebases that already use Karibu.
-
-**Purpose:** Creates Karibu unit tests for Vaadin views — server-side tests that exercise the full Vaadin component
-tree without launching a browser.
-
-**Usage:**
-
-```
-/karibu-test UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec to derive the test scenarios
-2. Generates a JUnit 5 test class using Karibu helpers (`LocatorJ`, `GridKt`, `NotificationsKt`, `ConfirmDialogKt`)
-3. Seeds test data via Flyway migrations under `src/test/resources/db/migration` — never via Mockito, services, or
-   `DSLContext`
-4. Cleans up only test-created data in `@AfterEach` (does not wipe the schema)
-5. Preserves transaction boundaries — tests are not annotated `@Transactional`
-6. Uses the KaribuTesting MCP server for documentation and code generation
-
-**Input:** Use case ID as argument
-**Output:** Karibu test class under `src/test/java`
-**Plugin:** `aiup-vaadin-jooq`
-
----
-
-### `/ktor-test` — Ktor Backend Tests
-
-**Purpose:** Creates backend tests for Compose/Ktor/Exposed services.
-
-**Usage:**
-
-```
-/ktor-test UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec and backend implementation
-2. Creates Ktor `testApplication` route tests with fake repository/service ports
-3. Covers success, validation, not-found, auth, and key alternative flows
-4. Adds Ktor `MockEngine` tests for outbound clients when needed
-5. Adds or extends `ArchitectureTest.kt` for new modules when the backend enforces ArchUnit layering
-6. Adds Testcontainers + Flyway repository integration tests under `src/testContainerTest` when persistence behavior needs real PostgreSQL
-
-**Input:** Use case ID as argument
-**Output:** Kotlin tests under the backend module's test source sets
-**Plugin:** `aiup-compose-ktor-exposed`
-
----
-
-### `/compose-test` — Compose UI Tests
+## Compose/Ktor/Exposed conventions
 
-**Purpose:** Creates UI-side tests for Compose/Ktor client code.
+The stack plugin follows the target project first. Its bundled references cover the retained service style:
 
-**Usage:**
+- Kotlin Multiplatform shared DTOs and platform-safe `commonMain` code;
+- vertical Ktor modules with domain repository ports;
+- Exposed persistence behind repository implementations;
+- Koin registration and existing authentication helpers;
+- runtime-configured Ktor clients and injected access-token providers;
+- `testApplication`, deterministic fakes, MockEngine, and Testcontainers/Flyway;
+- test-owned, idempotent cleanup with dependants removed before parents.
 
-```
-/compose-test UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec and UI implementation
-2. Creates Ktor `MockEngine` API-client tests in `commonTest`
-3. Creates coroutine ViewModel tests with fakes and `runTest`
-4. Places OIDC/PKCE or `expect`/`actual` platform tests in `jvmTest`/`wasmJsTest` when relevant
-5. Creates Compose Multiplatform semantics tests with `runComposeUiTest` when dependencies exist
-6. Avoids real network calls and Android-only test APIs in multiplatform modules
-
-**Input:** Use case ID as argument
-**Output:** Kotlin tests under the UI module's `commonTest` or matching source set
-**Plugin:** `aiup-compose-ktor-exposed`
-
----
-
-### `/implementation-status` — Implementation Status Documentation
-
-**Purpose:** Produces traceability/status documentation for Compose/Ktor/Exposed services.
-
-**Usage:**
-
-```
-/implementation-status UC-001
-```
-
-**What it does:**
-
-1. Reads `entity_model.md`, use case specs, source code, tests, and Flyway migrations
-2. Maintains an entity implementation-status matrix with Entity / DB Table / Domain Model / Repository / Service / Migrations columns
-3. Creates per-use-case Markdown status pages under `docs/use_cases/` or `<service>/docs/use_cases/`
-4. Cross-references migration version ranges and code/test evidence
-5. Reports missing or partial implementation honestly
-
-**Input:** Use case ID(s) as argument, or current entity/use-case docs
-**Output:** implementation-status matrix and `UC-XXX-implementation-status.md`
-**Plugin:** `aiup-compose-ktor-exposed`
-
----
-
-### `/playwright-test` — Playwright Integration Tests
-
-**Purpose:** Creates browser-based end-to-end tests for Vaadin views using Playwright with the Drama Finder library for
-type-safe, accessibility-first element wrappers.
-
-**Usage:**
+The implementation skills do not create tests. Use `/ktor-test` or `/compose-test` for observable test contracts. The UI skill does not invent missing backend DTOs or routes; it reports those prerequisites precisely.
 
-```
-/playwright-test UC-001
-```
-
-**What it does:**
-
-1. Reads the use case spec to derive the test scenarios
-2. Generates an integration test extending `AbstractBasePlaywrightIT` (handles browser lifecycle, page creation, and
-   Vaadin synchronization automatically)
-3. Writes black-box tests against the running application (default: `http://localhost:8080`) — does not consult the
-   implementation
-4. Uses Drama Finder element wrappers exclusively — never raw Playwright locators, XPath, `Thread.sleep()`, or
-   `page.waitForTimeout()`
-5. Reuses existing test data from Flyway migrations; cleans up only test-created data in `@AfterEach`
-6. Looks up Drama Finder method signatures via the JavaDocs MCP server rather than guessing
-
-**Input:** Use case ID as argument
-**Output:** Playwright integration test under `src/test/java` (named `*IT.java`)
-**Plugin:** `aiup-vaadin-jooq`
-
----
-
-## Project Structure
-
-After running the full workflow for a project, your tree will look like this:
-
-```
-your-project/
-├── docs/
-│   ├── vision.md                         ← you maintain this
-│   ├── requirements.md                   ← produced by /requirements and /use-case-diagram
-│   ├── entity_model.md                   ← produced by /entity-model, updated by /implementation-status
-│   ├── architecture.md                   ← produced by /architecture
-│   └── use_cases/                        ← produced by /use-case-spec and /implementation-status
-│       ├── UC-001-create-reservation.md
-│       ├── UC-002-cancel-reservation.md
-│       └── ...
-├── src/
-│   ├── main/
-│   │   ├── java/                         ← produced by /implement
-│   │   └── resources/
-│   │       └── db/migration/             ← produced by /flyway-migration
-│   │           ├── V001__create_room_type_table.sql
-│   │           └── ...
-│   └── test/
-│       ├── java/                         ← produced by /browserless-test, /playwright-test
-│       └── resources/
-│           └── db/migration/             ← test data seeds
-└── CLAUDE.md
-```
-
----
-
-## Recommended CLAUDE.md
-
-Create a `CLAUDE.md` at your project root. Claude loads this automatically at the start of every session:
-
-```markdown
-# Project Context
-
-This project follows the AI Unified Process. Read `docs/vision.md`, `docs/requirements.md`,
-and `docs/entity_model.md` for product context before making decisions.
-
-## AIUP Workflow
-
-1. `/requirements`        → derives `docs/requirements.md` from `docs/vision.md`
-2. `/entity-model`        → derives `docs/entity_model.md` from requirements
-3. `/use-case-diagram`    → produces Mermaid diagram inside `docs/requirements.md`
-4. `/use-case-spec UC-XX` → produces `docs/use_cases/UC-XX-*.md`
-5. `/architecture`        → produces `docs/architecture.md`
-6. `/flyway-migration`    → produces `src/main/resources/db/migration/V*.sql`
-7. `/implement UC-XX`     → implements the use case backend (Vaadin/jOOQ or Ktor/Exposed)
-8. `/implement-ui UC-XX`  → implements Compose UI when using Compose/Ktor/Exposed
-9. `/browserless-test UC-XX` or `/ktor-test UC-XX` → server-side tests
-10. `/playwright-test UC-XX` or `/compose-test UC-XX` → UI/end-to-end tests
-11. `/implementation-status UC-XX` → documents entity/use-case implementation status for Compose/Ktor/Exposed
-
-Never skip the spec for a use case before implementing it.
-Always read the entity model before writing data access code.
-```
+## End-to-end usage
 
----
+The intermediate documents are review points, not disposable generated output. Inspect and correct each artefact before continuing to the next step.
 
-## Recommended `docs/vision.md` Structure
+### 1. Describe the vision
 
-The `/requirements` skill relies heavily on this file. Include at minimum:
+Create `docs/vision.md` with the product mission, target users, goals, scope, and constraints. In a monorepo, place it under the selected service's `docs/` directory.
 
 ```markdown
 # Vision: <Product Name>
 
 ## Mission
-
-<One paragraph on what this product does and the problem it solves.>
+<Problem and intended outcome.>
 
 ## Target Users
-
-- <Primary user role and what they need from the system>
-- <Secondary user roles>
+- <Role and need>
 
 ## Goals
-
-- <Measurable business or product goals>
+- <Measurable goal>
 
 ## Scope
-
-- In scope: <high-level capabilities>
-- Out of scope: <explicit non-goals>
+- In scope: <capabilities>
+- Out of scope: <non-goals>
 
 ## Constraints
-
-- <Regulatory, technical, organizational constraints>
+- <Technical, regulatory, or organisational constraint>
 ```
 
----
+### 2. Build the analysis artefacts
 
-## Tips
+```text
+/requirements
+/entity-model
+/use-case-diagram
+/use-case-spec UC-001
+/architecture
+/reference
+```
 
-**Maintain traceability.** Every entity should map to at least one functional requirement; every use case should trace
-to one or more FRs; every test should reference a use case ID. The skills produce stable IDs (FR-001, UC-001, …) — keep
-them.
+- `/requirements` derives functional requirements, measurable NFRs, and constraints from the vision.
+- `/entity-model` derives the domain model and Mermaid ER diagram.
+- `/use-case-diagram` maintains the canonical Mermaid diagram in `requirements.md`.
+- `/use-case-spec` writes one actor-focused specification per use case, including alternative flows, postconditions, and business rules.
+- `/architecture` records observed structure, data flow, decisions, failure modes, security, observability, and deployment.
+- `/reference` captures concise repository facts, commands, vocabulary, and operational caveats without duplicating the canonical documents.
 
-**Edit between steps.** The intermediate documents (`requirements.md`, `entity_model.md`) are designed
-to be reviewed and corrected by hand. Do not skip the review.
+For an inherited codebase, use `/reverse-engineer` instead of starting from a new vision. It recovers the same requirements, use-case, and entity-model contract from observed code and configuration.
 
-**Re-run upstream skills when requirements change.** If a new functional requirement appears, re-run `/entity-model` and
-`/use-case-diagram` so the downstream artifacts stay consistent. Re-running is cheap; fixing inconsistencies later is
-not.
+### 3. Build the Compose/Ktor/Exposed implementation
 
-**Keep `aiup-core` even on non-Vaadin stacks.** The methodology skills are stack-agnostic — only the construction-phase
-skills are tied to a stack plugin such as Vaadin/jOOQ or Compose/Ktor/Exposed. You can pair `aiup-core` with any implementation toolchain.
+```text
+/flyway-migration
+/implement UC-001
+/implement-ui UC-001
+/ktor-test UC-001
+/compose-test UC-001
+/implementation-status UC-001
+```
 
-**Commit `docs/` to version control.** The vision, requirements, entity model, and use case specs are your project's
-institutional memory — they explain *why* the code is the way it is, which is invaluable for onboarding and debugging
-months later.
+- `/flyway-migration` creates additive PostgreSQL migrations from the entity model while preserving the project's existing ID, timestamp, constraint, and naming conventions.
+- `/implement` updates the backend vertical slice: shared DTOs, domain, repository port, Exposed persistence, application service, Ktor route, and Koin wiring.
+- `/implement-ui` updates the API client, ViewModel, Compose screen, navigation, and existing authentication boundary.
+- `/ktor-test` covers route, service, architecture, outbound-client, and repository behaviour at the appropriate existing test level.
+- `/compose-test` prefers MockEngine API-client and ViewModel tests, adding semantics tests only when the dependencies already exist.
+- `/implementation-status` records evidence-based entity and use-case coverage.
 
----
+Implementation and test skills inspect existing code first. They reconcile additions, changes, and removals in place instead of generating parallel implementations or test suites.
 
-## Learn More
+## Skill reference
 
-Visit [unifiedprocess.ai](https://unifiedprocess.ai) for the full methodology.
+| Skill | Input | Output |
+|---|---|---|
+| `/requirements` | `vision.md` | `requirements.md` |
+| `/entity-model` | `requirements.md` | `entity_model.md` |
+| `/use-case-diagram` | functional requirements | Mermaid section in `requirements.md` |
+| `/use-case-spec` | one or more `UC-XXX` IDs | one `docs/use_cases/UC-XXX-*.md` per use case |
+| `/reverse-engineer` | existing source, schema, auth, and configuration | requirements, use-case specifications, and entity model |
+| `/architecture` | existing docs, source, deployment, and architecture tests | `architecture.md` |
+| `/reference` | repository structure and authoritative documentation | `REFERENCE.md` |
+| `/flyway-migration` | entity model and existing migrations | versioned `V*.sql` migrations |
+| `/implement` | use-case specification and current backend | Ktor/Exposed backend and shared DTO changes |
+| `/implement-ui` | use-case specification and existing API contract | Compose UI, ViewModel, client, and navigation changes |
+| `/ktor-test` | specification and backend implementation | focused backend tests in existing source sets |
+| `/compose-test` | specification and UI implementation | focused client/ViewModel/platform/semantics tests |
+| `/implementation-status` | specifications, source, tests, and migrations | implementation traceability documentation |
 
-## Key Concepts
+The owning `SKILL.md` is the detailed behavioural contract. Its adjacent `references/` directory contains stack-specific patterns and examples.
 
-### Marketplace
+## Resulting project structure
 
-A **marketplace** is a curated repository that hosts and distributes multiple Claude Code plugins. It acts as a central
-hub where plugins can be discovered, installed, and managed. When you add a marketplace to Claude Code, you gain access
-to all the plugins it contains.
+```text
+<project-or-service>/
+├── docs/
+│   ├── vision.md
+│   ├── requirements.md
+│   ├── entity_model.md
+│   ├── architecture.md
+│   ├── REFERENCE.md
+│   └── use_cases/
+│       ├── UC-001-<name>.md
+│       └── UC-001-implementation-status.md
+├── <shared-module>/                  # serialisable API contracts
+├── <server-module>/
+│   └── src/main/resources/db/migration/V*.sql
+└── <ui-module>/                      # Compose Multiplatform UI
+```
 
-### Plugin
+Exact source-module paths come from the target repository. The skills must preserve its established layout rather than impose the illustrative names above.
 
-A **plugin** is a self-contained extension that adds new capabilities to Claude Code. Each plugin can include skills,
-agents, hooks, and MCP servers. Plugins are technology-specific and encapsulate everything needed to work with a
-particular tech stack or methodology.
+## Recommended project guidance
 
-### Skill
+A consumer project can add the following concise contract to its own `CLAUDE.md` or equivalent agent guidance:
 
-A **skill** is a specialized behavior defined in a `SKILL.md` file. Skills can be invoked explicitly as slash commands (
-e.g., `/requirements`) or triggered automatically by Claude when it recognizes a matching task. Skills are namespaced by
-their plugin (e.g., `aiup-core:requirements`).
+```markdown
+# Project Context
 
-### MCP Server
+This project follows the AI Unified Process. Read the scoped `docs/vision.md`,
+`docs/requirements.md`, `docs/entity_model.md`, relevant `docs/use_cases/`,
+`docs/architecture.md`, and `docs/REFERENCE.md` before changing behaviour.
 
-An **MCP (Model Context Protocol) server** is an external service that provides Claude with access to specialized tools
-and documentation. The plugins in this marketplace ship with the following servers:
+Do not implement a use case without its current specification. Preserve stable
+FR, UC, and BR identifiers. Reconcile existing code and tests in place, and run
+the complete affected verification task.
+```
 
-| Server            | Plugin                      | Description                                          |
-|-------------------|-----------------------------|------------------------------------------------------|
-| **context7**      | `aiup-core`                 | General library documentation lookup                 |
-| **Vaadin**        | `aiup-vaadin-jooq`          | Vaadin component and framework documentation         |
-| **KaribuTesting** | `aiup-vaadin-jooq`          | Karibu testing framework documentation               |
-| **jOOQ**          | `aiup-vaadin-jooq`          | jOOQ DSL and code generation reference               |
-| **JavaDocs**      | `aiup-vaadin-jooq`          | Java API documentation lookup                        |
-| **Playwright**    | `aiup-vaadin-jooq`          | Browser automation for integration tests             |
+## Working practices
+
+- Maintain traceability: every use case maps to functional requirements, modelled entities map to required behaviour, and tests cover observable use-case flows.
+- Keep stable identifiers when requirements evolve; do not renumber surviving `FR-*`, `UC-*`, or `BR-*` entries for convenience.
+- Re-run affected analysis skills when upstream artefacts change. A changed requirement may require entity-model, diagram, specification, implementation, and test reconciliation.
+- Commit `docs/` with the code. These artefacts preserve product intent and explain implementation decisions.
+- Treat generated artefacts as proposals for review. Correct domain errors before downstream work compounds them.
+
+## Manual consumption outside Claude Code
+
+The skills are Markdown folders with YAML frontmatter and can be consumed by another agent that supports compatible skill discovery:
+
+1. Clone this internal repository at a reviewed revision.
+2. Expose the required directories from `aiup-core/skills/` and, when applicable, `aiup-compose-ktor-exposed/skills/` to that client's skill path.
+3. Translate the retained plugin `.mcp.json` entries into the client's MCP configuration format.
+4. Invoke skills by intent when the client does not support Claude Code slash commands.
+
+The portable contract is the produced Markdown and source artefacts, not identical installation or command syntax across clients. Client-specific compatibility must be verified against that client's current documentation.
+
+## Concepts
+
+- **Marketplace:** a catalogue from which Claude Code discovers installable plugins.
+- **Plugin:** a versioned bundle of related skills, references, rules, and optional MCP configuration.
+- **Skill:** task-specific behaviour defined by a `SKILL.md`, selected explicitly or by matching user intent.
+- **MCP server:** an external tool or documentation service configured through the plugin's `.mcp.json`.
+- **Artefact chain:** the reviewed files passed between analysis, implementation, testing, and status steps.
+
+## MCP configuration
+
+`aiup-core/.mcp.json` and `aiup-compose-ktor-exposed/.mcp.json` are retained because Claude Code consumes plugin MCP configuration. They are not Agent Plugins root manifests and do not depend on Tessl. Other internal clients may translate these standard MCP settings when consuming the skills directly from Git.
+
+## Repository layout
+
+```text
+.claude-plugin/marketplace.json
+aiup-core/
+  .claude-plugin/plugin.json
+  .mcp.json
+  skills/
+aiup-compose-ktor-exposed/
+  .claude-plugin/plugin.json
+  .mcp.json
+  skills/
+scripts/
+  validate-skills.sh
+  validate-skills.rb
+```
+
+## Validation
+
+Run from the repository root:
+
+```sh
+scripts/validate-skills.sh
+```
+
+The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, removed-distribution references, canonical Markdown/Mermaid artefacts, and compilation of the bundled Kotlin API-client example.
+
+When changing shell scripts, also run:
+
+```sh
+shellcheck -S warning scripts/*.sh
+```
+
+## Release
+
+1. Make the coherent plugin change and update its executable validation where needed.
+2. Minor-bump the changed plugin's `.claude-plugin/plugin.json` version.
+3. Keep `.claude-plugin/marketplace.json`, this README, and plugin documentation aligned.
+4. Run repository validation.
+5. Publish through the normal internal Git review and merge process.
+
+Do not create Tessl manifests or copy version numbers from the public upstream repository. Existing `aiup` names remain stable.
+
+## Licence
+
+Apache-2.0

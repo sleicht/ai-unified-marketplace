@@ -3,10 +3,8 @@
 > Stack-agnostic core of the [**AI Unified Process (AIUP)**](https://unifiedprocess.ai) — a structured,
 > requirements-first workflow for taking a software project from raw vision to use case specifications.
 
-`aiup-core` is the foundation plugin of the AI Unified Process. It is **technology-independent**: it works with any
-language, framework, or stack because it stops at the specification boundary. Implementation and testing are handled by
-stack-specific plugins (e.g. [`aiup/aiup-vaadin-jooq`](https://registry.tessl.io/aiup/aiup-vaadin-jooq)) that build on
-the artifacts this plugin produces.
+`aiup-core` is the technology-independent foundation plugin. It stops at the specification boundary; implementation
+and testing are handled by the retained `aiup-compose-ktor-exposed` plugin or by project-specific tooling for other stacks.
 
 ## What it does
 
@@ -58,10 +56,10 @@ forward workflow would have produced, giving you a documented baseline to work f
 
 ## Installation
 
-Install from the Tessl registry:
+Install from the internal Git marketplace:
 
-```
-tessl install aiup/aiup-core
+```text
+/plugin install aiup-core
 ```
 
 ## Prerequisites
@@ -72,8 +70,7 @@ tessl install aiup/aiup-core
 
 ## Next step
 
-Once your use case specifications exist, add a stack-specific plugin to implement and test them — for example
-[`aiup/aiup-vaadin-jooq`](https://registry.tessl.io/aiup/aiup-vaadin-jooq) for the Vaadin + jOOQ stack.
+For Kotlin Multiplatform / Compose / Ktor / Exposed projects, install `aiup-compose-ktor-exposed` to implement and test the specifications. Other stacks may consume the core artefacts with their own project tooling.
 
 ## License
 

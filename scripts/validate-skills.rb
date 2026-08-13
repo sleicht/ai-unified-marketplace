@@ -6,6 +6,28 @@ require "pathname"
 ROOT = Pathname.new(__dir__).parent
 errors = []
 
+retained_plugins = %w[aiup-core aiup-compose-ktor-exposed]
+marketplace = JSON.parse(File.read(ROOT.join(".claude-plugin/marketplace.json")))
+marketplace_plugins = marketplace.fetch("plugins").map { |plugin| plugin.fetch("name") }
+errors << "marketplace plugins #{marketplace_plugins.inspect}, expected #{retained_plugins.inspect}" unless marketplace_plugins == retained_plugins
+
+retained_plugins.each do |plugin_name|
+  plugin_dir = ROOT.join(plugin_name)
+  manifest = JSON.parse(File.read(plugin_dir.join(".claude-plugin/plugin.json")))
+  errors << "plugin name mismatch: #{plugin_name}" unless manifest.fetch("name") == plugin_name
+  errors << "missing plugin MCP configuration: #{plugin_name}" unless plugin_dir.join(".mcp.json").file?
+  errors << "obsolete Tessl manifest: #{plugin_name}" if plugin_dir.join("tessl.json").exist? || plugin_dir.join(".tessl-plugin").exist?
+end
+
+errors << "removed plugin still present: aiup-vaadin-jooq" if ROOT.join("aiup-vaadin-jooq").exist?
+errors << "obsolete Tessl workflow still present" if ROOT.join(".github/workflows/publish-tessl.yml").exist?
+
+documented_versions = File.read(ROOT.join("README.md")).scan(/`(aiup-(?:core|compose-ktor-exposed))` \| `([^`]+)`/).to_h
+retained_plugins.each do |plugin_name|
+  manifest_version = JSON.parse(File.read(ROOT.join(plugin_name, ".claude-plugin/plugin.json"))).fetch("version")
+  errors << "README version mismatch for #{plugin_name}: #{documented_versions[plugin_name].inspect}, expected #{manifest_version}" unless documented_versions[plugin_name] == manifest_version
+end
+
 skill_files = Dir.glob(ROOT.join("aiup-{core,compose-ktor-exposed}/skills/*/SKILL.md"))
 skill_files.each do |file|
   text = File.read(file)
@@ -34,9 +56,7 @@ Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |
   end
 end
 
-legacy_files = skill_files +
-  Dir.glob(ROOT.join("aiup-core/evals/scenario-{2,3,4,5,6,7,8,9,10,11}/**/*.{md,json}")) +
-  [ROOT.join("aiup-core/README.md").to_s]
+legacy_files = skill_files + [ROOT.join("aiup-core/README.md").to_s]
 legacy_files.each do |file|
   next unless File.file?(file)
   text = File.read(file)
@@ -50,25 +70,11 @@ skill_files.each do |file|
   errors << "capability-specific wording: #{Pathname.new(file).relative_path_from(ROOT)}" if File.read(file).match?(neutrality)
 end
 
-Dir.glob(ROOT.join("aiup-core/evals/scenario-{6,7,8,9,10,11}/**/requirements.md")).each do |file|
-  text = File.read(file)
-  ["Functional Requirements", "Non-Functional Requirements", "Constraints", "Use Case Diagram"].each do |heading|
-    count = text.scan(/^## #{Regexp.escape(heading)}\s*$/).length
-    errors << "requirements heading #{heading.inspect} count #{count}: #{Pathname.new(file).relative_path_from(ROOT)}" unless count == 1
-  end
-  mermaid_count = text.scan(/^```mermaid\s*$/).length
-  errors << "requirements Mermaid fence count #{mermaid_count}: #{Pathname.new(file).relative_path_from(ROOT)}" unless mermaid_count == 1
-end
 
-Dir.glob(ROOT.join("aiup-compose-ktor-exposed/skills/*/evals/evals.json")).each do |file|
-  data = JSON.parse(File.read(file))
-  errors << "fewer than two behavioural evals: #{Pathname.new(file).relative_path_from(ROOT)}" if data.fetch("evals").length < 2
+forbidden_distribution_references = /aiup-vaadin-jooq|registry\.tessl\.io|tessl install|publish-tessl/
+[ROOT.join("README.md"), ROOT.join("CLAUDE.md"), ROOT.join("aiup-core/README.md")].each do |file|
+  errors << "obsolete distribution reference: #{file.relative_path_from(ROOT)}" if File.read(file).match?(forbidden_distribution_references)
 end
-
-expected_eval_skills = %w[flyway-migration implement implement-ui ktor-test compose-test implementation-status]
-actual_eval_skills = Dir.glob(ROOT.join("aiup-compose-ktor-exposed/skills/*/evals/evals.json")).map { |file| JSON.parse(File.read(file)).fetch("skill_name") }
-missing_eval_skills = expected_eval_skills - actual_eval_skills
-errors << "missing behavioural evals: #{missing_eval_skills.join(', ')}" unless missing_eval_skills.empty?
 
 if errors.empty?
   puts "Skill validation passed"

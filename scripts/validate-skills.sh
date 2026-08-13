@@ -8,7 +8,7 @@ ruby scripts/validate-skills.rb
 
 compile_dir="$(mktemp -d)"
 trap 'rm -rf "$compile_dir"' EXIT
-kotlinc aiup-compose-ktor-exposed/evals/compile/ApiClientConstruction.kt -d "$compile_dir/example.jar"
+kotlinc scripts/fixtures/ApiClientConstruction.kt -d "$compile_dir/example.jar"
 
 if rg -n 'localhost|DEFAULT_POC_EMPLOYEE_TOKEN' \
   aiup-compose-ktor-exposed/skills/compose-test/references/ExampleScreenTest.kt; then
@@ -26,7 +26,7 @@ fi
 if rg -n 'accessTokenProvider\.accessToken\(\)|override suspend fun accessToken\(' \
   aiup-compose-ktor-exposed/skills/implement-ui \
   aiup-compose-ktor-exposed/skills/compose-test/references \
-  aiup-compose-ktor-exposed/evals/compile; then
+  scripts/fixtures; then
   echo "Stale access-token provider contract found" >&2
   exit 1
 fi

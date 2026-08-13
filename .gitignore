@@ -1,1 +1,25 @@
+# OS and IDEs
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Java, Kotlin, Maven, Eclipse, and Gradle
+target/
+build/
+.gradle/
+.classpath
+.project
+.settings/
+
+# Node.js
+node_modules/
+dist/
+.next/
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo

@@ -1,5 +1,0 @@
-[tasks.test]
-run = "./gradlew test"
-
-[tasks.format]
-run = "./gradlew spotlessApply"

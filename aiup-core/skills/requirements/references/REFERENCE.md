@@ -6,7 +6,7 @@
 |--------|----------------------------|---------|
 | FR     | Functional Requirement     | FR-001  |
 | NFR    | Non-Functional Requirement | NFR-001 |
-| C      | Constraint                 | C-001   |
+| CON    | Constraint                 | CON-001 |
 
 ## Priority
 

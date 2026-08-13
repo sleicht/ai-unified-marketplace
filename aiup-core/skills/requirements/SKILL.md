@@ -80,11 +80,11 @@ Define quality attributes. Must be measurable.
 
 Use columns `ID`, `Title`, `Requirement`, `Category`, `Priority`, and `Status`. Example: `NFR-001 | Response Time | All page loads must complete within 2 seconds. | Performance | High | Open`.
 
-### Constraints (C)
+### Constraints (CON)
 
 Define limitations and boundaries imposed on the solution.
 
-Use columns `ID`, `Title`, `Constraint`, `Category`, `Priority`, and `Status`. Example: `C-001 | Runtime Platform | Backend must run on Java 21 LTS. | Technical | High | Open`.
+Use columns `ID`, `Title`, `Constraint`, `Category`, `Priority`, and `Status`. Example: `CON-001 | Runtime Platform | Backend must run on Java 21 LTS. | Technical | High | Open`.
 
 ## Language Variants
 
@@ -120,7 +120,7 @@ Record assumptions, rewrites, and unresolved conflicts under `## Requirements No
 - **Incomplete source document**: List what is missing (roles, NFR categories, constraints) and ask the user to clarify
   before proceeding
 - **Ambiguous requirement from user**: Rewrite it as a measurable requirement and ask the user to confirm the threshold
-- **Conflicting requirements**: Flag the conflict explicitly (e.g., "FR-003 requires real-time sync but C-002 limits to
+- **Conflicting requirements**: Flag the conflict explicitly (e.g., "FR-003 requires real-time sync but CON-002 limits to
   batch processing") and ask the user to resolve
 - **Missing stakeholder roles**: Default to generic roles (User, Admin, System) and note them for user review
 

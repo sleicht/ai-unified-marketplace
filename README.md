@@ -6,7 +6,7 @@ The repository deliberately contains two plugins:
 
 | Plugin | Version | Scope |
 |---|---:|---|
-| `aiup-core` | `103.6.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
+| `aiup-core` | `103.8.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
 | `aiup-compose-ktor-exposed` | `1.5.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
 
 ## Distribution contract
@@ -283,7 +283,7 @@ Run from the repository root:
 scripts/validate-skills.sh
 ```
 
-The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, removed-distribution references, canonical Markdown/Mermaid artefacts, and compilation of the bundled Kotlin API-client example.
+The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, removed-distribution references, canonical Markdown/Mermaid artefacts, the normative use-case validator and worked example, and compilation of the bundled Kotlin API-client example.
 
 When changing shell scripts, also run:
 
@@ -294,17 +294,18 @@ shellcheck -S warning scripts/*.sh
 ## Upstream integration baseline
 
 This fork was reconciled against `upstream/main` at commit
-`557900e18ee0deebac3b7f07871a94a7678e9fe3` (`refactor: move author
-instructions out of templates into SKILL.md files`). The shared ancestor used
-for that review was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`.
+`b4454e084c510df4fbee02b8aa254cd6e0e79cc4` (`feat(aiup-core): add
+normative use case spec format and validator (2.5.0)`). The shared ancestor used
+for the selective integration review was
+`48de70fd8cfe082a7b41563e4cb995c47b37a02c`.
 
 Future upstream reviews should compare from the recorded upstream commit, not
 merge `upstream/main` wholesale:
 
 ```sh
 git fetch upstream main
-git log --oneline 557900e18ee0deebac3b7f07871a94a7678e9fe3..upstream/main
-git diff --stat 557900e18ee0deebac3b7f07871a94a7678e9fe3..upstream/main
+git log --oneline b4454e084c510df4fbee02b8aa254cd6e0e79cc4..upstream/main
+git diff --stat b4454e084c510df4fbee02b8aa254cd6e0e79cc4..upstream/main
 ```
 
 Selectively port improvements that preserve this fork's retained core and

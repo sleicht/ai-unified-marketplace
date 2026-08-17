@@ -78,7 +78,7 @@ Count entry points and proposed use cases before writing. If counts are close, r
 - Derive preconditions from guards and required upstream state.
 - Derive postconditions from persisted changes, events, notifications, and rollback behaviour.
 - Derive business rules from validation, configuration, constants, constraints, and policy branches.
-- Keep `BR-XXX` IDs unique across every generated use-case file.
+- Number `BR-XXX` business-rule IDs from `BR-001` within each generated use-case file. Qualify cross-use-case references with the use case ID, for example `UC-005 BR-002`.
 
 ### 5. Recover the entity model
 
@@ -92,13 +92,19 @@ Map implementation types and validation into the AIUP vocabulary defined in the 
 
 ### 6. Write and cross-validate
 
-Write `requirements.md`, the scoped use-case files, and `entity_model.md` using the bundled contract. Then verify:
+Write `requirements.md`, the scoped use-case files, and `entity_model.md` using the bundled contract. Run the use-case validator over every specification you wrote, using the script relative to this skill directory:
+
+```bash
+python3 ../use-case-spec/scripts/validate_use_case.py --strict docs/use_cases/UC-*.md
+```
+
+Fix every reported problem, then verify:
 
 - exactly one `## Use Case Diagram` section and fenced Mermaid block exist;
 - every diagram actor is primary actor for at least one spec;
 - every diagram `UC-XXX` has exactly one correctly named spec;
 - every alternative flow references a main step and ends or resumes explicitly;
-- `BR-XXX` IDs are globally unique;
+- every spec numbers business rules `BR-001`, `BR-002`, … without gaps;
 - entity tables have exactly five columns and only AIUP types/validation terms;
 - every ER entity has an attribute section and every section appears in the ER diagram;
 - the use-case count is meaningfully below the entry-point count.

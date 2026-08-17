@@ -7,8 +7,6 @@
 **Primary Actor:** [Role]   
 **Goal:** [In one sentence: the observable outcome the actor achieves and why — not "use the system"]   
 **Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete   
-**Stakeholders:** [Stakeholder roles or groups affected by the use case]   
-**Trigger:** [Event or actor action that starts the use case]
 
 ## Preconditions
 
@@ -47,6 +45,9 @@
 
 [Description of the business rule that applies to this use case]
 
+Number business rules from `BR-001` within each use-case file. Qualify a
+cross-use-case reference with the use case ID, for example `UC-005 BR-002`.
+
 ---
 
 ## Reference
@@ -65,14 +66,15 @@
 
 ### German Section Names
 
+See [format-spec.md](format-spec.md) for the complete German structure and field
+labels. The canonical section names are:
+
 | English | German |
 |---------|--------|
-| Overview | Überblick |
-| Stakeholders | Stakeholder |
-| Trigger | Auslöser |
+| Overview | Übersicht |
 | Preconditions | Vorbedingungen |
-| Main Success Scenario | Standardablauf |
-| Alternative Flows | Alternative Abläufe |
+| Main Success Scenario | Hauptablauf |
+| Alternative Flows | Alternativabläufe |
 | Postconditions | Nachbedingungen |
 | Business Rules | Geschäftsregeln |
 

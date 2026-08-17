@@ -38,11 +38,12 @@ One file per use case, written to `docs/use_cases/UC-XXX-<kebab-case-name>.md` w
 - If the task names a single use case (e.g. "write UC-001 Place Order"), produce
   **only** that one file. Do not create specs for other use cases in the diagram.
 - If the task asks for "all use cases" or names several, produce **one file per
-  use case**, and number IDs **globally across all files in this task**:
+  use case**:
   - `UC-XXX` IDs come from the diagram and never repeat.
-  - `BR-XXX` business-rule IDs are unique across **every** file — they do **not**
-    restart at `BR-001` in the second file. If UC-001 ends at `BR-003`, UC-002
-    starts at `BR-004`.
+  - `BR-XXX` business-rule IDs are **unique within their own file only** and
+    **restart at `BR-001` in every file** — the use case is the namespace. When
+    referring to a rule of another use case, qualify it with the use case ID
+    (e.g. "UC-005 BR-002"), never by the bare rule ID.
 
 ## DO NOT
 
@@ -57,12 +58,18 @@ One file per use case, written to `docs/use_cases/UC-XXX-<kebab-case-name>.md` w
 
 - Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
 - Use existing docs language when updating; default to English for new docs.
-- For German docs, use section names such as `Überblick`, `Stakeholder`, `Auslöser`, `Vorbedingungen`, `Standardablauf`, `Alternative Abläufe`, `Nachbedingungen`, and `Geschäftsregeln`. Keep domain terms untranslated.
+- For German docs, use the exact labels in [references/format-spec.md](references/format-spec.md), including `Übersicht`, `Vorbedingungen`, `Hauptablauf`, `Alternativabläufe`, `Nachbedingungen`, and `Geschäftsregeln`. Keep domain terms untranslated.
 
 ## Template
 
 Use [references/use-case.md](references/use-case.md) as the document structure, and
 see [references/example.md](references/example.md) for a complete worked example.
+
+The normative format — including the German variant and the tolerances of the
+AI Unified Process Studio structured editor — is defined in
+[references/format-spec.md](references/format-spec.md). The bundled
+[scripts/validate_use_case.py](scripts/validate_use_case.py) checks both the
+structure and this skill's content rules.
 
 ## Workflow
 
@@ -76,7 +83,7 @@ see [references/example.md](references/example.md) for a complete worked example
    diagram — see "Scope" above). Take each `UC-XXX` ID and name from the diagram.
 5. Track progress with the available planning/task mechanism when useful — one item per use case file.
 6. For each use case, derive the filename with the rule in "File naming" above.
-7. Write the Overview section: `Use Case ID`, primary actor, stakeholders, trigger,
+7. Write the Overview section: `Use Case ID`, `Use Case Name`, primary actor,
    goal, and a `Status` from the template's list.
 8. Define preconditions — verifiable facts that must be true before the use case starts.
 9. Write the Main Success Scenario as numbered steps (start at 1, no gaps),
@@ -87,9 +94,9 @@ see [references/example.md](references/example.md) for a complete worked example
       written as `(step N)` (e.g. `Payment is declined (step 7)`); and
     - end with either `Use case continues at step N.` or `Use case ends.`
 11. Define postconditions for both success and failure (both subsections non-empty).
-12. Document applicable business rules with `BR-XXX` IDs. When writing more than one
-    use case in this task, keep `BR-XXX` IDs unique across all files (never restart
-    at `BR-001` — see "Scope").
+12. Document applicable business rules with `BR-XXX` IDs, numbered `BR-001`,
+    `BR-002`, … within the file. Every file starts again at `BR-001`; rule IDs
+    are scoped to their use case (see "Scope").
 13. Write each use case to its **own** file completely before moving to the next —
     never merge two use cases into one file, and never leave a planned file unwritten.
 14. Run the Completeness Checklist below; fix anything that fails.
@@ -97,22 +104,32 @@ see [references/example.md](references/example.md) for a complete worked example
     the resolved `docs/use_cases/` and confirm every `UC-XXX` from your scope has
     exactly one file present, named `UC-XXX-<kebab-case-name>.md` (kebab-case of the
     diagram name — e.g. `Log In` → `UC-002-log-in.md`, never `UC-002-login.md`). Rename
-    any mismatch. Then search every file you wrote for these forbidden words and
-    rewrite the step at the business level if any appears: `SMTP`, `email server`,
-    `JWT`, `token`, `bcrypt`, `hash`, `salt`, `SHA`, `SELECT`, `INSERT`, `SQL`. A
-    registration or login use case must say "System verifies the credentials" /
-    "System confirms the account" — never how the password or session is handled.
+    any mismatch. Then run the bundled validator over every file you wrote (the
+    script path is relative to this skill's directory):
+
+    ```bash
+    python3 scripts/validate_use_case.py --strict docs/use_cases/UC-*.md
+    ```
+
+    Fix every reported problem and re-run until it exits cleanly. Errors mean the
+    Studio structured editor cannot read the file; warnings mean a rule of this
+    skill is violated — for example, an implementation-level term (`SMTP`, `JWT`,
+    `token`, `bcrypt`, `hash`, `SQL`, …) in a step. Rewrite such steps at the
+    business level: a registration or login use case says "System verifies the
+    credentials" / "System confirms the account", never how the password or
+    session is handled.
 16. Mark todo complete.
 
 ## Completeness Checklist
 
-Before considering the document done, verify every item:
+Run the validator in step 15, then confirm every checklist item. The list is the
+definition of done:
 
 - [ ] Each file is named `UC-XXX-<kebab-case-name>.md` using the name from the diagram, and documents exactly one use case.
-- [ ] Overview has a `Use Case ID` (`UC-XXX`), primary actor, stakeholders, trigger, goal, and a valid `Status` value.
+- [ ] Overview has a `Use Case ID` (`UC-XXX`), use case name, primary actor, goal, and a valid `Status` value.
 - [ ] The Main Success Scenario starts at step 1, has no gaps, and its final step states the goal being achieved.
 - [ ] At least one alternative flow exists (two or more when the use case has several failure paths); each has a **Trigger** that references a specific main-scenario step number as `(step N)`.
 - [ ] Every alternative flow ends with `Use case continues at step N.` or `Use case ends.` — never open-ended.
 - [ ] Both Success and Failure postconditions are defined and non-empty.
-- [ ] Each business rule has a `BR-XXX` ID; across multiple files in one task, the IDs are unique and do not restart at `BR-001`.
+- [ ] Each business rule has a `BR-XXX` ID, numbered `BR-001`, `BR-002`, … without gaps within its file; every file starts at `BR-001` because rule IDs are scoped to their use case.
 - [ ] No step contains technical implementation detail — no HTTP verbs (POST/GET), SQL, class names, regex, exception names, or protocol terms (SMTP, JWT, bcrypt). See the template's step-writing guidelines.

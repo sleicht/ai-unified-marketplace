@@ -5,6 +5,9 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 ruby scripts/validate-skills.rb
+python3 aiup-core/skills/use-case-spec/scripts/validate_use_case.py --self-test
+python3 aiup-core/skills/use-case-spec/scripts/validate_use_case.py --strict \
+  aiup-core/skills/use-case-spec/references/example.md
 
 compile_dir="$(mktemp -d)"
 trap 'rm -rf "$compile_dir"' EXIT
@@ -37,4 +40,4 @@ if rg -n 'partnerContractNumber|PatientListItem' \
   exit 1
 fi
 
-echo "Documentation and Kotlin example validation passed"
+echo "Documentation, use-case, and Kotlin example validation passed"

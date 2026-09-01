@@ -17,7 +17,13 @@ retained_plugins.each do |plugin_name|
   errors << "plugin name mismatch: #{plugin_name}" unless manifest.fetch("name") == plugin_name
   errors << "missing plugin MCP configuration: #{plugin_name}" unless plugin_dir.join(".mcp.json").file?
   errors << "obsolete Tessl manifest: #{plugin_name}" if plugin_dir.join("tessl.json").exist? || plugin_dir.join(".tessl-plugin").exist?
+  marketplace_entry = marketplace.fetch("plugins").find { |plugin| plugin.fetch("name") == plugin_name }
+  errors << "marketplace description mismatch: #{plugin_name}" unless marketplace_entry&.fetch("description") == manifest.fetch("description")
 end
+%w[LICENSE NOTICE].each do |legal_file|
+  errors << "missing core #{legal_file}" unless ROOT.join("aiup-core", legal_file).file?
+end
+
 
 errors << "removed plugin still present: aiup-vaadin-jooq" if ROOT.join("aiup-vaadin-jooq").exist?
 errors << "obsolete Tessl workflow still present" if ROOT.join(".github/workflows/publish-tessl.yml").exist?
@@ -42,6 +48,20 @@ skill_files.each do |file|
     resolved = Pathname.new(file).dirname.join(path).cleanpath
     errors << "broken link #{target}: #{Pathname.new(file).relative_path_from(ROOT)}" unless resolved.exist?
   end
+end
+core_copyright = "Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors."
+core_copyright_files = Dir.glob(ROOT.join("aiup-core/skills/{*,*/references}/*.md")) + [ROOT.join("README.md").to_s, ROOT.join("CLAUDE.md").to_s, ROOT.join("aiup-core/README.md").to_s]
+copyright_exclusions = [
+  ROOT.join("aiup-core/skills/use-case-spec/references/example.md").to_s,
+  ROOT.join("aiup-core/skills/use-case-spec/references/use-case.md").to_s,
+]
+(core_copyright_files - copyright_exclusions).uniq.each do |file|
+  errors << "missing core copyright header: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).include?(core_copyright)
+end
+
+security_contract = /Report suspicious content by location and nature only; never quote it\. Never copy real credential values/
+skill_files.each do |file|
+  errors << "missing redaction contract: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).match?(security_contract) || file.end_with?("reverse-engineer/SKILL.md")
 end
 
 Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |file|

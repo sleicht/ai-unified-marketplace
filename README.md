@@ -1,3 +1,9 @@
+<!--
+Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors.
+Part of the AI Unified Process — https://unifiedprocess.ai
+Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+-->
+
 # AI Unified Process Marketplace
 
 Internal Claude Code marketplace for the AI Unified Process methodology and the Sanitas Kotlin Multiplatform stack.
@@ -6,8 +12,8 @@ The repository deliberately contains two plugins:
 
 | Plugin | Version | Scope |
 |---|---:|---|
-| `aiup-core` | `103.8.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.5.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
+| `aiup-core` | `103.9.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` | `1.6.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
 
 ## Distribution contract
 
@@ -262,9 +268,13 @@ The portable contract is the produced Markdown and source artefacts, not identic
 
 ```text
 .claude-plugin/marketplace.json
+LICENSE
+NOTICE
 aiup-core/
   .claude-plugin/plugin.json
   .mcp.json
+  LICENSE
+  NOTICE
   skills/
 aiup-compose-ktor-exposed/
   .claude-plugin/plugin.json
@@ -283,7 +293,7 @@ Run from the repository root:
 scripts/validate-skills.sh
 ```
 
-The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, removed-distribution references, canonical Markdown/Mermaid artefacts, the normative use-case validator and worked example, and compilation of the bundled Kotlin API-client example.
+The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, core plugin licence and notice files, attribution and secret-redaction contracts, removed-distribution references, canonical Markdown/Mermaid artefacts, the normative use-case validator and worked example, and compilation of the bundled Kotlin API-client example.
 
 When changing shell scripts, also run:
 
@@ -294,9 +304,9 @@ shellcheck -S warning scripts/*.sh
 ## Upstream integration baseline
 
 This fork was reconciled against `upstream/main` at commit
-`b4454e084c510df4fbee02b8aa254cd6e0e79cc4` (`feat(aiup-core): add
-normative use case spec format and validator (2.5.0)`). The shared ancestor used
-for the selective integration review was
+`c3a5da318da2186a871b07fcb3a3b8521cf03f22` (`Merge branch
+'feat/coverage-check-handoff'`). The shared ancestor used for the selective
+integration review remains
 `48de70fd8cfe082a7b41563e4cb995c47b37a02c`.
 
 Future upstream reviews should compare from the recorded upstream commit, not
@@ -304,8 +314,8 @@ merge `upstream/main` wholesale:
 
 ```sh
 git fetch upstream main
-git log --oneline b4454e084c510df4fbee02b8aa254cd6e0e79cc4..upstream/main
-git diff --stat b4454e084c510df4fbee02b8aa254cd6e0e79cc4..upstream/main
+git log --oneline c3a5da318da2186a871b07fcb3a3b8521cf03f22..upstream/main
+git diff --stat c3a5da318da2186a871b07fcb3a3b8521cf03f22..upstream/main
 ```
 
 Selectively port improvements that preserve this fork's retained core and
@@ -325,4 +335,8 @@ Do not create Tessl manifests or copy version numbers from the public upstream r
 
 ## Licence
 
-Apache-2.0
+Licensed under the [Apache License 2.0](LICENSE).
+
+## Copyright and trademark
+
+Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors. "AI Unified Process" identifies the original methodology by Simon Martinelli. Derived works must retain the [NOTICE](NOTICE) file and must not present themselves as the official AI Unified Process.

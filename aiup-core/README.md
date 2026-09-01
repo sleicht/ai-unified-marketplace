@@ -1,6 +1,12 @@
+<!--
+Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors.
+Part of the AI Unified Process — https://unifiedprocess.ai
+Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+-->
+
 # aiup-core
 
-> Stack-agnostic core of the [**AI Unified Process (AIUP)**](https://unifiedprocess.ai) — a structured,
+> Stack-agnostic core of the [**AI Unified Process**](https://unifiedprocess.ai) — a structured,
 > requirements-first workflow for taking a software project from raw vision to use case specifications.
 
 `aiup-core` is the technology-independent foundation plugin. It stops at the specification boundary; implementation
@@ -74,4 +80,4 @@ For Kotlin Multiplatform / Compose / Ktor / Exposed projects, install `aiup-comp
 
 ## License
 
-Apache-2.0 · © [Simon Martinelli](https://unifiedprocess.ai)
+Apache-2.0 · © 2025-2026 [Simon Martinelli](https://unifiedprocess.ai) and the AI Unified Process contributors. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

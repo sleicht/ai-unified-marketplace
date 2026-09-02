@@ -7,8 +7,9 @@ Prefer existing UI test conventions. Use these patterns when the target matches 
 Use the lightest level that proves the behaviour:
 
 1. Ktor `MockEngine` API-client test in `commonTest`
-2. `runTest` ViewModel test with injected fakes
-3. `runComposeUiTest` semantics test only when Compose test dependencies already exist
+2. `runTest` ViewModel test with injected fake feature ports
+3. Isolated state/action semantics test without a ViewModel or HTTP client when Compose tests are configured
+4. Full-screen `runComposeUiTest` semantics test only when the isolated boundary cannot prove the behaviour
 
 Place `expect`/`actual` auth and platform behaviour tests in the matching `jvmTest` or `wasmJsTest` source set. Do not use Android-only rules in a multiplatform module.
 
@@ -31,7 +32,13 @@ val client =
 
 ## ViewModel Tests
 
-Use `runTest`, pass the test scope, call the action, and use `advanceUntilIdle()` before state assertions. Extract an API interface only when existing code already follows that style or testability requires the production change.
+Use `runTest`, pass the test scope, call the action, and use `advanceUntilIdle()` before state assertions. Fake the production feature port, not the concrete API adapter. If the port is missing, report the production boundary needed by `implement-ui` rather than adding a test-only interface.
+
+## State and Action Tests
+
+Render independently testable screen sections with immutable `XxxUiState` and captured
+`XxxActions`. Assert both visible state and forwarded user intent without constructing a ViewModel,
+Ktor client, or authentication stack.
 
 ## Semantics Tests
 
@@ -47,4 +54,6 @@ Inject fake token providers for common API-client behaviour. Test PKCE generatio
 - inside the reference stack: `mise run ui-test <ClassName>`
 - no mise task: the matching UI source-set or `allTests` Gradle task
 
-Run focused tests first, then the project's formatting check.
+Run focused tests first, then the project's formatting, architecture, and configured coverage checks.
+When introducing a coverage threshold, measure a stable passing line/branch baseline and round down
+conservatively; never copy a threshold from another module.

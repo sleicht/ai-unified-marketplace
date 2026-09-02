@@ -2,9 +2,9 @@
 name: implement-ui
 description: >
   Implements Compose Multiplatform UI for use cases in the reference service
-  style: Ktor API client, plain Compose-state ViewModels,
-  constructor-injected dependencies, small Material 3 composables, shared DTOs,
-  and multiplatform-safe utilities. Use when the user asks to "implement the UI",
+  style: transport ports, plain Compose-state ViewModels, immutable UI state and
+  action contracts, constructor-injected dependencies, small Material 3
+  composables, shared DTOs, and multiplatform-safe utilities. Use when the user asks to "implement the UI",
   "create a screen", "build the Compose view", "wire the frontend", or mentions
   Compose Multiplatform screens, UI implementation, client-side development, or
   frontend for a use case.
@@ -19,11 +19,12 @@ Implement the Compose Multiplatform UI for the use case named or implied by the 
 Use:
 - `service-ui`/`*-ui` KMP module or discovered UI module
 - Shared `@Serializable` DTOs from the shared module
-- Ktor Client in a dedicated API client class
-- Plain ViewModel classes with Compose `mutableStateOf`
+- Feature-oriented transport ports implemented by dedicated Ktor API clients
+- Plain ViewModel classes that depend on ports, not concrete API clients
+- Immutable UI state and action contracts for independently testable screen sections
 - `rememberCoroutineScope()` passed into ViewModels
 - Small private composables and Material 3 components
-- Constructor injection via top-level `App(apiClient: ...)`, not Koin inside composables
+- Constructor injection at the application entry point, not Koin inside composables
 
 Do not create backend code. Use `implement` for backend.
 Do not create tests. Use `compose-test` for UI tests and Ktor MockEngine tests.
@@ -59,12 +60,20 @@ Before adding auth or runtime configuration, inspect the UI module for an existi
 
 - Hardcode `localhost` base URLs when the project has env/runtime configuration
 - Add a second auth mechanism beside an existing OIDC/PKCE stack
+- Make a ViewModel depend directly on a concrete `*ApiClient`
+- Pass a ViewModel into a screen section that can be expressed as immutable state plus actions
+- Create feature Gradle modules without evidence that package/internal boundaries are insufficient
 ## Target UI Architecture
 
 ```text
 <ui-module>/src/commonMain/kotlin/<base-package>/ui/
 ├── api/
-│   └── ServiceApiClient.kt              # Ktor Client calls, JSON config, auth header
+│   └── ServiceApiClient.kt          # Ktor adapter implementing feature ports
+├── <feature>/
+│   ├── <Feature>DataPort.kt         # transport-independent capabilities
+│   └── <Feature>Ui.kt               # immutable state and action contracts
+├── port/
+│   └── FeaturePorts.kt              # small ports shared by several features
 ├── screen/
 │   ├── App.kt                       # App root, MaterialTheme, navigation/tabs
 │   ├── ErrorBanner.kt               # Reusable error display
@@ -93,7 +102,7 @@ class ServiceApiClient(
     baseUrl: String,
     private val accessTokenProvider: AccessTokenProvider,
     val httpClient: HttpClient = createServiceHttpClient(),
-) {
+) : RecordDataPort {
     private val apiBase = "${baseUrl.trimEnd('/')}/api/v1"
 
     suspend fun listRecords(limit: Int = 50): List<RecordListItem> =
@@ -130,57 +139,80 @@ When no auth stack exists, keep the simple bearer-token constructor style from t
 
 ```kotlin
 class RecordViewModel(
-    private val api: ServiceApiClient,
+    private val recordPort: RecordDataPort,
     private val scope: CoroutineScope,
 ) {
-    var records by mutableStateOf<List<RecordListItem>>(emptyList())
+    var searchState by mutableStateOf(RecordSearchUiState())
         private set
 
-    var selectedRecord by mutableStateOf<RecordDetail?>(null)
-        private set
-
-    var isLoading by mutableStateOf(false)
-        private set
-
-    var error by mutableStateOf<String?>(null)
-        private set
-
-    var searchQuery by mutableStateOf("")
+    val searchActions =
+        RecordSearchActions(
+            onQueryChange = { query -> searchState = searchState.copy(query = query) },
+            onSearch = ::loadRecords,
+            onRecordSelected = ::selectRecord,
+        )
 
     fun loadRecords() {
         scope.launch {
-            isLoading = true
-            error = null
+            searchState = searchState.copy(isLoading = true, error = null)
             try {
-                records = api.listRecords(limit = 100)
+                searchState =
+                    searchState.copy(
+                        records = recordPort.listRecords(limit = 100),
+                    )
             } catch (e: Exception) {
-                error = "Failed to load records: ${e.message}"
+                searchState = searchState.copy(error = "Failed to load records: ${e.message}")
             } finally {
-                isLoading = false
+                searchState = searchState.copy(isLoading = false)
             }
         }
+    }
+
+    private fun selectRecord(id: Long) {
+        // Update feature state or navigation intent using the project's established pattern.
     }
 }
 ```
 
 Use private setters for state that only ViewModel actions mutate. Keep user input state public only when simple two-way binding is needed.
 
+## State and Action Boundary
+
+For a screen section with meaningful behaviour, expose one immutable state value and one action
+contract. This keeps rendering independent from the ViewModel and transport layer without forcing a
+new Gradle module:
+
+```kotlin
+data class RecordSearchUiState(
+    val query: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val records: List<RecordListItem> = emptyList(),
+)
+
+data class RecordSearchActions(
+    val onQueryChange: (String) -> Unit,
+    val onSearch: () -> Unit,
+    val onRecordSelected: (Long) -> Unit,
+)
+```
+
+Keep contracts feature-local unless several features genuinely share the capability. Prefer this
+package/internal boundary first; propose `feature:<name>:api/impl` Gradle modules only when measured
+change frequency, ownership, dependency control, or build isolation justifies their cost.
+
 ## App Wiring Pattern
 
 ```kotlin
 @Composable
-fun App(apiClient: ServiceApiClient) {
+fun App(recordPort: RecordDataPort) {
     val scope: CoroutineScope = rememberCoroutineScope()
-    val recordVm = remember { RecordViewModel(apiClient, scope) }
-    val importVm = remember { ImportViewModel(apiClient, scope) }
-    var selectedTab by remember { mutableStateOf(Tab.RECORDS) }
+    val recordVm = remember(recordPort, scope) { RecordViewModel(recordPort, scope) }
 
     MaterialTheme {
-        AppScaffold(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            recordContent = { RecordBrowserScreen(recordVm) },
-            importContent = { ImportDashboardScreen(importVm) },
+        RecordBrowserScreen(
+            state = recordVm.searchState,
+            actions = recordVm.searchActions,
         )
     }
 }
@@ -192,16 +224,13 @@ Prefer simple tabs/navigation until the project already has a navigation framewo
 
 ```kotlin
 @Composable
-fun RecordBrowserScreen(vm: RecordViewModel) {
-    LaunchedEffect(Unit) { vm.loadRecords() }
-
+fun RecordBrowserScreen(
+    state: RecordSearchUiState,
+    actions: RecordSearchActions,
+) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        RecordBrowserHeader(vm)
-        RecordBrowserContent(vm)
-    }
-
-    vm.selectedRecord?.let { detail ->
-        RecordDetailDialog(detail, onDismiss = { vm.clearSelection() })
+        RecordBrowserHeader(state, actions)
+        RecordBrowserContent(state, actions)
     }
 }
 ```
@@ -231,15 +260,16 @@ Show loading only when there is no existing content, unless the use case require
 2. Verify backend DTOs/routes exist in shared/server modules. If required prerequisites are missing, report the exact DTOs/routes and stop; do not implement backend scope automatically.
 3. Read `references/ui-style.md`.
 4. Discover the owning stack/service, UI module, package names, and platform targets from the stack's `settings.gradle.kts` and Gradle files.
-5. Inspect existing UI module for package names, screen structure, API client style, runtime config, and an `auth/` OIDC/PKCE stack.
+5. Inspect existing UI module for package names, feature ports, state/action contracts, screen structure, API client style, runtime config, and an `auth/` OIDC/PKCE stack.
 6. If an auth stack exists, route API calls through its token provider; otherwise preserve the existing POC token style.
 7. Add or extend shared DTO usage; do not duplicate DTOs.
-8. Add API client methods in the existing client class, using env/runtime-driven base URLs.
-9. Add or extend a ViewModel with Compose state and coroutine actions.
-10. Add or extend screens using small private composables and Material 3.
+8. Add the narrowest feature port and implement it in the existing API client; do not expose transport types through the port.
+9. Add or extend a ViewModel that depends only on ports and groups related Compose state.
+10. Give independently testable screen sections immutable state and action contracts; keep trivial leaf composables simple.
 11. Wire the screen into `App.kt` or existing navigation/tabs.
-12. If language-server diagnostics are available, run them for touched Kotlin files.
-13. Verify with the detected project command: namespaced `mise run //<stack>:compile` from monorepo root, bare `mise run compile` inside a stack, or UI module Gradle tasks as fallback. Use desktop/wasm run tasks only when manual UI verification is needed.
+12. Respect existing architecture and coverage gates. Do not invent coverage percentages or create tests in this skill; note missing test/gate work for `compose-test`.
+13. If language-server diagnostics are available, run them for touched Kotlin files.
+14. Verify with the detected project command: namespaced `mise run //<stack>:compile` from monorepo root, bare `mise run compile` inside a stack, or UI module Gradle tasks as fallback. Run existing architecture, coverage, and shared-contract gates affected by the change. Use desktop/wasm run tasks only when manual UI verification is needed.
 
 ## Resources
 

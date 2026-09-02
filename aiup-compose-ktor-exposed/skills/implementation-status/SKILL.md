@@ -39,7 +39,10 @@ Read these before updating status:
 - server module `src/main/kotlin/**/modules/**`
 - shared module `src/commonMain/kotlin/**`
 - UI module only when UI implementation status is requested
+- Feature ports, UI state/action contracts, and transport adapters when UI boundaries are in scope
 - Flyway migrations under `src/main/resources/db/migration`
+- Feature-owned Koin modules and deployable-service DI graph tests
+- Checked-in shared API dumps plus architecture and local coverage gates when present
 - `references/service-discovery.md` for module/source-set discovery and command shape
 
 ## Entity Matrix
@@ -76,8 +79,9 @@ Required sections:
 3. `Traceability` — requirements/use-case/entity/code links
 4. `Entity Coverage` — filtered entity matrix rows
 5. `Backend Coverage` — route, service, repository, DTO, migration evidence
-6. `Test Coverage` — route/unit/ArchUnit/Testcontainers/UI test evidence if present
-7. `Gaps` — missing or partial items with file-level evidence
+6. `Architecture and Contract Coverage` — DI graph, dependency rules, shared API checks, and local coverage gates
+7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/UI test evidence if present
+8. `Gaps` — missing or partial items with file-level evidence
 
 ## DO NOT
 
@@ -95,10 +99,12 @@ Required sections:
 4. Discover server/shared/UI modules from the owning stack's `settings.gradle.kts`.
 5. Read Flyway migration filenames and SQL headers, especially `-- Source:` comments when present.
 6. Search source files for entity model classes, repositories, services, routes, DTOs, and tests.
-7. Update the entity implementation-status matrix in `entity_model.md`.
-8. Write or refresh per-use-case implementation-status Markdown.
-9. Verify links point to existing relative paths and matrix columns line up.
-10. If commands are needed, use detected command shape: `mise run //<stack>:<task>` from monorepo root, bare `mise run <task>` inside a stack, or Gradle fallback.
+7. For UI scope, trace ViewModel dependencies through feature ports to transport adapters and record state/action screen seams.
+8. Record feature-owned DI modules, complete graph verification, architecture rules, shared API dumps, and measured local coverage gates when evidence exists.
+9. Update the entity implementation-status matrix in `entity_model.md`.
+10. Write or refresh per-use-case implementation-status Markdown.
+11. Verify links point to existing relative paths and matrix columns line up.
+12. If commands are needed, use detected command shape: `mise run //<stack>:<task>` from monorepo root, bare `mise run <task>` inside a stack, or Gradle fallback.
 
 ## Resources
 

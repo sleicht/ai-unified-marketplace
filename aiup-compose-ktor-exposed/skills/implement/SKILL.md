@@ -4,7 +4,8 @@ description: >
   Implements backend use cases in the Compose/Ktor/Exposed stack using the
   current reference service style: vertical server modules, domain
   models, repository ports, Exposed persistence, application services, Ktor
-  routes, Koin DI, and shared DTOs. Use when the user asks to "implement a use
+  routes, feature-owned Koin modules, and shared DTOs with compatibility gates.
+  Use when the user asks to "implement a use
   case", "build the backend", "create the API", "write the data access layer",
   or mentions Ktor implementation, Exposed repositories, REST endpoints, or
   backend development. This skill is backend-only; use implement-ui for Compose
@@ -25,7 +26,7 @@ Use:
 - Application services in `application` for orchestration
 - Ktor routes in `infrastructure/rest`
 - Shared `@Serializable` DTOs in the shared KMP module for API/UI boundaries
-- Koin registration in `di/DependencyInjection.kt`
+- Koin registration beside the owning feature, composed by `di/DependencyInjection.kt`
 
 Do not create tests. Use `ktor-test` and `compose-test` for tests.
 
@@ -54,6 +55,8 @@ Read `references/backend-style.md`, resolved relative to this `SKILL.md`, before
 - ArchUnit layering rules and `ArchitectureTest` verification
 - Route authorization and API Gateway annotations
 - Koin module composition
+- Feature-owned DI modules and deployable-service graph verification
+- Shared-contract API compatibility gates
 - Namespaced mise or Gradle fallback verification commands
 
 ## DO NOT
@@ -67,13 +70,17 @@ Read `references/backend-style.md`, resolved relative to this `SKILL.md`, before
 - Create one large route function when existing style uses small private helpers
 - Bypass route auth helpers in Company-style services
 - Return internal domain models when shared response DTOs already exist or are required
+- Put feature repository/service bindings directly in the application composition root
+- Regenerate API dumps for an unrelated change or hide an unintended contract break
+- Duplicate a convention-plugin rule in a module or collapse independent service builds to share configuration
 
 ## Target Architecture
 
 ```text
 <server-module>/src/main/kotlin/<base-package>/
-├── di/DependencyInjection.kt
+├── di/DependencyInjection.kt          # composition root only
 └── modules/<feature>/
+    ├── DependencyInjection.kt         # feature-owned Koin module
     ├── api/                         # Service/source ports, public API interfaces
     ├── application/                 # Use-case orchestration, cross-layer mappers
     ├── domain/
@@ -186,12 +193,12 @@ Keep route blocks small. Use route-local mappers when mapping domain models to s
 
 ### DI Pattern
 
-```kotlin
-private val repositoryModule = module {
-    single<RecordRepository> { ExposedRecordRepository() }
-}
+Define feature bindings beside their owner:
 
-private val serviceModule = module {
+```kotlin
+// modules/record/DependencyInjection.kt
+internal val recordModule = module {
+    single<RecordRepository> { ExposedRecordRepository() }
     single<ExampleService> {
         ExampleServiceImpl(
             recordRepository = get(),
@@ -199,9 +206,26 @@ private val serviceModule = module {
         )
     }
 }
-
-val appModule = module { includes(repositoryModule, serviceModule) }
 ```
+
+Keep the deployable service root declarative:
+
+```kotlin
+// di/DependencyInjection.kt
+val appModule = module {
+    includes(infrastructureModule, recordModule)
+}
+```
+
+Keep only genuinely cross-feature infrastructure in the root package. The owning feature controls
+its repository, service, and adapter bindings. Existing `DependencyInjectionTest` graph checks must
+stay green; use `ktor-test` when a new graph test is required.
+
+### Shared Contract Compatibility
+
+Treat `*-shared` modules consumed by another build as public contracts. When changing their public
+DTOs, run the configured `apiCheck` through the owning build. Update checked-in JVM/KLIB API dumps
+only when the use-case contract intentionally changed, and include the dump change in the review.
 
 ## Workflow
 
@@ -218,11 +242,12 @@ val appModule = module { includes(repositoryModule, serviceModule) }
 11. Implement Exposed repositories using the project's transaction style and private mappers.
 12. Implement application service only when orchestration spans multiple dependencies or transactions.
 13. Implement Ktor routes with auth helpers and route-local mappers.
-14. Register repositories/services in Koin DI.
+14. Register repositories/services in the owning feature's Koin module and include that module from the composition root.
 15. Wire routes in top-level `Routing.kt` under existing `/api/v1` structure.
-16. Update or extend `ArchitectureTest.kt` when adding modules or enforced architectural boundaries.
-17. If language-server diagnostics are available, run them for touched Kotlin files.
-18. Verify with the detected project command: `mise run //<stack>:compile` / `mise run //<stack>:verify` from a monorepo root, bare `mise run compile` / `mise run verify` inside a stack, or module Gradle tasks as fallback. Include a focused `ArchitectureTest` run when present.
+16. If a shared public contract changed, run its configured `apiCheck`; change API dumps only for the intended contract delta.
+17. Do not create or edit tests in this skill. Note required DI/architecture test work for `ktor-test` instead.
+18. If language-server diagnostics are available, run them for touched Kotlin files.
+19. Verify with the detected project command: `mise run //<stack>:compile` / `mise run //<stack>:verify` from a monorepo root, bare `mise run compile` / `mise run verify` inside a stack, or module Gradle tasks as fallback. Run existing DI graph and architecture tests when present.
 
 ## Resources
 

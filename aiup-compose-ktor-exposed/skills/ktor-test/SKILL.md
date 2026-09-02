@@ -5,7 +5,7 @@ description: >
   style: Ktor testApplication route tests, fake repository
   ports, Company auth test helpers when present, kotlin.test assertions,
   MockEngine for outbound clients, and Testcontainers repository integration
-  tests. Use when the user asks to "write API tests", "test the Ktor
+  tests, plus complete Koin dependency-graph verification. Use when the user asks to "write API tests", "test the Ktor
   endpoints", "create backend tests", "unit test the routes", or mentions Ktor
   testing, TestHost, repository integration tests, or endpoint tests.
 ---
@@ -24,6 +24,7 @@ Use:
 - Ktor `MockEngine` for outbound HTTP clients
 - Testcontainers + Flyway for repository integration tests
 - ArchUnit `ArchitectureTest.kt` updates when adding or changing modules
+- Koin `verify()` tests for each deployable service composition root
 
 ## Reconcile Existing Tests
 
@@ -57,6 +58,8 @@ Read `references/backend-testing.md`, resolved relative to this `SKILL.md`, befo
 - Delete all shared data in cleanup outside tables owned by the test
 - Put Testcontainers tests in `src/test` when the project has `src/testContainerTest`
 - Put ArchUnit tests outside the existing architecture-test location/style
+- Verify only isolated feature modules when the deployable `appModule` can be checked
+- Instantiate framework-managed dependencies merely to satisfy Koin verification
 
 ## Route Test Pattern
 
@@ -219,6 +222,30 @@ Reference rules to preserve:
 
 Run the focused `ArchitectureTest` after backend architecture changes. Do not loosen existing rules to make a new implementation pass; fix the dependency direction instead.
 
+## Dependency Graph Test Pattern
+
+Verify the complete module graph at the deployable service boundary:
+
+```kotlin
+class DependencyInjectionTest {
+    @OptIn(KoinExperimentalAPI::class)
+    @Test
+    fun `application dependency graph is complete`() {
+        appModule.verify(
+            extraTypes = listOf(Application::class),
+            injections =
+                injectedParameters(
+                    definition<HttpClient>(HttpClientEngine::class),
+                ),
+        )
+    }
+}
+```
+
+Use `extraTypes` for runtime-provided types such as `Application` or `Clock`. Use
+`injectedParameters` for definitions whose constructor parameters are supplied dynamically. Keep
+feature bindings beside their owning module and verify their composition through `appModule`.
+
 ## Scenario Coverage
 
 Derive tests from use case flows:
@@ -239,14 +266,15 @@ Derive tests from use case flows:
 2. Read `references/backend-testing.md`.
 3. Inspect existing tests in the same module and mirror imports, assertions, auth helpers, source-set placement, and naming.
 4. Inspect `ArchitectureTest.kt` when present; extend it for new modules or boundaries.
-5. Decide test level: route unit test, application service unit test, outbound client test, ArchUnit rule, or Testcontainers repository integration test.
+5. Decide test level: route unit test, application service unit test, outbound client test, DI graph test, ArchUnit rule, or Testcontainers repository integration test.
 6. Place route/unit/ArchUnit tests in `src/test`; place PostgreSQL/Flyway repository tests in `src/testContainerTest` when that suite exists.
 7. Create small fake implementations for ports used by route/service tests.
 8. Cover success, validation, not-found, auth, and key alternative flows.
 9. If language-server diagnostics are available, run them for touched Kotlin test files.
 10. Run focused test command using detected shape: `mise run //<stack>:test <ClassName>` or bare `mise run test <ClassName>`; for Testcontainers use namespaced/bare `tc-test`. Fallback to Gradle module test tasks.
-11. Run `ArchitectureTest` when architecture rules changed.
-12. Run `mise run format-check` or project formatting check if available.
+11. Add or update the deployable service's `DependencyInjectionTest` when Koin bindings or included feature modules changed.
+12. Run `ArchitectureTest` when architecture rules changed; ensure expected layers/modules are actually matched rather than silently allowing empty rules.
+13. Run `mise run format-check` or project formatting check if available.
 
 ## Resources
 

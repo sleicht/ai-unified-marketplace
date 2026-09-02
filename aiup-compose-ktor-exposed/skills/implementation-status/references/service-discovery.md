@@ -16,6 +16,10 @@ Use this reference to locate evidence. Prefer the target project's actual struct
 - A domain model requires a usable production class.
 - Repository coverage is complete only when the port and implementation both exist; otherwise mark `Partial`.
 - Service coverage may be an application service, a route-only implementation, or `Not needed` when evidence supports that design.
+- Backend DI evidence distinguishes feature-owned Koin bindings from root composition and requires a complete graph test before marking verification present.
+- UI boundary evidence traces `ViewModel -> feature port -> API client`; state/action contracts count only when a screen section consumes them directly.
+- Shared API compatibility requires configured validation and the applicable checked-in JVM/KLIB dumps for the affected contract module.
+- Coverage gates require repository-local thresholds backed by a recorded or reproducible passing baseline; reports alone are not gates.
 - Test evidence must identify an existing test file and its level (route, unit, ArchUnit, Testcontainers, UI).
 - Use exact migration versions from filenames and DDL changes.
 

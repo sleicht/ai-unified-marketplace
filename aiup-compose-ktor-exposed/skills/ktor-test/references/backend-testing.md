@@ -7,6 +7,7 @@ Prefer existing test conventions. Use these patterns when the target matches the
 - Discover modules from the owning stack's `settings.gradle.kts`.
 - Mirror nearby imports, assertions, auth helpers, fake style, naming, and source sets.
 - Put route/application/outbound-client/ArchUnit tests in `src/test`.
+- Put deployable-service Koin graph tests in `src/test` beside the composition root package.
 - Put PostgreSQL/Flyway repository tests in `src/testContainerTest` when configured.
 - Read `ArchitectureTest.kt` before testing new module boundaries.
 
@@ -46,6 +47,15 @@ When ArchUnit exists, preserve these directions:
 - cross-module access uses `..api..`.
 
 Do not loosen rules to make implementation pass.
+
+## Dependency Graph Verification
+
+Verify the complete deployable `appModule` with Koin `verify()`. Model runtime-provided types with
+`extraTypes` and dynamically supplied constructor parameters with `injectedParameters`. Do not
+replace feature-owned modules with duplicate test modules: the purpose is to prove that the real
+composition root resolves.
+
+Run this test whenever repository/service/client bindings or `includes(...)` change.
 
 ## Commands
 

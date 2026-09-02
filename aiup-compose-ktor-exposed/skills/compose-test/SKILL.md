@@ -3,8 +3,9 @@ name: compose-test
 description: >
   Creates UI-side tests for Compose/Ktor client code in the reference service
   style: commonTest Ktor MockEngine API-client tests,
-  coroutine runTest ViewModel tests, and Compose Multiplatform semantics tests
-  when screen-test dependencies exist. Use when the user asks to "write Compose
+  coroutine runTest ViewModel tests through feature ports, state/action boundary
+  tests, and Compose Multiplatform semantics tests when screen-test dependencies
+  exist. Use when the user asks to "write Compose
   tests", "test the UI", "create screen tests", "unit test a Compose screen",
   or mentions Compose testing, UI testing, MockEngine, ViewModel testing, or
   runComposeUiTest.
@@ -18,8 +19,9 @@ Create UI-side tests for the use case named or implied by the user's request. Fo
 
 Prefer this order:
 1. API client tests with Ktor `MockEngine` in `commonTest`
-2. ViewModel tests with fake API clients and `runTest`
-3. Compose semantics tests with `runComposeUiTest` only when the project has Compose UI test dependencies configured
+2. ViewModel tests with fake feature ports and `runTest`
+3. Isolated state/action semantics tests without a ViewModel or transport client when Compose tests are configured
+4. Full-screen semantics tests only when the isolated boundary cannot prove the behaviour
 
 ## Reconcile Existing Tests
 
@@ -52,6 +54,8 @@ Read `references/ui-testing.md`, resolved relative to this `SKILL.md`, before wr
 - Duplicate shared DTOs inside tests
 - Put platform-specific auth tests in `commonTest` when the implementation lives in `jvmMain` or `wasmJsMain`
 - Assert POC bearer-token headers when the project uses an OIDC token provider
+- Reintroduce concrete API clients into ViewModel or screen tests when feature ports exist
+- Invent coverage thresholds without first measuring a stable passing baseline
 
 ## API Client Test Pattern
 
@@ -111,7 +115,9 @@ When the target project uses test traceability annotations such as `@UseCase`, p
 
 ## ViewModel Test Pattern
 
-If the API client is concrete and not interface-based, prefer extracting a small interface only if existing code already uses that style or the change is needed for testability. Otherwise, test API client behavior directly.
+Inject a small fake of the production feature port. If a ViewModel still depends directly on a
+concrete API client, test the client separately and report the missing boundary for `implement-ui`;
+do not hide the coupling with a test-only abstraction.
 
 When a fake can be injected:
 
@@ -119,8 +125,8 @@ When a fake can be injected:
 class RecordViewModelTest {
     @Test
     fun `loadRecords stores records`() = runTest {
-        val api = FakeServiceApiClient(records = listOf(aRecordListItem()))
-        val vm = RecordViewModel(api, this)
+        val records = FakeRecordDataPort(records = listOf(aRecordListItem()))
+        val vm = RecordViewModel(records, this)
 
         vm.loadRecords()
         testScheduler.advanceUntilIdle()
@@ -133,6 +139,39 @@ class RecordViewModelTest {
 
 Use `kotlinx.coroutines.test.runTest` and `advanceUntilIdle()` for coroutine-driven state changes.
 
+## State and Action Boundary Test Pattern
+
+When a screen section accepts immutable state and actions, exercise it without constructing a
+ViewModel or HTTP client:
+
+```kotlin
+@Test
+fun `search forwards query and submit actions`() = runComposeUiTest {
+    var state by mutableStateOf(RecordSearchUiState())
+    var searchRequested = false
+
+    setContent {
+        RecordSearchContent(
+            state = state,
+            actions =
+                RecordSearchActions(
+                    onQueryChange = { state = state.copy(query = it) },
+                    onSearch = { searchRequested = true },
+                    onRecordSelected = {},
+                ),
+        )
+    }
+
+    onNode(hasSetTextAction()).performTextInput("Ada")
+    onNodeWithText("Search").performClick()
+
+    runOnIdle {
+        assertEquals("Ada", state.query)
+        assertTrue(searchRequested)
+    }
+}
+```
+
 ## Compose Semantics Test Pattern
 
 Use only when Compose UI testing dependencies exist in `commonTest`:
@@ -143,10 +182,12 @@ class RecordBrowserScreenTest {
 
     @Test
     fun `screen displays records`() = runComposeUiTest {
-        val vm = RecordViewModel(fakeApiWithRecords(), backgroundScope)
-        vm.loadRecords()
-
-        setContent { RecordBrowserScreen(vm) }
+        setContent {
+            RecordBrowserScreen(
+                state = RecordSearchUiState(records = listOf(aRecordListItem())),
+                actions = RecordSearchActions({}, {}, {}),
+            )
+        }
 
         waitUntil(timeoutMillis = 5_000) {
             onAllNodesWithText("Standard", substring = true).fetchSemanticsNodes().isNotEmpty()
@@ -183,6 +224,7 @@ Derive UI tests from use case behavior:
 | Loading state | ViewModel coroutine test |
 | Error message | ViewModel fake failure test |
 | Search/filter | ViewModel pure state test or screen semantics test |
+| State/action boundary | Screen semantics test with immutable state and captured actions |
 | Button invokes action | Screen semantics test if available |
 | Navigation/tab selection | Screen semantics test or extracted state test |
 
@@ -194,12 +236,15 @@ Derive UI tests from use case behavior:
 4. Inspect existing API-client auth style: OIDC/PKCE token provider, POC bearer token, or no auth.
 5. Choose the lightest useful test level: API client, ViewModel, platform auth helper, or Compose screen.
 6. Use Ktor `MockEngine` for API client behavior and no network.
-7. Use fake token providers/clients/repositories for ViewModel and screen tests.
+7. Use fake feature ports for ViewModel tests; reserve MockEngine clients for transport tests.
 8. Use `runTest` and `advanceUntilIdle()` for coroutine state.
-9. Use `runComposeUiTest` and semantics only when dependencies exist.
-10. Put `expect`/`actual` platform behaviour tests in `jvmTest`/`wasmJsTest` when relevant.
-11. If language-server diagnostics are available, run them for touched Kotlin test files.
-12. Run the detected focused UI test task. In the reference monorepo use `mise run //<stack>:ui-test <ClassName>` from the root or `mise run ui-test <ClassName>` inside the stack; otherwise use the matching UI source-set or `allTests` Gradle task.
+9. Test meaningful screen sections through immutable state and action contracts before using a full ViewModel fixture.
+10. Use `runComposeUiTest` and semantics only when dependencies exist.
+11. Put `expect`/`actual` platform behaviour tests in `jvmTest`/`wasmJsTest` when relevant.
+12. Add or extend architecture rules that keep ViewModels off concrete API clients and ports free of Ktor/Compose when the project uses ArchUnit.
+13. When adding a local coverage gate, measure the current line/branch baseline, round down conservatively, and keep the first gate no higher than the passing baseline.
+14. If language-server diagnostics are available, run them for touched Kotlin test files.
+15. Run the detected focused UI test task. In the reference monorepo use `mise run //<stack>:ui-test <ClassName>` from the root or `mise run ui-test <ClassName>` inside the stack; otherwise use the matching UI source-set or `allTests` Gradle task. Run configured architecture and coverage verification after focused tests.
 
 ## Resources
 

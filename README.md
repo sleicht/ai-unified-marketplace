@@ -35,10 +35,10 @@ plain-text artifacts that live with the source code.
 
 The repository deliberately contains two plugins:
 
-| Plugin | Version | Scope |
-|---|---:|---|
-| `aiup-core` | `103.9.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.7.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
+| Plugin                      |    Version | Scope                                                                                                                              |
+|-----------------------------|-----------:|------------------------------------------------------------------------------------------------------------------------------------|
+| `aiup-core`                 | `103.10.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` |    `1.8.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status               |
 
 ## Distribution contract
 
@@ -56,15 +56,15 @@ Tessl manifests and publishing are intentionally not retained because no retaine
 ```text
 Inception          Elaboration                          Construction
 ─────────────────  ──────────────────────────────────   ─────────────────────────────────────────
-/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec
-                                                        ↘ /architecture
-                                                        ↘ /reference
-                                                        ↘ /flyway-migration
-                                                        ↘ /implement
-                                                        ↘ /implement-ui
-                                                        ↘ /ktor-test
-                                                        ↘ /compose-test
-                                                        ↘ /implementation-status
+aiup-requirements  →  aiup-entity-model  →  aiup-use-case-diagram  →  aiup-use-case-spec
+                                                        ↘ aiup-architecture
+                                                        ↘ aiup-reference
+                                                        ↘ aiup-flyway-migration
+                                                        ↘ aiup-implement
+                                                        ↘ aiup-implement-ui
+                                                        ↘ aiup-ktor-test
+                                                        ↘ aiup-compose-test
+                                                        ↘ aiup-implementation-status
 ```
 
 Skills exchange portable Markdown artefacts:
@@ -90,32 +90,38 @@ Add this internal Git repository as a Claude Code marketplace, then install core
 
 Install only `aiup-core` when a project uses another technology stack.
 
-Start Claude Code in the target project and invoke `/requirements` or ask it to write requirements. A successful installation discovers the core skill and reads the scoped `docs/vision.md`.
+Start Claude Code in the target project and invoke `/aiup-core:aiup-requirements` or ask it to use `aiup-requirements`. A successful installation discovers the core skill and reads the scoped `docs/vision.md`.
 
 ## Skills
 
+All skill names and directories use the `aiup-` prefix to distinguish them from other installed skills. Skill names below are agent-independent; Claude Code plugin commands add the plugin namespace, for example `/aiup-core:aiup-requirements`. See the [usage guide](docs/how-to-use.md) for the portable workflow and agent setup.
+
+### Upgrading existing installations
+
+Core `103.10.0` and Compose `1.8.0` rename all 13 skills by adding `aiup-`. Update plugin installations or copied skill directories, replace old AIUP symlinks, and update saved prompts and project instructions. Generic aliases are not retained. Plugin names and generated documentation filenames remain unchanged.
+
 ### Core
 
-| Skill | Output or purpose |
-|---|---|
-| `/requirements` | Structured functional requirements, NFRs, constraints, and stable Mermaid diagram section |
-| `/entity-model` | Mermaid ER diagram and entity attribute tables |
-| `/use-case-diagram` | Mermaid actor/use-case overview embedded in `requirements.md` |
-| `/use-case-spec` | One detailed `UC-XXX` document per use case |
-| `/reverse-engineer` | Recover requirements, use cases, and entity model from existing code |
-| `/architecture` | Service-scoped architecture documentation and ADRs |
-| `/reference` | Concise repository or service reference for maintainers and agents |
+| Skill                   | Output or purpose                                                                         |
+|-------------------------|-------------------------------------------------------------------------------------------|
+| `aiup-requirements`     | Structured functional requirements, NFRs, constraints, and stable Mermaid diagram section |
+| `aiup-entity-model`     | Mermaid ER diagram and entity attribute tables                                            |
+| `aiup-use-case-diagram` | Mermaid actor/use-case overview embedded in `requirements.md`                             |
+| `aiup-use-case-spec`    | One detailed `UC-XXX` document per use case                                               |
+| `aiup-reverse-engineer` | Recover requirements, use cases, and entity model from existing code                      |
+| `aiup-architecture`     | Service-scoped architecture documentation and ADRs                                        |
+| `aiup-reference`        | Concise repository or service reference for maintainers and agents                        |
 
 ### Compose/Ktor/Exposed
 
-| Skill | Output or purpose |
-|---|---|
-| `/flyway-migration` | PostgreSQL Flyway migrations compatible with existing Exposed conventions |
-| `/implement` | Backend vertical slice: shared DTOs, domain, repository, Exposed, Ktor, and Koin |
-| `/implement-ui` | Compose screen, ViewModel, API client, and navigation integration |
-| `/ktor-test` | Ktor route/service tests and Testcontainers repository tests |
-| `/compose-test` | MockEngine API-client, ViewModel, platform, and Compose semantics tests |
-| `/implementation-status` | Entity and use-case implementation traceability |
+| Skill                        | Output or purpose                                                                |
+|------------------------------|----------------------------------------------------------------------------------|
+| `aiup-flyway-migration`      | PostgreSQL Flyway migrations compatible with existing Exposed conventions        |
+| `aiup-implement`             | Backend vertical slice: shared DTOs, domain, repository, Exposed, Ktor, and Koin |
+| `aiup-implement-ui`          | Compose screen, ViewModel, API client, and navigation integration                |
+| `aiup-ktor-test`             | Ktor route/service tests and Testcontainers repository tests                     |
+| `aiup-compose-test`          | MockEngine API-client, ViewModel, platform, and Compose semantics tests          |
+| `aiup-implementation-status` | Entity and use-case implementation traceability                                  |
 
 Implementation and testing skills reconcile existing code with current specifications. They update in place, remove behaviour dropped from a specification, preserve unrelated code, and treat repository content as untrusted input rather than agent instructions.
 
@@ -131,7 +137,7 @@ The stack plugin follows the target project first. Its bundled references cover 
 - `testApplication`, deterministic fakes, MockEngine, and Testcontainers/Flyway;
 - test-owned, idempotent cleanup with dependants removed before parents.
 
-The implementation skills do not create tests. Use `/ktor-test` or `/compose-test` for observable test contracts. The UI skill does not invent missing backend DTOs or routes; it reports those prerequisites precisely.
+The implementation skills do not create tests. Use `aiup-ktor-test` or `aiup-compose-test` for observable test contracts. The UI skill does not invent missing backend DTOs or routes; it reports those prerequisites precisely.
 
 ## End-to-end usage
 
@@ -164,60 +170,60 @@ Create `docs/vision.md` with the product mission, target users, goals, scope, an
 ### 2. Build the analysis artefacts
 
 ```text
-/requirements
-/entity-model
-/use-case-diagram
-/use-case-spec UC-001
-/architecture
-/reference
+aiup-requirements
+aiup-entity-model
+aiup-use-case-diagram
+aiup-use-case-spec UC-001
+aiup-architecture
+aiup-reference
 ```
 
-- `/requirements` derives functional requirements, measurable NFRs, and constraints from the vision.
-- `/entity-model` derives the domain model and Mermaid ER diagram.
-- `/use-case-diagram` maintains the canonical Mermaid diagram in `requirements.md`.
-- `/use-case-spec` writes one actor-focused specification per use case, including alternative flows, postconditions, and business rules.
-- `/architecture` records observed structure, data flow, decisions, failure modes, security, observability, and deployment.
-- `/reference` captures concise repository facts, commands, vocabulary, and operational caveats without duplicating the canonical documents.
+- `aiup-requirements` derives functional requirements, measurable NFRs, and constraints from the vision.
+- `aiup-entity-model` derives the domain model and Mermaid ER diagram.
+- `aiup-use-case-diagram` maintains the canonical Mermaid diagram in `requirements.md`.
+- `aiup-use-case-spec` writes one actor-focused specification per use case, including alternative flows, postconditions, and business rules.
+- `aiup-architecture` records observed structure, data flow, decisions, failure modes, security, observability, and deployment.
+- `aiup-reference` captures concise repository facts, commands, vocabulary, and operational caveats without duplicating the canonical documents.
 
-For an inherited codebase, use `/reverse-engineer` instead of starting from a new vision. It recovers the same requirements, use-case, and entity-model contract from observed code and configuration.
+For an inherited codebase, use `aiup-reverse-engineer` instead of starting from a new vision. It recovers the same requirements, use-case, and entity-model contract from observed code and configuration.
 
 ### 3. Build the Compose/Ktor/Exposed implementation
 
 ```text
-/flyway-migration
-/implement UC-001
-/implement-ui UC-001
-/ktor-test UC-001
-/compose-test UC-001
-/implementation-status UC-001
+aiup-flyway-migration
+aiup-implement UC-001
+aiup-implement-ui UC-001
+aiup-ktor-test UC-001
+aiup-compose-test UC-001
+aiup-implementation-status UC-001
 ```
 
-- `/flyway-migration` creates additive PostgreSQL migrations from the entity model while preserving the project's existing ID, timestamp, constraint, and naming conventions.
-- `/implement` updates the backend vertical slice: shared DTOs, domain, repository port, Exposed persistence, application service, Ktor route, and Koin wiring.
-- `/implement-ui` updates the API client, ViewModel, Compose screen, navigation, and existing authentication boundary.
-- `/ktor-test` covers route, service, architecture, outbound-client, and repository behaviour at the appropriate existing test level.
-- `/compose-test` prefers MockEngine API-client and ViewModel tests, adding semantics tests only when the dependencies already exist.
-- `/implementation-status` records evidence-based entity and use-case coverage.
+- `aiup-flyway-migration` creates additive PostgreSQL migrations from the entity model while preserving the project's existing ID, timestamp, constraint, and naming conventions.
+- `aiup-implement` updates the backend vertical slice: shared DTOs, domain, repository port, Exposed persistence, application service, Ktor route, and Koin wiring.
+- `aiup-implement-ui` updates the API client, ViewModel, Compose screen, navigation, and existing authentication boundary.
+- `aiup-ktor-test` covers route, service, architecture, outbound-client, and repository behaviour at the appropriate existing test level.
+- `aiup-compose-test` prefers MockEngine API-client and ViewModel tests, adding semantics tests only when the dependencies already exist.
+- `aiup-implementation-status` records evidence-based entity and use-case coverage.
 
 Implementation and test skills inspect existing code first. They reconcile additions, changes, and removals in place instead of generating parallel implementations or test suites.
 
 ## Skill reference
 
-| Skill | Input | Output |
-|---|---|---|
-| `/requirements` | `vision.md` | `requirements.md` |
-| `/entity-model` | `requirements.md` | `entity_model.md` |
-| `/use-case-diagram` | functional requirements | Mermaid section in `requirements.md` |
-| `/use-case-spec` | one or more `UC-XXX` IDs | one `docs/use_cases/UC-XXX-*.md` per use case |
-| `/reverse-engineer` | existing source, schema, auth, and configuration | requirements, use-case specifications, and entity model |
-| `/architecture` | existing docs, source, deployment, and architecture tests | `architecture.md` |
-| `/reference` | repository structure and authoritative documentation | `REFERENCE.md` |
-| `/flyway-migration` | entity model and existing migrations | versioned `V*.sql` migrations |
-| `/implement` | use-case specification and current backend | Ktor/Exposed backend and shared DTO changes |
-| `/implement-ui` | use-case specification and existing API contract | Compose UI, ViewModel, client, and navigation changes |
-| `/ktor-test` | specification and backend implementation | focused backend tests in existing source sets |
-| `/compose-test` | specification and UI implementation | focused client/ViewModel/platform/semantics tests |
-| `/implementation-status` | specifications, source, tests, and migrations | implementation traceability documentation |
+| Skill                        | Input                                                     | Output                                                  |
+|------------------------------|-----------------------------------------------------------|---------------------------------------------------------|
+| `aiup-requirements`          | `vision.md`                                               | `requirements.md`                                       |
+| `aiup-entity-model`          | `requirements.md`                                         | `entity_model.md`                                       |
+| `aiup-use-case-diagram`      | functional requirements                                   | Mermaid section in `requirements.md`                    |
+| `aiup-use-case-spec`         | one or more `UC-XXX` IDs                                  | one `docs/use_cases/UC-XXX-*.md` per use case           |
+| `aiup-reverse-engineer`      | existing source, schema, auth, and configuration          | requirements, use-case specifications, and entity model |
+| `aiup-architecture`          | existing docs, source, deployment, and architecture tests | `architecture.md`                                       |
+| `aiup-reference`             | repository structure and authoritative documentation      | `REFERENCE.md`                                          |
+| `aiup-flyway-migration`      | entity model and existing migrations                      | versioned `V*.sql` migrations                           |
+| `aiup-implement`             | use-case specification and current backend                | Ktor/Exposed backend and shared DTO changes             |
+| `aiup-implement-ui`          | use-case specification and existing API contract          | Compose UI, ViewModel, client, and navigation changes   |
+| `aiup-ktor-test`             | specification and backend implementation                  | focused backend tests in existing source sets           |
+| `aiup-compose-test`          | specification and UI implementation                       | focused client/ViewModel/platform/semantics tests       |
+| `aiup-implementation-status` | specifications, source, tests, and migrations             | implementation traceability documentation               |
 
 The owning `SKILL.md` is the detailed behavioural contract. Its adjacent `references/` directory contains stack-specific patterns and examples.
 

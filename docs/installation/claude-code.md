@@ -6,61 +6,59 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 # Install with Claude Code
 
-Claude Code can install AI Unified Process directly from the marketplace. Install `aiup-core` in every project and add exactly one
-stack plugin when the implementation stack is supported.
-
-## Prerequisites
-
-- Claude Code is installed and can open the target project.
-- The target project contains a `docs/vision.md` file for the forward workflow, or existing code for
-  `/reverse-engineer`.
-- Stack-specific prerequisites from the selected plugin README are available.
+This fork provides `aiup-core` and `aiup-compose-ktor-exposed`. Install core for the methodology; add the Compose plugin when the target project uses Compose Multiplatform, Ktor, and Exposed.
 
 ## Add the marketplace
 
-Run this once in Claude Code:
+In Claude Code, add your organisation's checkout URL for this repository:
 
 ```text
-/plugin marketplace add ai-unified-process/marketplace
+/plugin marketplace add <internal-git-repository-url>
 ```
+
+Alternatively, add an existing local checkout:
+
+```text
+/plugin marketplace add /absolute/path/to/ai-unified-marketplace
+```
+
+The placeholder must point to this fork, whose [marketplace manifest](../../.claude-plugin/marketplace.json) declares `ai-unified-process-marketplace`. The marketplace identifier comes from the manifest, not the Git repository's name.
 
 ## Install plugins
 
-Install the core plugin:
-
 ```text
-/plugin install aiup-core
+/plugin install aiup-core@ai-unified-process-marketplace
+/plugin install aiup-compose-ktor-exposed@ai-unified-process-marketplace
 ```
 
-Then install one matching stack plugin:
+Omit the second command for other implementation stacks. The Compose workflow requires the target project's Kotlin Multiplatform/Gradle setup and its configured PostgreSQL and verification tools.
+
+## Invoke skills
+
+Plugin skills use the plugin namespace. Start Claude Code in the target project and, after preparing `payments-service/docs/vision.md`, request:
 
 ```text
-/plugin install aiup-vaadin-jooq
-/plugin install aiup-angular-jpa
-/plugin install aiup-blazor-dotnet
-/plugin install aiup-nestjs-nextjs
+/aiup-core:aiup-requirements in payments-service
 ```
 
-The four commands above are alternatives, not a bundle. Projects on another stack need only `aiup-core` and can use
-their own implementation workflow after the specification boundary.
+Verify that it reads the scoped vision, writes `payments-service/docs/requirements.md`, and passes the requirements quality checks. This creates or updates documentation; it is not a read-only installation check.
 
-## Verify the installation
-
-Start Claude Code in the target project and run:
+Follow the [agent-independent workflow](../how-to-use.md), using these command forms:
 
 ```text
-/requirements
+/aiup-core:aiup-entity-model in payments-service
+/aiup-core:aiup-use-case-diagram in payments-service
+/aiup-core:aiup-use-case-spec UC-001 in payments-service
+/aiup-core:aiup-architecture in payments-service
+/aiup-compose-ktor-exposed:aiup-flyway-migration in payments-service
+/aiup-compose-ktor-exposed:aiup-implement UC-001 in payments-service
+/aiup-compose-ktor-exposed:aiup-implement-ui UC-001 in payments-service
+/aiup-compose-ktor-exposed:aiup-ktor-test UC-001 in payments-service
+/aiup-compose-ktor-exposed:aiup-compose-test UC-001 in payments-service
+/aiup-compose-ktor-exposed:aiup-implementation-status UC-001 in payments-service
+/aiup-core:aiup-reference in payments-service
 ```
 
-The skill should read `docs/vision.md` and propose a requirements catalog. Existing applications without a vision
-document can start with `/reverse-engineer`, but that skill is not a non-mutating installation check: it creates an
-entity model, use case diagram, and use case specifications under `docs/`. Review those artifacts after it completes.
+For an inherited service, start with `/aiup-core:aiup-reverse-engineer in payments-service` and review the recovered documentation. For a standalone project, omit the service qualifier; artefacts live under `docs/`.
 
-## Update or change the stack plugin
-
-Keep the core plugin installed when changing the implementation stack. Remove the old stack plugin through Claude
-Code's plugin management and install the new one; do not keep multiple plugins that expose the same construction
-commands in one project.
-
-Continue with [Getting started](../getting-started.md) or consult the selected plugin README for its prerequisites and
-construction workflow.
+See Claude Code's documentation for [plugin invocation](https://code.claude.com/docs/en/plugins) and [marketplace installation](https://code.claude.com/docs/en/plugin-marketplaces).

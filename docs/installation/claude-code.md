@@ -33,6 +33,18 @@ The placeholder must point to this fork, whose [marketplace manifest](../../.cla
 
 Omit the second command for other implementation stacks. The Compose workflow requires the target project's Kotlin Multiplatform/Gradle setup and its configured PostgreSQL and verification tools.
 
+## Prepare prompts for separate sessions
+
+Once specifications exist, generate the prompt document with:
+
+```text
+/aiup-compose-ktor-exposed:aiup-implementation-prompts for Card Payments (UC-001 UC-002) in payments-service
+```
+
+It writes `payments-service/docs/card-payments-implementation-prompts.md`. Paste the shared
+header and one numbered prompt into each fresh chat; the skill does not launch
+sessions or implement code.
+
 ## Invoke skills
 
 Plugin skills use the plugin namespace. Start Claude Code in the target project and, after preparing `payments-service/docs/vision.md`, request:

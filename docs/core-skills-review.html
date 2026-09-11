@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Evidence-based review of the eight AI Unified Process core skills, with prioritised recommendations.">
+  <title>AIUP core skills — review and recommendations</title>
+  <style>
+    :root{--ink:#252339;--muted:#626176;--paper:#f4f6fb;--white:#fff;--purple:#49367b;--pale:#e9e4f4;--teal:#116869;--red:#a63822;--line:#d8d9e4;--display:"Avenir Next","Trebuchet MS",sans-serif;--body:"Segoe UI",Arial,sans-serif;--mono:"SFMono-Regular",Consolas,monospace}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.5 var(--body)}a{color:var(--purple);text-underline-offset:4px}a:hover{color:var(--teal)}button,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--teal);outline-offset:5px}button:disabled{cursor:default;opacity:.4}
+    .masthead{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 4.5vw;border-bottom:1px solid var(--line);font:12px/1.4 var(--mono);letter-spacing:.05em}.brand{font-weight:700;color:var(--purple)}.masthead span:last-child{color:var(--muted)}
+    main{max-width:1560px;margin:auto;padding:26px 4.5vw 100px}.slide{position:relative;min-height:calc(100svh - 188px);padding:30px 0;display:flex;flex-direction:column;gap:22px;scroll-margin-top:24px}.slide+.slide{border-top:1px solid var(--line);margin-top:50px}.presenting .slide+.slide{margin-top:0;border:0}.slide[hidden]{display:none}.eyebrow{margin:0;color:var(--purple);font:12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.12em}h1,h2,h3,p{margin:0}h1,h2,h3{font-family:var(--display);line-height:1.12;letter-spacing:-.035em}h1{font-size:clamp(46px,5.8vw,83px);max-width:970px}h2{font-size:clamp(34px,3.7vw,52px);max-width:1150px}h3{font-size:25px;letter-spacing:-.02em}.lead{font-size:23px;max-width:960px;color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:36px}.grid.three{grid-template-columns:repeat(3,1fr);gap:26px}.panel{background:var(--white);padding:25px 28px;border:1px solid var(--line);border-radius:12px}.panel h3{margin-bottom:16px}.panel p+p{margin-top:14px}.panel ul{margin-bottom:0}.label{display:inline-block;color:var(--teal);font:11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}.label.fix{color:var(--red)}.callout{padding:17px 24px;background:var(--pale);border-left:4px solid var(--purple);border-radius:0 8px 8px 0}.callout strong{color:var(--purple)}.check{color:var(--teal);font-weight:600}.sources{margin-top:auto;padding-top:17px;border-top:1px solid var(--line);font:12px/1.6 var(--mono);color:var(--muted)}.sources a{display:inline;overflow-wrap:anywhere}.sources p+p{margin-top:5px}ul,ol{padding-left:23px;margin:10px 0}li+li{margin-top:10px}code{font-family:var(--mono);font-size:.83em;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;background:#29233c;color:#f6f4ff;padding:24px;border-radius:10px;font:15px/1.65 var(--mono)}table{width:100%;border-collapse:collapse;background:var(--white);font-size:17px}th{text-align:left;color:var(--muted);font:11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.07em}th,td{padding:12px 17px;border-bottom:1px solid var(--line);vertical-align:top}td:first-child{font-weight:600}tr:last-child td{border-bottom:0}.table-wrap{border:1px solid var(--line);border-radius:12px;overflow-x:auto}.tag{font:11px/1.4 var(--mono);padding:5px 9px;border-radius:5px;background:var(--pale);color:var(--purple);white-space:nowrap}.tag.fix{background:#fbece7;color:var(--red)}.tag.keep{background:#e3f1ed;color:var(--teal)}.small{font-size:16px;color:var(--muted)}
+    .cover{background:var(--purple);color:var(--white);border-radius:18px;padding:42px;gap:30px}.cover .eyebrow,.cover .lead{color:#e5ddf8}.cover h1{max-width:900px}.cover .thesis{font-size:25px;max-width:850px}.cover .sources{border-color:#78659e;color:#e5ddf8}.ribbon{display:flex;align-items:stretch;gap:0;margin:15px 0 0;max-width:1050px}.file{flex:1;position:relative;padding:22px;border:1px solid #9182af;border-radius:8px;min-width:0}.file b{display:block;font:28px var(--mono);margin-bottom:10px}.file span{font-size:15px}.connector{display:flex;align-items:center;justify-content:center;min-width:55px;font-size:26px;color:#d5c9eb}.track{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:start;padding:20px 0;border-bottom:1px solid var(--line)}.track:last-child{border:0}.track strong{color:var(--purple)}.chain{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.node{flex:1;background:var(--white);border:1px solid var(--line);border-top:5px solid var(--purple);padding:23px;border-radius:8px;min-width:170px}.node b{display:block;font:26px var(--mono);color:var(--purple);margin-bottom:8px}.node p{font-size:16px}.arrow{color:var(--purple);font-size:26px}
+    .controls{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--line);padding:13px 4.5vw;align-items:center;gap:12px;z-index:10}.presenting .controls{display:flex}.controls button,.controls select{border:1px solid var(--line);background:var(--white);color:var(--ink);border-radius:6px;padding:8px 12px;font-size:13px}.controls button:hover:not(:disabled){background:var(--pale)}.controls select{max-width:290px;min-width:0}.controls .spacer{flex:1}.counter{font:12px var(--mono);white-space:nowrap}.progress{position:absolute;top:-3px;left:0;height:3px;width:0;background:var(--teal)}.hint{font:11px var(--mono);color:var(--muted)}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;clip:rect(0,0,0,0);overflow:hidden}.all-mode .slide{min-height:auto;padding-bottom:35px}.all-mode .cover{padding-bottom:42px}.all-mode .slide+.slide{border-top:1px solid var(--line);margin-top:50px}.all-mode .sources{margin-top:15px}
+    @media(min-width:1500px){body{font-size:21px}.panel{padding:30px}table{font-size:19px}.slide{gap:28px}}
+    @media(min-width:851px) and (max-height:900px){body{font-size:17px;line-height:1.4}.slide{padding:20px 0;gap:17px}h1{font-size:60px}h2{font-size:38px}h3{font-size:22px}.lead{font-size:20px}.panel{padding:20px 23px}.panel h3{margin-bottom:12px}.panel p+p{margin-top:10px}li+li{margin-top:7px}table{font-size:15px}th,td{padding:10px 14px}.cover{padding:32px;gap:22px}.cover .thesis{font-size:22px}.cover .lead{font-size:20px}.file{padding:18px}.file b{font-size:24px}.file span{font-size:14px}.sources{font-size:11px;padding-top:12px}.callout{padding:14px 20px}.small{font-size:14px}.track{padding:15px 0}.node{padding:18px}.node p{font-size:14px}}
+    @media(max-width:850px){.grid,.grid.three{grid-template-columns:1fr;gap:18px}.slide{min-height:auto;gap:20px}.cover{padding:27px}.lead{font-size:20px}.ribbon{flex-direction:column}.connector{min-height:36px;transform:rotate(90deg)}.file{padding:17px}.hint{display:none}.track{grid-template-columns:1fr;gap:8px}.sources{margin-top:10px}.masthead{font-size:10px}.controls{gap:7px}.controls select{max-width:180px}.controls button{padding:9px}table{font-size:15px}th,td{padding:11px}.table-wrap code{white-space:normal}.chain{align-items:stretch}.node{min-width:160px}}
+    @media(max-width:480px){body{font-size:17px}.masthead{align-items:flex-start;gap:15px}.masthead span:last-child{max-width:160px;text-align:right}main{padding:12px 20px 105px}.cover{padding:24px}.cover .thesis{font-size:21px}.panel{padding:22px}.controls{flex-wrap:wrap;padding:10px 15px}.controls select{flex:1;max-width:none}.controls .spacer{display:none}.controls .counter{margin-left:auto}.print-button{display:none}.table-wrap{border-radius:7px}.table-wrap table{min-width:590px}.sources{font-size:11px}.arrow{display:none}.node{flex-basis:100%}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{@page{size:A4 landscape;margin:12mm}body{background:white;font-size:12px}.masthead,.controls{display:none!important}main{padding:0;max-width:none}.slide,.slide[hidden],.presenting .slide+.slide,.all-mode .slide{display:flex!important;min-height:0;margin:0;padding:10px 0;gap:14px;break-after:page;border:0}.slide:last-child{break-after:auto}.cover{padding:30px!important;min-height:165mm!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}h1{font-size:48px}h2{font-size:32px}h3{font-size:19px}.lead,.cover .thesis{font-size:17px}.panel{padding:16px}.grid{gap:22px}.grid.three{gap:18px}.sources{font-size:9px;margin-top:8px;padding-top:10px}.small{font-size:11px}table{font-size:12px}th,td{padding:7px 10px}.panel,.table-wrap,.callout{break-inside:avoid}.label,.tag{font-size:9px}pre{font-size:11px;padding:14px}.track{padding:12px 0}.node{padding:15px}.node p{font-size:12px}.file b{font-size:24px}.file span{font-size:13px}.callout{padding:12px 18px}a{color:inherit;text-decoration:none}li+li{margin-top:5px}}
+  </style>
+</head>
+<body>
+  <header class="masthead"><span class="brand">AIUP / CORE SKILLS REVIEW</span><span>11 September 2026 · core 103.11.0 · source 719d42a</span></header>
+  <main id="deck">
+    <section class="slide cover" id="verdict" aria-labelledby="title-1" data-title="Verdict">
+      <p class="eyebrow">Review &amp; recommendations</p>
+      <h1 id="title-1">Keep the eight skills.<br>Make their handoffs reliable.</h1>
+      <p class="thesis">The division of work is useful. The changes I would make concern document compatibility, evidence, stable identity and execution in a fresh session.</p>
+      <div class="ribbon" aria-label="Requirements, use cases and test cases depend on reliable document handoffs">
+        <div class="file"><b>FR</b><span>Requirements define the intent.</span></div><div class="connector" aria-hidden="true">→</div>
+        <div class="file"><b>UC</b><span>Use cases specify the behaviour.</span></div><div class="connector" aria-hidden="true">→</div>
+        <div class="file"><b>TC</b><span>Journeys connect the outcomes.</span></div>
+      </div>
+      <p class="lead">First priority: repair the new test-case integration and prevent recovered specifications from changing the meaning of existing code.</p>
+      <div class="sources">Scope: all eight core SKILL.md files, bundled references, the use-case validator and repository validation. Recommendations only; no skills changed.</div>
+    </section>
+
+    <section class="slide" id="skill-map" aria-labelledby="title-2" data-title="All eight skills">
+      <p class="eyebrow">Assessment by skill</p><h2 id="title-2">Focused changes across the existing set.</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Skill</th><th scope="col">Assessment</th><th scope="col">What I would change</th></tr></thead>
+        <tbody>
+          <tr><td><a href="#requirements"><code>aiup-requirements</code></a></td><td><span class="tag">Tighten</span></td><td>Align translated states; preserve IDs; label proposed thresholds.</td></tr>
+          <tr><td><a href="#schema"><code>aiup-entity-model</code></a></td><td><span class="tag fix">Fix</span></td><td>Represent actual key types, optional foreign keys and constraints.</td></tr>
+          <tr><td><a href="#identity"><code>aiup-use-case-diagram</code></a></td><td><span class="tag">Tighten</span></td><td>Preserve existing UC IDs; record durable FR → UC mappings.</td></tr>
+          <tr><td><a href="#validation"><code>aiup-use-case-spec</code></a></td><td><span class="tag fix">Fix</span></td><td>Correct validator invocation, reference checks and update behaviour.</td></tr>
+          <tr><td><a href="#test-case"><code>aiup-test-case</code></a></td><td><span class="tag fix">Fix first</span></td><td>Repair validation, scope paths and remove unsupported handoffs.</td></tr>
+          <tr><td><a href="#reverse"><code>aiup-reverse-engineer</code></a></td><td><span class="tag fix">Fix</span></td><td>Preserve source meaning; emit a compatible requirements catalogue.</td></tr>
+          <tr><td><a href="#retain"><code>aiup-architecture</code></a></td><td><span class="tag keep">Keep</span></td><td>Add concise provenance for important claims; scale detail to need.</td></tr>
+          <tr><td><a href="#retain"><code>aiup-reference</code></a></td><td><span class="tag keep">Keep</span></td><td>Report code/documentation conflicts before replacing agreed decisions.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="small">“Fix” identifies a concrete inconsistency or execution defect. “Tighten” identifies a safeguard the current instructions do not consistently provide. Links jump to the evidence.</p>
+    </section>
+
+    <section class="slide" id="release-gate" aria-labelledby="title-3" data-title="R1 · Validation failures">
+      <p class="eyebrow">R1 · Fix · Reproduced</p><h2 id="title-3">The current repository gate fails.</h2>
+      <p class="lead"><code>scripts/validate-skills.sh</code> exits 1 with five diagnostics, all associated with <code>aiup-test-case</code>.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Diagnostic</th><th scope="col">Interpretation</th><th scope="col">Concrete fix</th></tr></thead>
+        <tbody>
+          <tr><td>1 broken link</td><td>An example output link is checked as a bundled resource.</td><td>Fence the example and make the link checker distinguish examples from real resource links.</td></tr>
+          <tr><td>2 missing copyright headers</td><td>Both new test-case reference files fail the attribution rule.</td><td>Apply the existing template/exemplar policy explicitly; preserve attribution without leaking template metadata into generated docs.</td></tr>
+          <tr><td>1 redaction-contract mismatch</td><td>Redaction guidance exists, but its wording does not match the gate.</td><td>Use the common contract wording. This diagnostic does not demonstrate a missing security instruction.</td></tr>
+          <tr><td>1 agent-specific wording violation</td><td><code>$ARGUMENTS</code> has returned.</td><td>Use “the user’s request”, consistent with the other core skills.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Acceptance:</strong> the full repository gate passes, including checks currently skipped after the first stage fails. Keep real missing-resource checks effective.</div>
+      <div class="sources"><p>Evidence: actual command output on the reviewed revision.</p><p><a href="../scripts/validate-skills.rb">scripts/validate-skills.rb:52–72, 96–98</a> · <a href="../scripts/validate-skills.sh">scripts/validate-skills.sh:7–11</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md:23, 32–34, 70</a></p></div>
+    </section>
+
+    <section class="slide" id="test-case" aria-labelledby="title-4" data-title="R2 · Test-case handoff">
+      <p class="eyebrow">R2 · Fix · Instruction mismatch</p><h2 id="title-4">The test-case skill promises an unavailable next step.</h2>
+      <div class="grid">
+        <div class="panel"><span class="label fix">Current contract</span><h3>A good journey format, incomplete integration.</h3><ul><li>Suggests <code>/playwright-test TC-XXX</code>; that skill is absent from the retained plugins.</li><li>The description promises <code>aiup-compose-test TC-001</code>, but Compose testing defines UC-driven component and UI tests, with no TC journey contract.</li><li>Uses root <code>docs/</code> paths and creation-only ID allocation; no service scope, language or update procedure.</li></ul></div>
+        <div class="panel"><span class="label">Recommended change</span><h3>Keep the document; make the handoff truthful.</h3><ul><li>Use agent-independent skill names and only suggest automation when an installed skill explicitly accepts TC documents.</li><li>Otherwise report: “Journey specification ready; no matching automation skill identified.”</li><li>Reuse the core service/language rules. Update a named TC in place, preserving its ID.</li><li>Replace the stale <code>/use-case-spec</code> reference with <code>aiup-use-case-spec</code>.</li></ul></div>
+      </div>
+      <div class="callout"><strong>Acceptance:</strong> “Update TC-002 for service billing” updates the existing service-local file, keeps its language and ID, and suggests no unsupported command.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md:12, 23–40, 71–84</a> · <a href="../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">aiup-compose-test/SKILL.md:1–27, Workflow</a></div>
+    </section>
+
+    <section class="slide" id="schema" aria-labelledby="title-5" data-title="R3 · Schema fidelity">
+      <p class="eyebrow">R3 · Fix · Source meaning</p><h2 id="title-5">A recovered model must not invent constraints.</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Current guidance</th><th scope="col">Risk</th><th scope="col">Recommended rule</th></tr></thead>
+        <tbody>
+          <tr><td>Decimal precision → <code>Min: 0</code></td><td>Negative values become forbidden without evidence.</td><td>Recover ranges only from actual constraints or validated behaviour.</td></tr>
+          <tr><td>String → 255 or a default length</td><td>An undocumented storage limit becomes a supposed requirement.</td><td>Record evidenced length; distinguish unbounded from unknown.</td></tr>
+          <tr><td>Unique FK → mandatory 1:1</td><td>Uniqueness does not prove participation is mandatory at both ends.</td><td>Derive multiplicity and optionality separately for each end.</td></tr>
+          <tr><td>Limited type/rule vocabulary</td><td>No explicit UUID key, non-sequence key or optional-FK form.</td><td>Extend the vocabulary where observed schemas require it; preserve key generation and nullability.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Acceptance:</strong> signed decimal, UUID primary key and nullable unique-FK fixtures retain their meaning through code → entity model. The existing five-column format can remain.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/stack-signals.md">reverse-engineer/references/stack-signals.md:94–99</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md:140–175</a> · <a href="../aiup-core/skills/aiup-entity-model/references/REFERENCE.md">entity-model/references/REFERENCE.md:11–34</a></div>
+    </section>
+
+    <section class="slide" id="reverse" aria-labelledby="title-6" data-title="R4 · Reverse → forward">
+      <p class="eyebrow">R4 · Fix · Cross-skill compatibility</p><h2 id="title-6">Reverse engineering needs the same requirements contract.</h2>
+      <div class="grid">
+        <div class="panel"><span class="label fix">Current mismatch</span><h3>The filename matches; the structure does not.</h3><p>The reverse-engineering reference permits a prose-only Functional Requirements section: recovered behaviour is delegated to use-case specs.</p><p>The forward skill requires FR tables with IDs, user stories, priorities and statuses. The diagram skill requires each UC to trace to an FR.</p><p>A new reverse-engineered catalogue can therefore leave nothing concrete for that traceability check to resolve.</p></div>
+        <div class="panel"><span class="label">Recommended change</span><h3>Recover evidence-backed FR rows.</h3><ul><li>Reuse the forward table structure and stable headings, including Requirements Notes.</li><li>Give each recovered FR an ID and link each UC to its FRs; the UC format already permits a Requirements field.</li><li>Record source paths and uncertainty. Do not infer business priority, approval or unevidenced NFRs from code alone.</li><li>Keep unknowns explicit instead of filling gaps with invented requirements.</li></ul></div>
+      </div>
+      <div class="callout"><strong>Acceptance:</strong> run the forward diagram/specification checks on recovered documents without first repairing their catalogue structure.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md:41–56</a> · <a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md:30–60, 69–93</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:59, 70</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:41</a></div>
+    </section>
+
+    <section class="slide" id="identity" aria-labelledby="title-7" data-title="R5 · Stable updates">
+      <p class="eyebrow">R5 · Tighten · Update behaviour</p><h2 id="title-7">Preserve identity when the specification changes.</h2>
+      <p class="lead">Several skills say “create or update”, but do not explicitly reconcile existing IDs, content and downstream references before writing.</p>
+      <div class="grid">
+        <div class="panel"><span class="label fix">Illustrative failure</span><h3>A new goal changes the order.</h3><p>An existing <code>UC-004</code> can be reassigned during regrouping by actor or importance. A renamed diagram label can produce a new filename while TC links still point to the old one.</p><p>The business-rule contract adds a real constraint: rules are numbered without gaps, and the bundled Studio format says they are positional.</p></div>
+        <div class="panel"><span class="label">Recommended update contract</span><ol><li>Read existing output first; match by ID and business meaning.</li><li>Keep existing FR, UC and TC IDs. Allocate new IDs without renumbering other items.</li><li>Preserve unaffected content; report removed or renamed items and affected links.</li><li>When BR renumbering is required, produce an old → new mapping and repair authorised references; report consumers outside the task scope.</li></ol></div>
+      </div>
+      <div class="callout"><strong>Acceptance:</strong> adding a UC, renaming a UC and deleting a business rule leave unrelated IDs intact and all affected references resolved or explicitly reported.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:63–68</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:80</a> · <a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md:86–117</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:179–180, 204–207</a></div>
+    </section>
+
+    <section class="slide" id="validation" aria-labelledby="title-8" data-title="R6 · Validator behaviour">
+      <p class="eyebrow">R6 · Fix · Reproduced with controlled probes</p><h2 id="title-8">Validation checks syntax more reliably than meaning.</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Probe using the bundled UC example</th><th scope="col">Observed result</th><th scope="col">Recommended change</th></tr></thead>
+        <tbody>
+          <tr><td>Unchanged example</td><td><span class="check">0 errors, 0 warnings</span></td><td>Keep as a regression fixture.</td></tr>
+          <tr><td>Trigger and resume point changed to step 99; main flow has 9 steps</td><td><span class="tag fix">Still clean</span></td><td>Resolve every trigger/resume reference against existing main-flow steps.</td></tr>
+          <tr><td>One step says “Clerk redeems a loyalty token.”</td><td><code>TECHNICAL_TERM</code> warning; strict mode treats it as failure</td><td>Make ambiguous vocabulary contextual advice. Keep concrete implementation details detectable.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Acceptance:</strong> reject a nonexistent step; allow a legitimate business use of “token” or “salt”; continue detecting implementation-specific prose. A passing parser does not establish behavioural completeness.</div>
+      <p class="small">These are targeted validator probes, not end-to-end agent evaluations. No repository examples were modified.</p>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py">use-case-spec/scripts/validate_use_case.py:119–131, 605–614, 644–650, 894</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/example.md">use-case-spec/references/example.md</a></div>
+    </section>
+
+    <section class="slide" id="sessions" aria-labelledby="title-9" data-title="R7 · Fresh-session execution">
+      <p class="eyebrow">R7 · Fix · Path and task scope</p><h2 id="title-9">Resolve the skill and the project independently.</h2>
+      <p class="lead">The use-case and reverse-engineering skills mix an installed-skill-relative script path with a project-relative document path in one command.</p>
+      <div class="grid">
+        <div class="panel"><span class="label fix">Current instruction pattern</span><pre>python3 scripts/validate_use_case.py \
+  --strict docs/use_cases/UC-*.md</pre><p class="small" style="margin-top:16px">Running from the project usually misses the bundled script. Running from the skill directory usually misses the project docs. The wildcard also selects unrelated UCs.</p></div>
+        <div class="panel"><span class="label">Recommended behaviour</span><ul><li>Resolve the installed script to an absolute path.</li><li>Resolve the selected project/service docs separately.</li><li>Pass an explicit, quoted list of files created or updated by this task.</li><li>End with the output path, checks and unresolved dependencies, so the next chat can work from files.</li></ul></div>
+      </div>
+      <div class="callout"><strong>Acceptance:</strong> the same single-UC request works from project root and service directory, with the skill installed elsewhere. An unrelated invalid UC is left untouched.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md:109–120</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:102–106</a></div>
+    </section>
+
+    <section class="slide" id="requirements" aria-labelledby="title-10" data-title="R8 · Requirement states">
+      <p class="eyebrow">R8 · Tighten · Lifecycle and uncertainty</p><h2 id="title-10">Keep the same meaning across languages and revisions.</h2>
+      <div class="grid">
+        <div class="panel"><span class="label fix">Confirmed inconsistency</span><h3>English and German states diverge.</h3><p>English defines <strong>Deferred</strong> and <strong>Rejected</strong>. German defines <strong>Abgelehnt</strong> and <strong>Ersetzt</strong>, but no equivalent of Deferred.</p><p>The lists are not a one-to-one vocabulary: postponement, rejection and replacement describe different outcomes.</p><p><strong>Change:</strong> define an explicit mapping, add a German deferred state, and support superseded consistently only if it is needed.</p></div>
+        <div class="panel"><span class="label">Recommended safeguards</span><h3>Distinguish proposals from agreed facts.</h3><ul><li>When making an NFR measurable, label the threshold as proposed until confirmed; keep that uncertainty in Requirements Notes.</li><li>Separate a requirement’s delivery state from review/conflict notes instead of adding ad-hoc status values.</li><li>For test cases and UC templates, clarify “Reviewed”: its current definition says it is still awaiting stakeholder review.</li></ul></div>
+      </div>
+      <div class="callout"><strong>Acceptance:</strong> a deferred requirement retains its meaning when translated. An unanswered performance question cannot silently become an approved limit.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md:95–103, 124–140</a> · <a href="../aiup-core/skills/aiup-requirements/references/REFERENCE.md">requirements/references/REFERENCE.md:33–53</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">test-case/SKILL.md:49–55</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/use-case.md">use-case-spec/references/use-case.md:57–67</a></div>
+    </section>
+
+    <section class="slide" id="retain" aria-labelledby="title-11" data-title="Keep & refine">
+      <p class="eyebrow">What I would keep · Smaller suggestions</p><h2 id="title-11">The architecture and reference skills need little change.</h2>
+      <div class="grid three">
+        <div class="panel"><span class="label">Architecture</span><h3>Keep evidence-led discovery.</h3><p>It reads the project, permits equivalent existing headings and favours targeted updates. No comparable must-fix defect found.</p><p><strong>Refine:</strong> attach source paths to consequential claims; distinguish observed architecture from proposed ADRs. Keep small-service sections brief.</p></div>
+        <div class="panel"><span class="label">Reference</span><h3>Keep it as the navigation layer.</h3><p>Exact project commands, links to canonical docs and explicit unknowns make it useful in fresh sessions.</p><p><strong>Refine:</strong> when code contradicts a documented decision, report the divergence. Implementation drift alone should not erase an agreed convention.</p></div>
+        <div class="panel"><span class="label">Across the core</span><h3>Keep the existing skill boundaries.</h3><p>Retain <code>aiup-*</code> names, Markdown artefacts, Mermaid and task-specific references.</p><p><strong>Refine:</strong> narrow the diagram trigger “mentions Mermaid”; make reverse-engineering use-case counts a review signal rather than a mandatory reduction ratio.</p></div>
+      </div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-architecture/SKILL.md">architecture/SKILL.md:33–48, 74–105</a> · <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md:65–74, 85–99</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:3–9</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:80, 118</a></div>
+    </section>
+
+    <section class="slide" id="contract" aria-labelledby="title-12" data-title="Proposed handoff contract">
+      <p class="eyebrow">Recommended shared contract</p><h2 id="title-12">A fresh session should need files, scope and a task.</h2>
+      <div class="chain" aria-label="Proposed forward and reverse document handoff">
+        <div class="node"><b>Evidence</b><p>Vision or existing code.<br>Known facts and open questions.</p></div><span class="arrow" aria-hidden="true">→</span>
+        <div class="node"><b>FR → UC</b><p>Stable IDs and explicit links.<br>One canonical requirements catalogue.</p></div><span class="arrow" aria-hidden="true">→</span>
+        <div class="node"><b>UC → TC</b><p>Verified references and state dependencies.<br>One journey per TC.</p></div><span class="arrow" aria-hidden="true">→</span>
+        <div class="node"><b>Execution</b><p>An installed implementation/test skill with a compatible input contract.</p></div>
+      </div>
+      <div class="grid">
+        <div class="panel"><h3>Resolve before writing.</h3><p>Target project/service → existing artefacts → authoritative inputs → allowed output files. Architecture and REFERENCE supply context; the entity model supplies persistence meaning.</p></div>
+        <div class="panel"><h3>Report after writing.</h3><p>Link outputs, identify changed IDs, state validation results and list unresolved decisions. Name the next compatible skill only when its contract fits.</p></div>
+      </div>
+      <div class="callout"><strong>Implementation approach:</strong> align the repeated rules first. Keep essential scope/update instructions inside each portable skill; avoid introducing a new orchestration skill solely to share a few paragraphs.</div>
+      <div class="sources">Proposed design, derived from R2–R7. Existing patterns worth reusing: <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md:85–110</a> and <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:25–76</a>.</div>
+    </section>
+
+    <section class="slide" id="roadmap" aria-labelledby="title-13" data-title="Recommended sequence">
+      <p class="eyebrow">Prioritised work</p><h2 id="title-13">Repair compatibility before adding more skills.</h2>
+      <div>
+        <div class="track"><strong>First<br><span class="small">Make the existing workflow usable</span></strong><div><p><b>R1, R2, R7:</b> restore the gate, integrate the TC skill and correct validation paths.</p><p class="small">Proof: full gate passes; a service-scoped TC update and an external-install single-UC validation work without unrelated writes.</p></div></div>
+        <div class="track"><strong>Then<br><span class="small">Protect document meaning</span></strong><div><p><b>R3, R4, R6:</b> fix schema recovery, align recovered requirements and add the validator regression cases.</p><p class="small">Proof: signed/nullable/key fixtures preserve meaning; recovered FR → UC links resolve; step 99 fails validation.</p></div></div>
+        <div class="track"><strong>Next<br><span class="small">Make updates predictable</span></strong><div><p><b>R5, R8:</b> preserve identities, reconcile references and align lifecycle language. Apply the smaller refinements where relevant.</p><p class="small">Proof: adding, renaming, removing and translating items do not silently change existing identities or decisions.</p></div></div>
+      </div>
+      <div class="callout"><strong>Release policy:</strong> this review does not change a skill, so it needs no plugin version bump. Batch published-skill fixes into a coherent release with one core version bump.</div>
+      <div class="sources"><a href="../CLAUDE.md">CLAUDE.md:Versions</a> · Recommendations are intentionally scoped to the existing core and its direct consumers.</div>
+    </section>
+
+    <section class="slide" id="evidence" aria-labelledby="title-14" data-title="Evidence & limits">
+      <p class="eyebrow">Review record</p><h2 id="title-14">What was checked, and what remains unproven.</h2>
+      <div class="grid">
+        <div class="panel"><span class="label">Observed</span><ul><li>Reviewed all eight core skills and their supporting contracts; checked the claimed Compose test handoff.</li><li><code>scripts/validate-skills.sh</code>: exit 1, five diagnostics in its first stage.</li><li>Use-case validator self-test: passed.</li><li>Bundled use-case example under <code>--strict</code>: 0 errors, 0 warnings.</li><li>Controlled probes: nonexistent step references accepted; a domain use of “token” flagged.</li><li>Inspected sources passed the required secrets scan.</li></ul></div>
+        <div class="panel"><span class="label">Limits</span><ul><li>This is a source review plus deterministic validation, not a full agent-by-agent task evaluation.</li><li>The full gate stops before its later checks; those are not claimed to have passed.</li><li>Studio compatibility statements are taken from the bundled format contract; the Studio implementation was not independently tested.</li><li>Illustrative failure scenarios show risks implied by instructions, not observed production data loss.</li><li>Source links are relative to this repository. File paths and line references remain visible when the HTML is shared separately.</li></ul></div>
+      </div>
+      <div class="sources"><p>Reviewed snapshot: <strong>719d42ab0d983e552b1c5f8b4f99c43ad6f9deca</strong> · core <strong>103.11.0</strong> · 11 September 2026.</p><p>Read-only skill review. The HTML is self-contained, works offline, supports arrow-key navigation and includes a printable layout.</p></div>
+    </section>
+  </main>
+  <nav class="controls" aria-label="Presentation controls">
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <button type="button" id="previous" aria-label="Previous slide">←</button>
+    <label class="sr-only" for="jump">Choose slide</label><select id="jump"></select>
+    <button type="button" id="next" aria-label="Next slide">→</button>
+    <span class="counter" id="counter"></span><span class="spacer"></span>
+    <span class="hint">← → navigate</span><button type="button" id="mode" aria-pressed="false">Read all</button>
+    <button type="button" class="print-button" id="print">Print / PDF</button>
+  </nav>
+  <div class="sr-only" role="status" aria-live="polite" id="announcement"></div>
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll('.slide')];
+      const jump = document.getElementById('jump');
+      const previous = document.getElementById('previous');
+      const next = document.getElementById('next');
+      const mode = document.getElementById('mode');
+      let current = Math.max(0, slides.findIndex(slide => '#' + slide.id === location.hash));
+      let all = false;
+      slides.forEach((slide, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = String(index + 1).padStart(2, '0') + ' · ' + slide.dataset.title;
+        jump.append(option);
+      });
+      function show(index, updateHash = true, scroll = true) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach((slide, i) => { slide.hidden = !all && i !== current; });
+        jump.value = current;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        document.getElementById('counter').textContent = (current + 1) + ' / ' + slides.length;
+        document.getElementById('progress').style.width = ((current + 1) / slides.length * 100) + '%';
+        document.getElementById('announcement').textContent = 'Slide ' + (current + 1) + ': ' + slides[current].dataset.title;
+        if (updateHash && location.hash !== '#' + slides[current].id) history.replaceState(null, '', '#' + slides[current].id);
+        if (scroll) { if (all) slides[current].scrollIntoView(); else window.scrollTo(0, 0); }
+      }
+      previous.addEventListener('click', () => show(current - 1));
+      next.addEventListener('click', () => show(current + 1));
+      jump.addEventListener('change', () => show(Number(jump.value)));
+      mode.addEventListener('click', () => {
+        all = !all;
+        document.body.classList.toggle('all-mode', all);
+        mode.textContent = all ? 'Slide view' : 'Read all';
+        mode.setAttribute('aria-pressed', String(all));
+        show(current);
+      });
+      document.getElementById('print').addEventListener('click', () => window.print());
+      document.addEventListener('keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest('button,select,input,textarea,a,[contenteditable]')) return;
+        const targets = {ArrowRight: current + 1, ArrowLeft: current - 1, Home: 0, End: slides.length - 1};
+        if (Object.hasOwn(targets, event.key)) { event.preventDefault(); show(targets[event.key]); }
+      });
+      document.addEventListener('click', event => {
+        const link = event.target.closest('a[href^="#"]');
+        if (!link) return;
+        const index = slides.findIndex(slide => '#' + slide.id === link.getAttribute('href'));
+        if (index < 0) return;
+        event.preventDefault(); show(index);
+      });
+      window.addEventListener('hashchange', () => {
+        const index = slides.findIndex(slide => '#' + slide.id === location.hash);
+        if (index >= 0) show(index, false);
+      });
+      document.body.classList.add('presenting');
+      show(current, false, false);
+    })();
+  </script>
+</body>
+</html>

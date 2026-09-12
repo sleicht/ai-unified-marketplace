@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Evidence-based review of the eight AI Unified Process core skills, with prioritised recommendations.">
-  <title>AIUP core skills — review and recommendations</title>
+  <meta name="description" content="Implementation record for the eight AI Unified Process core skills: resolved findings, delivered changes and validation evidence.">
+  <title>AIUP core skills — review and implemented fixes</title>
   <style>
     :root{--ink:#252339;--muted:#626176;--paper:#f4f6fb;--white:#fff;--purple:#49367b;--pale:#e9e4f4;--teal:#116869;--red:#a63822;--line:#d8d9e4;--display:"Avenir Next","Trebuchet MS",sans-serif;--body:"Segoe UI",Arial,sans-serif;--mono:"SFMono-Regular",Consolas,monospace}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.5 var(--body)}a{color:var(--purple);text-underline-offset:4px}a:hover{color:var(--teal)}button,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--teal);outline-offset:5px}button:disabled{cursor:default;opacity:.4}
@@ -21,151 +21,151 @@
   </style>
 </head>
 <body>
-  <header class="masthead"><span class="brand">AIUP / CORE SKILLS REVIEW</span><span>11 September 2026 · core 103.11.0 · source 719d42a</span></header>
+  <header class="masthead"><span class="brand">AIUP / CORE SKILLS REVIEW</span><span>Updated 12 September 2026 · core 103.12.0 · delivered ec006c4</span></header>
   <main id="deck">
     <section class="slide cover" id="verdict" aria-labelledby="title-1" data-title="Verdict">
-      <p class="eyebrow">Review &amp; recommendations</p>
-      <h1 id="title-1">Keep the eight skills.<br>Make their handoffs reliable.</h1>
-      <p class="thesis">The division of work is useful. The changes I would make concern document compatibility, evidence, stable identity and execution in a fresh session.</p>
+      <p class="eyebrow">Review → implementation complete</p>
+      <h1 id="title-1">Eight skills retained.<br>Review fixes delivered.</h1>
+      <p class="thesis">R1–R8 and the smaller refinements are implemented. The core now defines consistent scope, stable document identity, evidence-backed recovery and truthful handoffs.</p>
       <div class="ribbon" aria-label="Requirements, use cases and test cases depend on reliable document handoffs">
         <div class="file"><b>FR</b><span>Requirements define the intent.</span></div><div class="connector" aria-hidden="true">→</div>
         <div class="file"><b>UC</b><span>Use cases specify the behaviour.</span></div><div class="connector" aria-hidden="true">→</div>
         <div class="file"><b>TC</b><span>Journeys connect the outcomes.</span></div>
       </div>
-      <p class="lead">First priority: repair the new test-case integration and prevent recovered specifications from changing the meaning of existing code.</p>
-      <div class="sources">Scope: all eight core SKILL.md files, bundled references, the use-case validator and repository validation. Recommendations only; no skills changed.</div>
+      <p class="lead">Delivered in core 103.12.0, commit ec006c4, on fix/core-skill-contracts. Full validation passed in an isolated core-only checkout.</p>
+      <div class="sources">Original review: 11 September, core 103.11.0 / 719d42a. Implementation: 12 September, 22 changed files. This presentation records the delivered fixes and their verification limits.</div>
     </section>
 
     <section class="slide" id="skill-map" aria-labelledby="title-2" data-title="All eight skills">
-      <p class="eyebrow">Assessment by skill</p><h2 id="title-2">Focused changes across the existing set.</h2>
+      <p class="eyebrow">Delivered changes by skill</p><h2 id="title-2">All eight core skills updated.</h2>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Skill</th><th scope="col">Assessment</th><th scope="col">What I would change</th></tr></thead>
+        <thead><tr><th scope="col">Skill</th><th scope="col">Status</th><th scope="col">What changed</th></tr></thead>
         <tbody>
-          <tr><td><a href="#requirements"><code>aiup-requirements</code></a></td><td><span class="tag">Tighten</span></td><td>Align translated states; preserve IDs; label proposed thresholds.</td></tr>
-          <tr><td><a href="#schema"><code>aiup-entity-model</code></a></td><td><span class="tag fix">Fix</span></td><td>Represent actual key types, optional foreign keys and constraints.</td></tr>
-          <tr><td><a href="#identity"><code>aiup-use-case-diagram</code></a></td><td><span class="tag">Tighten</span></td><td>Preserve existing UC IDs; record durable FR → UC mappings.</td></tr>
-          <tr><td><a href="#validation"><code>aiup-use-case-spec</code></a></td><td><span class="tag fix">Fix</span></td><td>Correct validator invocation, reference checks and update behaviour.</td></tr>
-          <tr><td><a href="#test-case"><code>aiup-test-case</code></a></td><td><span class="tag fix">Fix first</span></td><td>Repair validation, scope paths and remove unsupported handoffs.</td></tr>
-          <tr><td><a href="#reverse"><code>aiup-reverse-engineer</code></a></td><td><span class="tag fix">Fix</span></td><td>Preserve source meaning; emit a compatible requirements catalogue.</td></tr>
-          <tr><td><a href="#retain"><code>aiup-architecture</code></a></td><td><span class="tag keep">Keep</span></td><td>Add concise provenance for important claims; scale detail to need.</td></tr>
-          <tr><td><a href="#retain"><code>aiup-reference</code></a></td><td><span class="tag keep">Keep</span></td><td>Report code/documentation conflicts before replacing agreed decisions.</td></tr>
+          <tr><td><a href="#requirements"><code>aiup-requirements</code></a></td><td><span class="tag keep">Updated</span></td><td>Aligned translated states; preserved IDs; labelled proposed thresholds.</td></tr>
+          <tr><td><a href="#schema"><code>aiup-entity-model</code></a></td><td><span class="tag keep">Updated</span></td><td>Added UUID/key-generation and optional-FK vocabulary; preserved actual constraints.</td></tr>
+          <tr><td><a href="#identity"><code>aiup-use-case-diagram</code></a></td><td><span class="tag keep">Updated</span></td><td>Preserved UC IDs and added FR → UC mappings in Mermaid comments.</td></tr>
+          <tr><td><a href="#validation"><code>aiup-use-case-spec</code></a></td><td><span class="tag keep">Updated</span></td><td>Corrected validator paths, step-reference checks and update reconciliation.</td></tr>
+          <tr><td><a href="#test-case"><code>aiup-test-case</code></a></td><td><span class="tag keep">Updated</span></td><td>Repaired integration; added scoped updates, status evidence and compatible handoffs.</td></tr>
+          <tr><td><a href="#reverse"><code>aiup-reverse-engineer</code></a></td><td><span class="tag keep">Updated</span></td><td>Aligned recovered FR tables; removed invented schema constraints and count ratios.</td></tr>
+          <tr><td><a href="#retain"><code>aiup-architecture</code></a></td><td><span class="tag keep">Updated</span></td><td>Added claim provenance and guidance for brief small-service sections.</td></tr>
+          <tr><td><a href="#retain"><code>aiup-reference</code></a></td><td><span class="tag keep">Updated</span></td><td>Required explicit reporting of code/decision divergence.</td></tr>
         </tbody>
       </table></div>
-      <p class="small">“Fix” identifies a concrete inconsistency or execution defect. “Tighten” identifies a safeguard the current instructions do not consistently provide. Links jump to the evidence.</p>
+      <p class="small">All statuses describe implemented changes. The following slides retain the original problem for context and distinguish automated tests, bounded exercises and instruction review.</p>
     </section>
 
-    <section class="slide" id="release-gate" aria-labelledby="title-3" data-title="R1 · Validation failures">
-      <p class="eyebrow">R1 · Fix · Reproduced</p><h2 id="title-3">The current repository gate fails.</h2>
-      <p class="lead"><code>scripts/validate-skills.sh</code> exits 1 with five diagnostics, all associated with <code>aiup-test-case</code>.</p>
+    <section class="slide" id="release-gate" aria-labelledby="title-3" data-title="R1 · Gate fixed">
+      <p class="eyebrow">R1 · Fixed · Full gate passed</p><h2 id="title-3">The five original gate failures are resolved.</h2>
+      <p class="lead">The original core 103.11.0 gate exited 1. The delivered core-only snapshot passes every stage of <code>scripts/validate-skills.sh</code>.</p>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Diagnostic</th><th scope="col">Interpretation</th><th scope="col">Concrete fix</th></tr></thead>
+        <thead><tr><th scope="col">Original diagnostic</th><th scope="col">Interpretation</th><th scope="col">Implemented fix</th></tr></thead>
         <tbody>
-          <tr><td>1 broken link</td><td>An example output link is checked as a bundled resource.</td><td>Fence the example and make the link checker distinguish examples from real resource links.</td></tr>
-          <tr><td>2 missing copyright headers</td><td>Both new test-case reference files fail the attribution rule.</td><td>Apply the existing template/exemplar policy explicitly; preserve attribution without leaking template metadata into generated docs.</td></tr>
-          <tr><td>1 redaction-contract mismatch</td><td>Redaction guidance exists, but its wording does not match the gate.</td><td>Use the common contract wording. This diagnostic does not demonstrate a missing security instruction.</td></tr>
-          <tr><td>1 agent-specific wording violation</td><td><code>$ARGUMENTS</code> has returned.</td><td>Use “the user’s request”, consistent with the other core skills.</td></tr>
+          <tr><td>1 broken link</td><td>An example output link is checked as a bundled resource.</td><td>The checker skips inline/fenced code examples while retaining real resource links, including links with code-formatted labels.</td></tr>
+          <tr><td>2 missing copyright headers</td><td>Both new test-case reference files fail the attribution rule.</td><td>TC templates and exemplars now use the explicit UC template exception; attribution remains in the package and owning skill.</td></tr>
+          <tr><td>1 redaction-contract mismatch</td><td>Redaction guidance exists, but its wording does not match the gate.</td><td>Standardised the existing redaction guidance to the common contract wording.</td></tr>
+          <tr><td>1 agent-specific wording violation</td><td><code>$ARGUMENTS</code> has returned.</td><td>Replaced the agent-specific variable with “the user’s request”.</td></tr>
         </tbody>
       </table></div>
-      <div class="callout"><strong>Acceptance:</strong> the full repository gate passes, including checks currently skipped after the first stage fails. Keep real missing-resource checks effective.</div>
-      <div class="sources"><p>Evidence: actual command output on the reviewed revision.</p><p><a href="../scripts/validate-skills.rb">scripts/validate-skills.rb:52–72, 96–98</a> · <a href="../scripts/validate-skills.sh">scripts/validate-skills.sh:7–11</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md:23, 32–34, 70</a></p></div>
+      <div class="callout"><strong>Verified:</strong> resource-link self-test, skill checks, UC regressions, strict example validation, Kotlin example compilation and shell linting passed in the isolated checkout.</div>
+      <div class="sources"><p>Evidence: original failure reproduced on 719d42a; full passing validation recorded for the ec006c4 core-only snapshot.</p><p><a href="../scripts/validate-skills.rb">scripts/validate-skills.rb</a> · <a href="../scripts/validate-skills.sh">scripts/validate-skills.sh</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md</a></p></div>
     </section>
 
     <section class="slide" id="test-case" aria-labelledby="title-4" data-title="R2 · Test-case handoff">
-      <p class="eyebrow">R2 · Fix · Instruction mismatch</p><h2 id="title-4">The test-case skill promises an unavailable next step.</h2>
+      <p class="eyebrow">R2 · Fixed · Scoped update exercise passed</p><h2 id="title-4">Test-case updates now have a truthful handoff.</h2>
       <div class="grid">
-        <div class="panel"><span class="label fix">Current contract</span><h3>A good journey format, incomplete integration.</h3><ul><li>Suggests <code>/playwright-test TC-XXX</code>; that skill is absent from the retained plugins.</li><li>The description promises <code>aiup-compose-test TC-001</code>, but Compose testing defines UC-driven component and UI tests, with no TC journey contract.</li><li>Uses root <code>docs/</code> paths and creation-only ID allocation; no service scope, language or update procedure.</li></ul></div>
-        <div class="panel"><span class="label">Recommended change</span><h3>Keep the document; make the handoff truthful.</h3><ul><li>Use agent-independent skill names and only suggest automation when an installed skill explicitly accepts TC documents.</li><li>Otherwise report: “Journey specification ready; no matching automation skill identified.”</li><li>Reuse the core service/language rules. Update a named TC in place, preserving its ID.</li><li>Replace the stale <code>/use-case-spec</code> reference with <code>aiup-use-case-spec</code>.</li></ul></div>
+        <div class="panel"><span class="label fix">Original contract</span><h3>The original integration gaps.</h3><ul><li>Suggests <code>/playwright-test TC-XXX</code>; that skill is absent from the retained plugins.</li><li>The description promises <code>aiup-compose-test TC-001</code>, but Compose testing defines UC-driven component and UI tests, with no TC journey contract.</li><li>Uses root <code>docs/</code> paths and creation-only ID allocation; no service scope, language or update procedure.</li></ul></div>
+        <div class="panel"><span class="label">Implemented change</span><h3>Scoped updates with evidence-backed status.</h3><ul><li>Uses agent-independent names and checks that an installed automation skill explicitly accepts TC documents.</li><li>Otherwise reports: “Journey specification ready; no matching automation skill identified.”</li><li>Resolves the service, updates an existing TC by ID and preserves language and confirmed priority.</li><li>Requires evidence for status promotions. Materially changed journeys return to Draft unless renewed evidence supports another status.</li></ul></div>
       </div>
-      <div class="callout"><strong>Acceptance:</strong> “Update TC-002 for service billing” updates the existing service-local file, keeps its language and ID, and suggests no unsupported command.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md:12, 23–40, 71–84</a> · <a href="../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">aiup-compose-test/SKILL.md:1–27, Workflow</a></div>
+      <div class="callout"><strong>Exercise passed:</strong> German billing TC-002 kept its ID, language, priority and UC links; a material change moved Automated → Draft. One TC remained; root docs and UC files were untouched; no unsupported automation was suggested.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-test-case/SKILL.md">aiup-test-case/SKILL.md</a> · <a href="../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">aiup-compose-test/SKILL.mdWorkflow</a></div>
     </section>
 
     <section class="slide" id="schema" aria-labelledby="title-5" data-title="R3 · Schema fidelity">
-      <p class="eyebrow">R3 · Fix · Source meaning</p><h2 id="title-5">A recovered model must not invent constraints.</h2>
+      <p class="eyebrow">R3 · Fixed · Recovery fixture passed</p><h2 id="title-5">Recovery now preserves schema meaning.</h2>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Current guidance</th><th scope="col">Risk</th><th scope="col">Recommended rule</th></tr></thead>
+        <thead><tr><th scope="col">Original guidance</th><th scope="col">Risk</th><th scope="col">Implemented rule</th></tr></thead>
         <tbody>
-          <tr><td>Decimal precision → <code>Min: 0</code></td><td>Negative values become forbidden without evidence.</td><td>Recover ranges only from actual constraints or validated behaviour.</td></tr>
-          <tr><td>String → 255 or a default length</td><td>An undocumented storage limit becomes a supposed requirement.</td><td>Record evidenced length; distinguish unbounded from unknown.</td></tr>
-          <tr><td>Unique FK → mandatory 1:1</td><td>Uniqueness does not prove participation is mandatory at both ends.</td><td>Derive multiplicity and optionality separately for each end.</td></tr>
-          <tr><td>Limited type/rule vocabulary</td><td>No explicit UUID key, non-sequence key or optional-FK form.</td><td>Extend the vocabulary where observed schemas require it; preserve key generation and nullability.</td></tr>
+          <tr><td>Decimal precision → <code>Min: 0</code></td><td>Negative values become forbidden without evidence.</td><td>Ranges require constraint or behavioural evidence; decimal precision alone adds no minimum.</td></tr>
+          <tr><td>String → 255 or a default length</td><td>An undocumented storage limit becomes a supposed requirement.</td><td>String bounds distinguish actual limits, Unbounded and Unknown; no invented 255 default.</td></tr>
+          <tr><td>Unique FK → mandatory 1:1</td><td>Uniqueness does not prove participation is mandatory at both ends.</td><td>Each relationship end is derived independently. CASCADE describes deletion, not mandatory participation.</td></tr>
+          <tr><td>Limited type/rule vocabulary</td><td>No explicit UUID key, non-sequence key or optional-FK form.</td><td>Added UUIDs, independent key generation, composable validation and optional-FK forms.</td></tr>
         </tbody>
       </table></div>
-      <div class="callout"><strong>Acceptance:</strong> signed decimal, UUID primary key and nullable unique-FK fixtures retain their meaning through code → entity model. The existing five-column format can remain.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/stack-signals.md">reverse-engineer/references/stack-signals.md:94–99</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md:140–175</a> · <a href="../aiup-core/skills/aiup-entity-model/references/REFERENCE.md">entity-model/references/REFERENCE.md:11–34</a></div>
+      <div class="callout"><strong>Exercise passed:</strong> generated five-column tables preserved application-generated UUID keys, Unbounded text, signed Decimal(10,2), a nullable unique FK and optional participation at both ends.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/stack-signals.md">reverse-engineer/references/stack-signals.md</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md</a> · <a href="../aiup-core/skills/aiup-entity-model/references/REFERENCE.md">entity-model/references/REFERENCE.md</a></div>
     </section>
 
     <section class="slide" id="reverse" aria-labelledby="title-6" data-title="R4 · Reverse → forward">
-      <p class="eyebrow">R4 · Fix · Cross-skill compatibility</p><h2 id="title-6">Reverse engineering needs the same requirements contract.</h2>
+      <p class="eyebrow">R4 · Implemented · Contract review complete</p><h2 id="title-6">Reverse and forward skills now share the FR contract.</h2>
       <div class="grid">
-        <div class="panel"><span class="label fix">Current mismatch</span><h3>The filename matches; the structure does not.</h3><p>The reverse-engineering reference permits a prose-only Functional Requirements section: recovered behaviour is delegated to use-case specs.</p><p>The forward skill requires FR tables with IDs, user stories, priorities and statuses. The diagram skill requires each UC to trace to an FR.</p><p>A new reverse-engineered catalogue can therefore leave nothing concrete for that traceability check to resolve.</p></div>
-        <div class="panel"><span class="label">Recommended change</span><h3>Recover evidence-backed FR rows.</h3><ul><li>Reuse the forward table structure and stable headings, including Requirements Notes.</li><li>Give each recovered FR an ID and link each UC to its FRs; the UC format already permits a Requirements field.</li><li>Record source paths and uncertainty. Do not infer business priority, approval or unevidenced NFRs from code alone.</li><li>Keep unknowns explicit instead of filling gaps with invented requirements.</li></ul></div>
+        <div class="panel"><span class="label fix">Original mismatch</span><h3>The original catalogue mismatch.</h3><p>The reverse-engineering reference permits a prose-only Functional Requirements section: recovered behaviour is delegated to use-case specs.</p><p>The forward skill requires FR tables with IDs, user stories, priorities and statuses. The diagram skill requires each UC to trace to an FR.</p><p>A new reverse-engineered catalogue can therefore leave nothing concrete for that traceability check to resolve.</p></div>
+        <div class="panel"><span class="label">Implemented change</span><h3>Evidence-backed FR rows and links.</h3><ul><li>Reuses forward tables and stable headings, including Requirements Notes.</li><li>Requires FR IDs, diagram-comment mappings and corresponding UC Requirements links.</li><li>Records source evidence and uncertainty; unknown priority is To confirm, with no invented approval or NFR thresholds.</li><li>Keeps NFR/constraint table headers when no rows are evidenced and records the gap in Requirements Notes.</li></ul></div>
       </div>
-      <div class="callout"><strong>Acceptance:</strong> run the forward diagram/specification checks on recovered documents without first repairing their catalogue structure.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md:41–56</a> · <a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md:30–60, 69–93</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:59, 70</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:41</a></div>
+      <div class="callout"><strong>Verification:</strong> the aligned contracts were reviewed and recovery acceptance fixtures were added. A full generated FR → UC → TC pipeline was not exercised in this change.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md</a> · <a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md</a></div>
     </section>
 
     <section class="slide" id="identity" aria-labelledby="title-7" data-title="R5 · Stable updates">
-      <p class="eyebrow">R5 · Tighten · Update behaviour</p><h2 id="title-7">Preserve identity when the specification changes.</h2>
-      <p class="lead">Several skills say “create or update”, but do not explicitly reconcile existing IDs, content and downstream references before writing.</p>
+      <p class="eyebrow">R5 · Implemented · Identity and reconciliation rules</p><h2 id="title-7">Updates now reconcile identity and downstream references.</h2>
+      <p class="lead">The core skills now read existing artefacts, preserve unaffected content and IDs, allocate new IDs above existing ones, and report consumers outside the authorised scope.</p>
       <div class="grid">
-        <div class="panel"><span class="label fix">Illustrative failure</span><h3>A new goal changes the order.</h3><p>An existing <code>UC-004</code> can be reassigned during regrouping by actor or importance. A renamed diagram label can produce a new filename while TC links still point to the old one.</p><p>The business-rule contract adds a real constraint: rules are numbered without gaps, and the bundled Studio format says they are positional.</p></div>
-        <div class="panel"><span class="label">Recommended update contract</span><ol><li>Read existing output first; match by ID and business meaning.</li><li>Keep existing FR, UC and TC IDs. Allocate new IDs without renumbering other items.</li><li>Preserve unaffected content; report removed or renamed items and affected links.</li><li>When BR renumbering is required, produce an old → new mapping and repair authorised references; report consumers outside the task scope.</li></ol></div>
+        <div class="panel"><span class="label fix">Original risk</span><h3>A new goal changes the order.</h3><p>An existing <code>UC-004</code> can be reassigned during regrouping by actor or importance. A renamed diagram label can produce a new filename while TC links still point to the old one.</p><p>The business-rule contract adds a real constraint: rules are numbered without gaps, and the bundled Studio format says they are positional.</p></div>
+        <div class="panel"><span class="label">Implemented update contract</span><ol><li>Read existing output first; match by ID and business meaning.</li><li>Keep existing FR, UC and TC IDs. Allocate new IDs without renumbering other items.</li><li>Preserve unaffected content; report removed or renamed items and affected links.</li><li>When BR renumbering is required, produce an old → new mapping and repair authorised references; report consumers outside the task scope.</li></ol></div>
       </div>
-      <div class="callout"><strong>Acceptance:</strong> adding a UC, renaming a UC and deleting a business rule leave unrelated IDs intact and all affected references resolved or explicitly reported.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:63–68</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:80</a> · <a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md:86–117</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:179–180, 204–207</a></div>
+      <div class="callout"><strong>Verified:</strong> the TC update exercise preserved its ID and links. UC rename and BR old → new mappings are explicit contract rules and fixture criteria; those cases were not separately run end to end.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md</a></div>
     </section>
 
     <section class="slide" id="validation" aria-labelledby="title-8" data-title="R6 · Validator behaviour">
-      <p class="eyebrow">R6 · Fix · Reproduced with controlled probes</p><h2 id="title-8">Validation checks syntax more reliably than meaning.</h2>
+      <p class="eyebrow">R6 · Fixed · Automated regressions passed</p><h2 id="title-8">Invalid step references now fail strict validation.</h2>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Probe using the bundled UC example</th><th scope="col">Observed result</th><th scope="col">Recommended change</th></tr></thead>
+        <thead><tr><th scope="col">Probe using the bundled UC example</th><th scope="col">Delivered result</th><th scope="col">Regression coverage</th></tr></thead>
         <tbody>
-          <tr><td>Unchanged example</td><td><span class="check">0 errors, 0 warnings</span></td><td>Keep as a regression fixture.</td></tr>
-          <tr><td>Trigger and resume point changed to step 99; main flow has 9 steps</td><td><span class="tag fix">Still clean</span></td><td>Resolve every trigger/resume reference against existing main-flow steps.</td></tr>
-          <tr><td>One step says “Clerk redeems a loyalty token.”</td><td><code>TECHNICAL_TERM</code> warning; strict mode treats it as failure</td><td>Make ambiguous vocabulary contextual advice. Keep concrete implementation details detectable.</td></tr>
+          <tr><td>Unchanged example</td><td><span class="check">0 errors, 0 warnings</span></td><td>Existing English and German fixtures remain valid.</td></tr>
+          <tr><td>Trigger and resume point changed to step 99; main flow has 9 steps</td><td><span class="tag keep">Rejected in strict mode</span></td><td>Tests cover invalid triggers, zero/nonexistent continuations and conditional/German references.</td></tr>
+          <tr><td>One step says “Clerk redeems a loyalty token.”</td><td>Accepted as domain vocabulary</td><td>Loyalty token, food salt and hash browns pass; access tokens, password hashing/salting, SMTP and SQL remain flagged.</td></tr>
         </tbody>
       </table></div>
-      <div class="callout"><strong>Acceptance:</strong> reject a nonexistent step; allow a legitimate business use of “token” or “salt”; continue detecting implementation-specific prose. A passing parser does not establish behavioural completeness.</div>
-      <p class="small">These are targeted validator probes, not end-to-end agent evaluations. No repository examples were modified.</p>
-      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py">use-case-spec/scripts/validate_use_case.py:119–131, 605–614, 644–650, 894</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/example.md">use-case-spec/references/example.md</a></div>
+      <div class="callout"><strong>Verified:</strong> the expanded self-test and strict bundled example pass. Vocabulary checks are contextual heuristics; a passing validator still does not prove complete business behaviour.</div>
+      <p class="small">The regressions are retained in the bundled validator self-test and run through the repository gate.</p>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py">use-case-spec/scripts/validate_use_case.py</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/example.md">use-case-spec/references/example.md</a></div>
     </section>
 
     <section class="slide" id="sessions" aria-labelledby="title-9" data-title="R7 · Fresh-session execution">
-      <p class="eyebrow">R7 · Fix · Path and task scope</p><h2 id="title-9">Resolve the skill and the project independently.</h2>
-      <p class="lead">The use-case and reverse-engineering skills mix an installed-skill-relative script path with a project-relative document path in one command.</p>
+      <p class="eyebrow">R7 · Fixed · External-install tests passed</p><h2 id="title-9">Resolve the skill and the project independently.</h2>
+      <p class="lead">The skill instructions now resolve the installed validator and target project independently, then pass only the explicit files created or updated by the task.</p>
       <div class="grid">
-        <div class="panel"><span class="label fix">Current instruction pattern</span><pre>python3 scripts/validate_use_case.py \
+        <div class="panel"><span class="label fix">Original instruction pattern</span><pre>python3 scripts/validate_use_case.py \
   --strict docs/use_cases/UC-*.md</pre><p class="small" style="margin-top:16px">Running from the project usually misses the bundled script. Running from the skill directory usually misses the project docs. The wildcard also selects unrelated UCs.</p></div>
-        <div class="panel"><span class="label">Recommended behaviour</span><ul><li>Resolve the installed script to an absolute path.</li><li>Resolve the selected project/service docs separately.</li><li>Pass an explicit, quoted list of files created or updated by this task.</li><li>End with the output path, checks and unresolved dependencies, so the next chat can work from files.</li></ul></div>
+        <div class="panel"><span class="label">Implemented behaviour</span><ul><li>Resolve the installed script to an absolute path.</li><li>Resolve the selected project/service docs separately.</li><li>Pass an explicit, quoted list of files created or updated by this task.</li><li>End with the output path, checks and unresolved dependencies, so the next chat can work from files.</li></ul></div>
       </div>
-      <div class="callout"><strong>Acceptance:</strong> the same single-UC request works from project root and service directory, with the skill installed elsewhere. An unrelated invalid UC is left untouched.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md:109–120</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:102–106</a></div>
+      <div class="callout"><strong>Verified:</strong> CLI tests copied the validator to a separate installation and ran from both project root and billing service. Paths contained spaces; one selected UC passed and an unrelated invalid UC stayed unchanged.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-use-case-spec/SKILL.md">use-case-spec/SKILL.md</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md</a></div>
     </section>
 
     <section class="slide" id="requirements" aria-labelledby="title-10" data-title="R8 · Requirement states">
-      <p class="eyebrow">R8 · Tighten · Lifecycle and uncertainty</p><h2 id="title-10">Keep the same meaning across languages and revisions.</h2>
+      <p class="eyebrow">R8 · Implemented · Lifecycle semantics aligned</p><h2 id="title-10">States and uncertainty now have explicit meanings.</h2>
       <div class="grid">
-        <div class="panel"><span class="label fix">Confirmed inconsistency</span><h3>English and German states diverge.</h3><p>English defines <strong>Deferred</strong> and <strong>Rejected</strong>. German defines <strong>Abgelehnt</strong> and <strong>Ersetzt</strong>, but no equivalent of Deferred.</p><p>The lists are not a one-to-one vocabulary: postponement, rejection and replacement describe different outcomes.</p><p><strong>Change:</strong> define an explicit mapping, add a German deferred state, and support superseded consistently only if it is needed.</p></div>
-        <div class="panel"><span class="label">Recommended safeguards</span><h3>Distinguish proposals from agreed facts.</h3><ul><li>When making an NFR measurable, label the threshold as proposed until confirmed; keep that uncertainty in Requirements Notes.</li><li>Separate a requirement’s delivery state from review/conflict notes instead of adding ad-hoc status values.</li><li>For test cases and UC templates, clarify “Reviewed”: its current definition says it is still awaiting stakeholder review.</li></ul></div>
+        <div class="panel"><span class="label">Language alignment</span><h3>One meaning in both languages.</h3><ul><li>Deferred ↔ Zurückgestellt.</li><li>Rejected ↔ Abgelehnt.</li><li>Superseded ↔ Ersetzt, with a replacement ID.</li><li>In Progress ↔ Teilweise: implementation has started or is partial.</li><li>Unknown priority: To confirm ↔ Zu bestätigen.</li></ul></div>
+        <div class="panel"><span class="label">Evidence and review</span><h3>Proposals stay distinguishable from facts.</h3><ul><li>Proposed NFR thresholds remain labelled in Requirements Notes until confirmed.</li><li>Review/conflict notes are separate from delivery statuses.</li><li>Reviewed now means review completed, awaiting approval, in UC and TC guidance.</li><li>TC promotions require evidence; material changes return to Draft unless renewed evidence supports another status.</li></ul></div>
       </div>
-      <div class="callout"><strong>Acceptance:</strong> a deferred requirement retains its meaning when translated. An unanswered performance question cannot silently become an approved limit.</div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md:95–103, 124–140</a> · <a href="../aiup-core/skills/aiup-requirements/references/REFERENCE.md">requirements/references/REFERENCE.md:33–53</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">test-case/SKILL.md:49–55</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/use-case.md">use-case-spec/references/use-case.md:57–67</a></div>
+      <div class="callout"><strong>Verification:</strong> vocabulary and update contracts reviewed. The German TC exercise confirmed status demotion and language preservation; no full requirements-translation workflow was run.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md · Updates and Evidence</a> · <a href="../aiup-core/skills/aiup-requirements/references/REFERENCE.md">requirements/references/REFERENCE.md · Status</a> · <a href="../aiup-core/skills/aiup-test-case/SKILL.md">test-case/SKILL.md · Update Scope</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/use-case.md">use-case-spec/references/use-case.md · Status Values</a></div>
     </section>
 
     <section class="slide" id="retain" aria-labelledby="title-11" data-title="Keep & refine">
-      <p class="eyebrow">What I would keep · Smaller suggestions</p><h2 id="title-11">The architecture and reference skills need little change.</h2>
+      <p class="eyebrow">Smaller refinements · Implemented</p><h2 id="title-11">Architecture, reference and routing were refined.</h2>
       <div class="grid three">
-        <div class="panel"><span class="label">Architecture</span><h3>Keep evidence-led discovery.</h3><p>It reads the project, permits equivalent existing headings and favours targeted updates. No comparable must-fix defect found.</p><p><strong>Refine:</strong> attach source paths to consequential claims; distinguish observed architecture from proposed ADRs. Keep small-service sections brief.</p></div>
-        <div class="panel"><span class="label">Reference</span><h3>Keep it as the navigation layer.</h3><p>Exact project commands, links to canonical docs and explicit unknowns make it useful in fresh sessions.</p><p><strong>Refine:</strong> when code contradicts a documented decision, report the divergence. Implementation drift alone should not erase an agreed convention.</p></div>
-        <div class="panel"><span class="label">Across the core</span><h3>Keep the existing skill boundaries.</h3><p>Retain <code>aiup-*</code> names, Markdown artefacts, Mermaid and task-specific references.</p><p><strong>Refine:</strong> narrow the diagram trigger “mentions Mermaid”; make reverse-engineering use-case counts a review signal rather than a mandatory reduction ratio.</p></div>
+        <div class="panel"><span class="label">Architecture</span><h3>Evidence-led discovery retained.</h3><p>It reads the project, permits equivalent existing headings and favours targeted updates. No comparable must-fix defect found.</p><p><strong>Added:</strong> source paths for consequential claims, a distinction between observed architecture and proposed decisions, and brief sections for small services.</p></div>
+        <div class="panel"><span class="label">Reference</span><h3>Navigation role retained.</h3><p>Exact project commands, links to canonical docs and explicit unknowns make it useful in fresh sessions.</p><p><strong>Added:</strong> report code/decision divergence as To confirm; implementation drift alone must not erase an agreed convention.</p></div>
+        <div class="panel"><span class="label">Across the core</span><h3>Skill boundaries retained.</h3><p>Retain <code>aiup-*</code> names, Markdown artefacts, Mermaid and task-specific references.</p><p><strong>Changed:</strong> narrowed Mermaid routing; made UC counts a review signal; broadened service discovery beyond Gradle; repaired the entity template’s nested code fence.</p></div>
       </div>
-      <div class="sources"><a href="../aiup-core/skills/aiup-architecture/SKILL.md">architecture/SKILL.md:33–48, 74–105</a> · <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md:65–74, 85–99</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md:3–9</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md:80, 118</a></div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-architecture/SKILL.md">architecture/SKILL.md</a> · <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md</a> · <a href="../aiup-core/skills/aiup-reverse-engineer/SKILL.md">reverse-engineer/SKILL.md</a></div>
     </section>
 
-    <section class="slide" id="contract" aria-labelledby="title-12" data-title="Proposed handoff contract">
-      <p class="eyebrow">Recommended shared contract</p><h2 id="title-12">A fresh session should need files, scope and a task.</h2>
-      <div class="chain" aria-label="Proposed forward and reverse document handoff">
+    <section class="slide" id="contract" aria-labelledby="title-12" data-title="Implemented handoff contract">
+      <p class="eyebrow">Implemented shared contract</p><h2 id="title-12">Fresh-session instructions now resolve scope and evidence.</h2>
+      <div class="chain" aria-label="Implemented forward and reverse document handoff contract">
         <div class="node"><b>Evidence</b><p>Vision or existing code.<br>Known facts and open questions.</p></div><span class="arrow" aria-hidden="true">→</span>
         <div class="node"><b>FR → UC</b><p>Stable IDs and explicit links.<br>One canonical requirements catalogue.</p></div><span class="arrow" aria-hidden="true">→</span>
         <div class="node"><b>UC → TC</b><p>Verified references and state dependencies.<br>One journey per TC.</p></div><span class="arrow" aria-hidden="true">→</span>
@@ -175,28 +175,28 @@
         <div class="panel"><h3>Resolve before writing.</h3><p>Target project/service → existing artefacts → authoritative inputs → allowed output files. Architecture and REFERENCE supply context; the entity model supplies persistence meaning.</p></div>
         <div class="panel"><h3>Report after writing.</h3><p>Link outputs, identify changed IDs, state validation results and list unresolved decisions. Name the next compatible skill only when its contract fits.</p></div>
       </div>
-      <div class="callout"><strong>Implementation approach:</strong> align the repeated rules first. Keep essential scope/update instructions inside each portable skill; avoid introducing a new orchestration skill solely to share a few paragraphs.</div>
-      <div class="sources">Proposed design, derived from R2–R7. Existing patterns worth reusing: <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md:85–110</a> and <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md:25–76</a>.</div>
+      <div class="callout"><strong>Delivered:</strong> essential scope/update rules stay inside each portable skill. No extra orchestration skill was added. The core catalogue and documentation now list all eight skills and TC artefacts.</div>
+      <div class="sources">Implemented instructions from R2–R7; this diagram describes the contract, not a claim that every complete pipeline was tested: <a href="../aiup-core/skills/aiup-reference/SKILL.md">reference/SKILL.md</a> and <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md</a>.</div>
     </section>
 
-    <section class="slide" id="roadmap" aria-labelledby="title-13" data-title="Recommended sequence">
-      <p class="eyebrow">Prioritised work</p><h2 id="title-13">Repair compatibility before adding more skills.</h2>
+    <section class="slide" id="roadmap" aria-labelledby="title-13" data-title="Delivered release">
+      <p class="eyebrow">Delivery record</p><h2 id="title-13">R1–R8 delivered in one core release.</h2>
       <div>
-        <div class="track"><strong>First<br><span class="small">Make the existing workflow usable</span></strong><div><p><b>R1, R2, R7:</b> restore the gate, integrate the TC skill and correct validation paths.</p><p class="small">Proof: full gate passes; a service-scoped TC update and an external-install single-UC validation work without unrelated writes.</p></div></div>
-        <div class="track"><strong>Then<br><span class="small">Protect document meaning</span></strong><div><p><b>R3, R4, R6:</b> fix schema recovery, align recovered requirements and add the validator regression cases.</p><p class="small">Proof: signed/nullable/key fixtures preserve meaning; recovered FR → UC links resolve; step 99 fails validation.</p></div></div>
-        <div class="track"><strong>Next<br><span class="small">Make updates predictable</span></strong><div><p><b>R5, R8:</b> preserve identities, reconcile references and align lifecycle language. Apply the smaller refinements where relevant.</p><p class="small">Proof: adding, renaming, removing and translating items do not silently change existing identities or decisions.</p></div></div>
+        <div class="track"><strong>Compatibility<br><span class="small">R1, R2, R7 · Complete</span></strong><div><p>Repaired the gate and TC integration; added independent validator/project paths and explicit file scope.</p><p class="small">Evidence: full isolated gate, external-install CLI tests and the billing TC exercise passed.</p></div></div>
+        <div class="track"><strong>Source fidelity<br><span class="small">R3, R4, R6 · Complete</span></strong><div><p>Corrected schema recovery, aligned recovered requirements and added step-reference/vocabulary regressions.</p><p class="small">Evidence: schema exercise and validator regressions passed; the FR handoff contract was reviewed.</p></div></div>
+        <div class="track"><strong>Predictable updates<br><span class="small">R5, R8 · Complete</span></strong><div><p>Added identity reconciliation, BR mappings, lifecycle translations and status-evidence rules; applied the smaller refinements.</p><p class="small">Evidence: instruction review and TC update exercise. Broader rename/translation workflows remain evaluation opportunities.</p></div></div>
       </div>
-      <div class="callout"><strong>Release policy:</strong> this review does not change a skill, so it needs no plugin version bump. Batch published-skill fixes into a coherent release with one core version bump.</div>
-      <div class="sources"><a href="../CLAUDE.md">CLAUDE.md:Versions</a> · Recommendations are intentionally scoped to the existing core and its direct consumers.</div>
+      <div class="callout"><strong>Delivered:</strong> core 103.12.0 · 22 files · commit <code>ec006c4</code> · branch <code>fix/core-skill-contracts</code>. One version bump covered the published-skill fixes; this HTML update adds none.</div>
+      <div class="sources"><a href="../CLAUDE.md">CLAUDE.md · Versions</a> · <a href="../aiup-core/.claude-plugin/plugin.json">Core plugin manifest</a> · Record refers to the delivered core-only snapshot; unrelated Kotlin/Compose work was excluded.</div>
     </section>
 
     <section class="slide" id="evidence" aria-labelledby="title-14" data-title="Evidence & limits">
-      <p class="eyebrow">Review record</p><h2 id="title-14">What was checked, and what remains unproven.</h2>
+      <p class="eyebrow">Implementation verification · 12 September 2026</p><h2 id="title-14">Passing checks, with their practical limits.</h2>
       <div class="grid">
-        <div class="panel"><span class="label">Observed</span><ul><li>Reviewed all eight core skills and their supporting contracts; checked the claimed Compose test handoff.</li><li><code>scripts/validate-skills.sh</code>: exit 1, five diagnostics in its first stage.</li><li>Use-case validator self-test: passed.</li><li>Bundled use-case example under <code>--strict</code>: 0 errors, 0 warnings.</li><li>Controlled probes: nonexistent step references accepted; a domain use of “token” flagged.</li><li>Inspected sources passed the required secrets scan.</li></ul></div>
-        <div class="panel"><span class="label">Limits</span><ul><li>This is a source review plus deterministic validation, not a full agent-by-agent task evaluation.</li><li>The full gate stops before its later checks; those are not claimed to have passed.</li><li>Studio compatibility statements are taken from the bundled format contract; the Studio implementation was not independently tested.</li><li>Illustrative failure scenarios show risks implied by instructions, not observed production data loss.</li><li>Source links are relative to this repository. File paths and line references remain visible when the HTML is shared separately.</li></ul></div>
+        <div class="panel"><span class="label">Passed for the delivered snapshot</span><ul><li>Full <code>scripts/validate-skills.sh</code> in an isolated core-only checkout, including Kotlin example compilation.</li><li>Resource-link regression self-test and skill metadata/contract checks.</li><li>Expanded UC validator self-test; strict bundled example: zero errors or warnings.</li><li>ShellCheck, secrets scans and diff whitespace checks.</li><li>Bounded schema recovery exercise: UUIDs, signed decimals, text bounds and optional unique FK.</li><li>German billing TC update: stable ID/links, Draft after a material change, unrelated files preserved.</li></ul></div>
+        <div class="panel"><span class="label">Limits and provenance</span><ul><li>The original review at 719d42a failed five gate checks; the delivered ec006c4 snapshot resolved them.</li><li>The full suite ran in isolation because concurrent Compose work was changing shared files. All 22 committed files were matched to the validated snapshot before push.</li><li>Two bounded agent exercises supplement deterministic tests; this was not an exhaustive multi-agent or full FR → UC → TC evaluation.</li><li>Studio itself was not independently tested. Some safeguards are instructions verified by review, not deterministic guarantees.</li><li>Source links target repository files; original line numbers were removed because the fixes moved the relevant sections.</li></ul></div>
       </div>
-      <div class="sources"><p>Reviewed snapshot: <strong>719d42ab0d983e552b1c5f8b4f99c43ad6f9deca</strong> · core <strong>103.11.0</strong> · 11 September 2026.</p><p>Read-only skill review. The HTML is self-contained, works offline, supports arrow-key navigation and includes a printable layout.</p></div>
+      <div class="sources"><p>Original review: <strong>719d42a / core 103.11.0</strong> · Delivered fixes: <strong>ec006c4 / core 103.12.0</strong>.</p><p><a href="../aiup-core/skills/aiup-reverse-engineer/references/recovery-fixtures.md">Reusable recovery acceptance fixtures</a> · <a href="../aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py">Retained UC regression tests</a> · <a href="../scripts/validate-skills.rb">Retained resource-link regression test</a></p></div>
     </section>
   </main>
   <nav class="controls" aria-label="Presentation controls">

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Review of AIUP Kotlin implementation skills and examples, plus a proposed Kobweb web UI skill, migration trade-offs and verification criteria.">
+<title>Kotlin skills — example quality review</title>
+<style>
+:root{--ink:#202945;--muted:#59647c;--paper:#f3f5fb;--white:#fff;--violet:#5944a4;--violet-pale:#ebe6fa;--teal:#096866;--red:#a62f47;--line:#d3daea;--display:"Avenir Next","Trebuchet MS",sans-serif;--body:"Segoe UI",Arial,sans-serif;--mono:"SFMono-Regular",Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.48 var(--body)}a{color:var(--violet);text-underline-offset:3px}button,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}:focus-visible{outline:3px solid var(--teal);outline-offset:4px}h1,h2,h3,p{margin:0}h1,h2,h3{font-family:var(--display);line-height:1.12;letter-spacing:-.035em}h1{font-size:clamp(44px,5.8vw,84px);max-width:1000px}h2{font-size:clamp(32px,3.6vw,52px)}h3{font-size:24px}p+p{margin-top:12px}.masthead{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding:18px 4.5vw;font:12px/1.4 var(--mono);color:var(--muted)}.masthead strong{color:var(--violet)}main{max-width:1550px;margin:auto;padding:20px 4.5vw 110px}.slide{min-height:calc(100svh - 176px);padding:24px 0;display:flex;flex-direction:column;gap:22px;scroll-margin-top:20px}.slide+.slide{border-top:1px solid var(--line);margin-top:45px}.slide[hidden]{display:none}.presenting .slide+.slide{border:0;margin:0}.eyebrow{font:12px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--violet)}.lead{font-size:23px;max-width:1080px;color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.three{grid-template-columns:repeat(3,1fr)}.panel{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:24px}.panel h3{margin-bottom:15px}.label,.tag{font:11px/1.4 var(--mono);letter-spacing:.04em;text-transform:uppercase}.label{display:block;margin-bottom:10px;color:var(--teal)}.tag{display:inline-block;padding:4px 8px;background:var(--violet-pale);color:var(--violet);border-radius:4px;white-space:nowrap}.must{color:var(--red)}.tag.must{background:#f9e9ee}.callout{border-left:4px solid var(--violet);background:var(--violet-pale);padding:17px 22px;border-radius:0 8px 8px 0}.check{color:var(--teal)}.small{font-size:15px;color:var(--muted)}ul,ol{padding-left:22px;margin:10px 0 0}li+li{margin-top:9px}code{font-family:var(--mono);font-size:.84em;overflow-wrap:anywhere}pre{margin:10px 0 0;padding:18px;background:#eef1f9;border:1px solid var(--line);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.5 var(--mono)}pre code{font-size:inherit}.sources{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font:12px/1.6 var(--mono)}.sources a{overflow-wrap:anywhere}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:16px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:12px 13px}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}.signature{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);background:var(--white);border-radius:12px;overflow:hidden}.signature div{padding:21px;border-right:1px solid var(--line)}.signature div:last-child{border:0}.signature b{display:block;font:15px var(--mono);margin-bottom:8px}.signature span{font-size:14px;color:var(--muted)}.signature .broken{background:#f9e9ee}.signature .broken b{color:var(--red)}.toolbar{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:10px;padding:12px 4.5vw;background:var(--white);border-top:1px solid var(--line);box-shadow:0 -4px 20px #20294508}.toolbar button,.toolbar select{border:1px solid var(--line);border-radius:7px;padding:8px 12px;background:var(--white);color:var(--ink);font-size:14px}.toolbar select{max-width:360px;flex:1}.toolbar .primary{background:var(--violet);color:white;border-color:var(--violet)}.counter{font:12px var(--mono);margin-left:auto;white-space:nowrap}.skip{position:fixed;top:-80px;left:16px;background:white;padding:12px;z-index:20}.skip:focus{top:10px}
+@media(max-width:850px){body{font-size:16px}.grid,.three{grid-template-columns:1fr}.lead{font-size:20px}.signature{grid-template-columns:1fr}.signature div{border-right:0;border-bottom:1px solid var(--line);padding:13px 18px}.signature b{display:inline;margin-right:10px}.slide{min-height:0}.toolbar{flex-wrap:wrap;padding:10px 4vw;gap:7px}.toolbar select{max-width:none;min-width:140px}.toolbar button{padding:7px 9px}.counter{display:none}.masthead{font-size:10px}.panel{padding:19px}main{padding-bottom:150px}th,td{padding:9px}.table-wrap table{min-width:650px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{@page{size:A4 landscape;margin:12mm}body{font-size:11pt;background:white}.masthead,.toolbar,.skip{display:none}main{padding:0;max-width:none}.slide,.slide[hidden]{display:flex!important;min-height:0;margin:0!important;padding:0 0 10mm;break-after:page;border:0!important;gap:12px}.slide:last-child{break-after:auto}h1{font-size:35pt}h2{font-size:26pt}h3{font-size:16pt}.lead{font-size:14pt}.grid{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.panel{padding:14px;break-inside:avoid}pre{font-size:9pt;padding:10px}table{font-size:10pt}.sources{font-size:8pt}.small{font-size:9pt}.table-wrap{overflow:visible}a{color:inherit}.signature div{padding:14px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to review</a>
+<header class="masthead"><strong>AIUP / KOTLIN IMPLEMENTATION</strong><span>EXAMPLE QUALITY REVIEW · 12 SEPTEMBER 2026</span></header>
+<main id="main">
+<section class="slide" id="verdict" data-title="Verdict">
+<p class="eyebrow">Review · Compose / Ktor / Exposed</p>
+<h1>Keep the architecture.<br>Repair the examples.</h1>
+<p class="lead">I would change these skills before treating their examples as a canonical source for generated code. The main weakness is inconsistency between the snippets an agent is instructed to follow.</p>
+<div class="signature" aria-label="Example chain and observed faults"><div><b>Domain</b><span>Nullable required field</span></div><div class="broken"><b>Persistence</b><span>Missing constructor arguments</span></div><div class="broken"><b>Client</b><span>Incomplete port implementation</span></div><div class="broken"><b>ViewModel</b><span>Cancellation becomes an error</span></div><div><b>Tests</b><span>Stale state properties</span></div></div>
+<div class="grid"><div class="panel"><span class="label must">Change first</span><h3>Six corrections</h3><p>Compile consistency, domain/schema agreement, cancellation, overlapping requests, HTTP failures and JDBC execution guidance.</p></div><div class="panel"><span class="label">Then strengthen</span><h3>Five focused improvements</h3><p>Migration verification, test fixtures, wire compatibility, removal rules and a checked example set.</p></div></div>
+<p class="callout">Review snapshot before implementation. The recommendations have since been applied; see the <a href="../aiup-compose-ktor-exposed/skills/aiup-implement/references/record-example/README.md">checked example and verification commands</a>, <a href="../aiup-compose-ktor-exposed/skills/aiup-kobweb-ui/SKILL.md">Kobweb UI skill</a> and <a href="../aiup-compose-ktor-exposed/skills/aiup-kobweb-test/SKILL.md">Kobweb test skill</a>. Findings and line numbers below describe the original revision.</p>
+<p class="small">Scope: seven repository skills in <code>aiup-compose-ktor-exposed</code>, their seven Markdown references and two Kotlin skeletons, plus a <a href="#kobweb-fit">Kobweb alternative and skill proposal</a>. Static review; no target service build or runtime test suite was available in this package. Proposed snippets below are focused replacement fragments, not a complete runnable application.</p>
+</section>
+
+<section class="slide" id="scope" data-title="Skill-by-skill assessment">
+<p class="eyebrow">Assessment</p><h2>Where I would change each skill</h2>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Assessment</th><th>Recommended change</th></tr></thead><tbody>
+<tr><td><code>aiup-implement</code></td><td><span class="tag must">Must fix</span></td><td><a href="#compile">Complete the repository/model example</a>; align nullability; distinguish JDBC execution from suspension.</td></tr>
+<tr><td><code>aiup-implement-ui</code></td><td><span class="tag must">Must fix</span></td><td><a href="#cancellation">Preserve cancellation</a>; choose a load policy; define the port; handle HTTP status and use one state name.</td></tr>
+<tr><td><code>aiup-ktor-test</code></td><td><span class="tag must">Must fix</span></td><td>Correct the <code>RecordStatus</code> fixture drift; strengthen negative-path and persistence examples.</td></tr>
+<tr><td><code>aiup-compose-test</code></td><td><span class="tag must">Must fix</span></td><td>Use <code>searchState</code> and the defined token fake; demonstrate cancellation, failures and concurrent loads.</td></tr>
+<tr><td><code>aiup-flyway-migration</code></td><td><span class="tag">Improve</span></td><td><a href="#migrations">Replace mental SQL validation</a> with migration execution and schema/mapping checks.</td></tr>
+<tr><td><code>aiup-implementation-prompts</code></td><td><span class="tag">Keep + clarify</span></td><td>Keep explicit predecessors and separate sessions; make test handoffs durable and gate completion.</td></tr>
+<tr><td><code>aiup-implementation-status</code></td><td><span class="tag">Keep + clarify</span></td><td>Distinguish test files present, checks executed, and checks passing.</td></tr>
+</tbody></table></div>
+<p class="callout">“Must fix” means a concrete example defect or misleading execution guidance. “Improve” means a missing safeguard or better teaching example; it is not proof of a production defect.</p>
+</section>
+
+<section class="slide" id="retain" data-title="What I would retain">
+<p class="eyebrow">Retain</p><h2>The structural choices are sensible.</h2>
+<div class="grid three"><div class="panel"><h3>Backend boundaries</h3><ul><li>Vertical feature slices and private persistence mappers.</li><li>Domain repository ports; route-local response mapping.</li><li>Feature-owned Koin modules and full composition-root verification.</li><li>Services only where orchestration warrants one.</li></ul></div><div class="panel"><h3>UI boundaries</h3><ul><li>Transport ports and constructor injection.</li><li>Immutable state plus action contracts for meaningful screen sections.</li><li>Existing runtime configuration and authentication reused.</li><li>Platform APIs kept out of shared code.</li></ul></div><div class="panel"><h3>Scope discipline</h3><ul><li>Discover target conventions and versions first.</li><li>Reconcile existing code instead of duplicating features.</li><li>Use lightweight fakes and MockEngine.</li><li>Avoid unnecessary Gradle modules and arbitrary coverage targets.</li></ul></div></div>
+<p class="callout">I would retain plain state holders where the project uses them. Switching every screen to a new ViewModel framework would add migration work without fixing the defects identified here.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/references/backend-style.md">backend-style.md</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/references/ui-style.md">ui-style.md</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md">implementation-prompts / Select and Order Sessions</a></div>
+</section>
+
+<section class="slide" id="compile" data-title="F1 · Compile consistency">
+<p class="eyebrow">F1 · Must fix · Static inconsistency</p><h2>The examples do not form one valid contract.</h2>
+<div class="table-wrap"><table><thead><tr><th>Evidence</th><th>Why it matters</th><th>Concrete correction</th></tr></thead><tbody>
+<tr><td>Backend <code>Record</code> requires <code>category</code> and <code>displayName</code>; mapper supplies neither.</td><td>The constructor call cannot compile. The illustrated table also lacks both columns.</td><td>Include the fields in the canonical schema, table and mapper, or remove them consistently from a deliberately smaller example.</td></tr>
+<tr><td><code>ExposedRecordRepository</code> implements only <code>findById</code>; its port requires four methods.</td><td>A concrete class must implement the remaining methods.</td><td>Provide the complete class in a reference file; label any shortened excerpt explicitly.</td></tr>
+<tr><td><code>ServiceApiClient : RecordDataPort</code> declares <code>suspend fun listRecords(limit: Int = 50)</code>.</td><td>The port is absent. For the intended port method, the implementation needs <code>override</code>, with the default declared on the interface.</td><td>Supply the real port and use <code>override suspend fun listRecords(limit: Int)</code>.</td></tr>
+<tr><td><code>searchState</code> / <code>searchUiState</code> / <code>vm.records</code> / <code>vm.error</code>.</td><td>The reference wiring and tests do not match the shown ViewModel.</td><td>Use <code>searchState</code> throughout, including tests and error rendering.</td></tr>
+<tr><td>Backend inline test uses <code>status = RecordStatus.ACTIVE</code>; UI inline test defines <code>FixedAccessTokenProvider</code> but calls <code>FakeAccessTokenProvider</code>.</td><td>The examples contradict their own supplied fixtures.</td><td>Use <code>active = true</code> and the defined <code>FixedAccessTokenProvider</code>, as the bundled Kotlin skeletons already do.</td></tr>
+</tbody></table></div>
+<p class="check"><strong>Verify:</strong> compile a single consistent example set and its tests. Markdown syntax validation cannot prove these contracts agree.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md">implement:102–169</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui:108,145,252</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/references/ui-style.md">ui-style:42,75</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md">ktor-test:91</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">compose-test:67,98,134–135</a>. Language rule: <a href="https://kotlinlang.org/docs/functions.html#parameters-with-default-values">Kotlin default parameters and overrides</a>.</div>
+</section>
+
+<section class="slide" id="model" data-title="F2 · Domain and schema">
+<p class="eyebrow">F2 · Must fix · Invalid states</p><h2>A nullable column feeds a non-null invariant.</h2>
+<div class="grid"><div class="panel"><span class="label must">Current example</span><pre><code>val externalReference: String? = null
+
+init {
+    require(!externalReference.isNullOrBlank())
+}
+
+// RecordTable
+varchar("external_reference", 50).nullable()</code></pre><p>A default construction fails validation. A database row allowed by the table mapping can fail during hydration. Audit timestamps are also silently left at their null defaults by the mapper.</p></div><div class="panel"><span class="label">Proposed contract</span><pre><code>// If the domain requires a reference:
+val externalReference: String
+
+init {
+    require(externalReference.isNotBlank())
+}
+
+// Corresponding Exposed column:
+varchar("external_reference", 50)</code></pre><p>Use matching SQL <code>NOT NULL</code> and the agreed blank/length rules. Map all persisted fields, including audit timestamps, with explicit timestamp imports/conversions.</p></div></div>
+<p class="callout"><strong>Alternative:</strong> if the real domain allows a missing reference, keep nullability and validate only present values. Establish the domain rule first; existing nullable rows need a migration plan before tightening constraints.</p>
+<p class="check"><strong>Verify:</strong> persist and reload every field; exercise null/blank boundaries and any historical rows affected by a constraint change.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md">implement:102–117,134–139,163–168</a>. The mismatch is confirmed in the examples; actual database contents were not inspected.</div>
+</section>
+
+<section class="slide" id="cancellation" data-title="F3 · Coroutine cancellation">
+<p class="eyebrow">F3 · Must fix · Runtime behaviour</p><h2>Cancellation should leave quietly.</h2>
+<div class="grid"><div class="panel"><span class="label must">Current catch block</span><pre><code>} catch (e: Exception) {
+    searchState = searchState.copy(
+        error = "Failed to load records: ${e.message}"
+    )
+}</code></pre><p>Coroutine cancellation is caught as a loading failure. The snippet also puts arbitrary exception text directly into visible UI.</p></div><div class="panel"><span class="label">Replacement fragment</span><pre><code>import kotlin.coroutines.cancellation.CancellationException
+
+// After the successful load:
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    searchState = searchState.copy(
+        error = "Could not load records. Try again."
+    )
+}</code></pre><p>Preserve cancellation. Prefer the project's typed error mapping; keep diagnostic details in its existing reporting mechanism.</p></div></div>
+<p class="check"><strong>Verify:</strong> suspend the fake port, cancel the load and assert no failure message is produced. Separately throw a transport error and assert the stable user-facing message.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui:154–168</a>. Behaviour supported by <a href="https://kotlinlang.org/docs/exception-handling.html#cancellation-and-exceptions">Kotlin coroutine exception handling</a>. The concurrency policy on the next slide must also govern state updates in <code>finally</code>.</div>
+</section>
+
+<section class="slide" id="loads" data-title="F4 · Load and search semantics">
+<p class="eyebrow">F4 · Must fix · Unspecified interaction</p><h2>Two clicks can race. Search ignores its query.</h2>
+<div class="grid"><div class="panel"><span class="label must">Observed</span><ul><li>Every <code>loadRecords()</code> launches another coroutine.</li><li>Either completion sets <code>isLoading = false</code>, even while another load remains active.</li><li>An older response can overwrite a newer response.</li><li><code>onQueryChange</code> stores text, but <code>listRecords(limit = 100)</code> neither receives nor filters by that text.</li></ul></div><div class="panel"><span class="label">Smallest coherent example</span><p>Teach a list refresh if that is the intended use case: remove the illustrative search field/action and ignore repeat refreshes while a load is active.</p><p>If search is intended, pass the query through the real contract and implement latest-request-wins behaviour. Cancel or invalidate prior work, and prevent stale completion/finalisation from changing current state.</p></div></div>
+<div class="callout"><strong>Choose by behaviour:</strong> one in-flight load is simpler for refresh. Latest-request-wins is appropriate for changing search inputs. A disabled button alone does not define the ViewModel's concurrency contract.</div>
+<p class="check"><strong>Verify:</strong> use controllable fake responses, start A then B and complete them in reverse order. Assert the chosen result and loading state. For search, assert the submitted query reaches filtering or the port.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui:148–168,186–197</a>. These are reachable behaviours of the supplied snippet; the intended product search semantics are not specified.</div>
+</section>
+
+<section class="slide" id="http" data-title="F5 · HTTP failures">
+<p class="eyebrow">F5 · Must fix · Error contract gap</p><h2>Decoding JSON is not HTTP error handling.</h2>
+<div class="grid"><div class="panel"><span class="label must">Current example</span><p>The default client installs JSON negotiation and immediately calls <code>.body()</code>. There is no status validation or explicit response mapping.</p><p>Ktor does not reject responses by status by default. A <code>500</code> containing <code>[]</code> could therefore look like a successful empty list; an error object could instead surface as a decoding failure.</p></div><div class="panel"><span class="label">Concrete correction</span><pre><code>internal fun HttpClientConfig&lt;*&gt;.configureServiceClient() {
+    expectSuccess = true
+    installServiceContentNegotiation()
+}</code></pre><p>Use this shared configuration for production and MockEngine clients if the project uses exception-based HTTP errors. Otherwise explicitly map statuses into the existing error contract.</p><p class="small">Do not impose this choice on a project that deliberately handles non-2xx responses itself.</p></div></div>
+<p class="check"><strong>Verify:</strong> return <code>401</code>, <code>403</code> and <code>500</code>, including a valid list-shaped error body. Assert none becomes successful data. Also test malformed successful JSON.</p>
+<p class="small">Related suggestion: make HttpClient ownership explicit and close it at its owner’s lifecycle boundary; close test clients in cleanup. Keep <code>ignoreUnknownKeys</code> when intended; require a concrete interoperability reason for <code>isLenient = true</code>.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui:89–121</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/references/ExampleScreenTest.kt">ExampleScreenTest.kt:29–51</a>. Default behaviour: <a href="https://ktor.io/docs/client-response-validation.html">Ktor response validation</a>.</div>
+</section>
+
+<section class="slide" id="transactions" data-title="F6 · Database transactions">
+<p class="eyebrow">F6 · Must fix · Misleading guidance</p><h2>JDBC stays blocking inside a suspend function.</h2>
+<div class="grid"><div class="panel"><span class="label must">Current guidance</span><p>The backend guide calls <code>suspendTransaction</code> “coroutine-safe”; the implementation example imports its JDBC variant and supplies no dispatcher or project transaction helper.</p><p>The name alone does not establish safe execution on the caller’s thread. Actual blocking risk depends on the target runtime and existing transaction helper.</p></div><div class="panel"><span class="label">Replacement instruction</span><p>“Determine whether the project uses JDBC or R2DBC. For JDBC, reuse the project's transaction helper and blocking-I/O dispatcher. For R2DBC, use its suspend transaction API. Follow the installed Exposed version.”</p><p>“When a use case requires atomic multi-repository work, show one transaction owner and how repository calls participate in that transaction.”</p></div></div>
+<p class="callout">The DI example injects <code>transactionRunner</code>, but no example defines its contract or uses it. Add one small service example that demonstrates the existing project boundary; avoid inventing a transaction framework.</p>
+<p class="check"><strong>Verify:</strong> review the actual dispatcher/helper and execute a two-write rollback test: force the second operation to fail and confirm the first write is absent.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md">implement:149–160,200–210</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/references/backend-style.md">backend-style:69</a>. Driver distinction: <a href="https://www.jetbrains.com/help/exposed/transactions.html">Exposed transactions</a>. This is a guidance defect, not a measured performance finding.</div>
+</section>
+
+<section class="slide" id="migrations" data-title="F7 · Migration verification">
+<p class="eyebrow">F7 · Suggestion · Stronger evidence</p><h2>Run the SQL the example teaches.</h2>
+<div class="grid"><div class="panel"><span class="label">Replace weak verification</span><p>The migration workflow says to validate SQL mentally and prefers compilation before a migration/test task. Kotlin compilation cannot establish that PostgreSQL accepts the migration.</p><p>The shorter reference already prefers migration/Testcontainers tasks. Make the main skill agree with it.</p></div><div class="panel"><span class="label">Concrete verification contract</span><ol><li>Apply the migration chain to an empty disposable PostgreSQL database.</li><li>For a schema change, apply it over the previous schema with representative existing rows.</li><li>Run the repository mapping round trip.</li><li>Assert constraints and audit-trigger behaviour relevant to the change.</li></ol></div></div>
+<p class="callout">Explicitly state that applied versioned migrations are immutable. Add a new migration for a change. Ensure <code>set_updated_at()</code> exists before creating its first trigger, including when adding audit fields to an existing schema.</p>
+<p class="small">Do not copy the standalone <code>status</code> or boolean indexes automatically. Keep an index only when actual query patterns and expected selectivity justify it. The current “follow existing conventions” rule is useful.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-flyway-migration/SKILL.md">flyway-migration / Reference SQL Style, Constraints and Indexes, Workflow:9–11</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-flyway-migration/references/migration-style.md">migration-style / Verification</a>.</div>
+</section>
+
+<section class="slide" id="tests" data-title="F8 · Test examples">
+<p class="eyebrow">F8 · Suggestion · Examples should catch the defects</p><h2>Teach failures and state transitions.</h2>
+<div class="table-wrap"><table><thead><tr><th>Current example</th><th>Change I would make</th><th>Proof gained</th></tr></thead><tbody>
+<tr><td>Bundled route skeleton has list success and missing-ID tests.</td><td>Add missing-token, insufficient-authority, invalid-ID and response-contract cases using the existing auth helper.</td><td>Demonstrates the negative coverage already required by the prose.</td></tr>
+<tr><td>Repository fake returns input from <code>create</code>/<code>update</code> without storing it.</td><td>Keep it clearly labelled a read-route fixture. For write routes, capture arguments or use a tiny stateful fake.</td><td>A write test cannot pass solely because it echoes the request.</td></tr>
+<tr><td>ViewModel test checks only the final record count and error.</td><td>Assert loading before completion, preservation of existing content on failure, cancellation and overlapping loads.</td><td>Finds defects hidden by <code>advanceUntilIdle()</code>-only tests.</td></tr>
+<tr><td><code>ExampleScreenTest.kt</code> is actually <code>ExampleApiClientTest</code>.</td><td>Rename the file and update links; assert HTTP method, full URL and failure decoding. Add a separate semantics example only where supported.</td><td>Clear test purpose and transport contract coverage.</td></tr>
+<tr><td>Integration skeleton assumes <code>testRunId</code> columns; local Hikari datasource has no shown teardown.</td><td>Use real ownership columns or captured inserted IDs. Retain the datasource for explicit lifecycle cleanup.</td><td>Usable cleanup without adding test-only production schema or leaking pools.</td></tr>
+</tbody></table></div>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-ktor-test/references/ExampleRouteTest.kt">ExampleRouteTest.kt:52–104</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md">ktor-test:176–208</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">compose-test:121–140</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/references/ExampleScreenTest.kt">ExampleScreenTest.kt:20–67</a>.</div>
+</section>
+
+<section class="slide" id="wire" data-title="F9 · Shared contracts">
+<p class="eyebrow">F9 · Suggestion · Complement the existing API gate</p><h2>A binary API check is only part of compatibility.</h2>
+<div class="grid"><div class="panel"><span class="label">Keep</span><h3>JVM / KLIB API checks</h3><p>The skills correctly treat shared modules as public contracts and discourage casually regenerating API dumps.</p><p>That is valuable protection for Kotlin consumers.</p></div><div class="panel"><span class="label">Add when a wire contract changes</span><h3>JSON compatibility examples</h3><p>Exercise old payloads against the new decoder and new payloads against supported consumers. Cover field names, optional/default values, null handling and enum representations where affected.</p><p>A change in serialised names can change JSON while the public Kotlin property signature remains the same.</p></div></div>
+<p class="callout"><strong>Minimal addition:</strong> one request/response DTO and representative JSON fixtures used by both the route and MockEngine examples. Avoid creating a second DTO definition in tests.</p>
+<p class="check"><strong>Verify:</strong> demonstrate that a wire-name change is detected by a JSON contract test even when the Kotlin declaration shape remains unchanged.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md">implement:224–228,247</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/references/backend-style.md">backend-style / Shared Contract Gates</a>. Serialised name semantics: <a href="https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-serial-name/">kotlinx.serialization SerialName</a>. Compatibility gap is an inference from what the current gate covers.</div>
+</section>
+
+<section class="slide" id="scope-rules" data-title="F10 · Reconciliation and handoffs">
+<p class="eyebrow">F10 · Suggestion · Scope safeguards</p><h2>Document edits do not always remove behaviour.</h2>
+<div class="grid"><div class="panel"><span class="label">Tighten reconciliation</span><p>“Removed lines” and a bidirectional spec comparison can overreach if a paragraph moved, wording changed or a spec is incomplete.</p><p><strong>Proposed rule:</strong> delete behaviour only when the current contract explicitly retires it, or an authorised change clearly supersedes it. Trace the change through callers and dependent use cases. Treat omission alone as a gap to investigate.</p></div><div class="panel"><span class="label">Make handoffs durable</span><p>Keep separate implementation and test skills for the explicit fresh-session workflow.</p><p>Record exact scenarios requiring tests, affected symbols and failed checks in the existing plan/status artefact. “Tests exist”, “tests ran” and “tests passed” should be separate evidence states.</p></div></div>
+<p class="callout">The unconditional “do not edit tests” rule can leave stale tests after an intentional contract change. Preserve the scoped session boundary, but explicitly mark the implementation as awaiting the named test session. For a user-authorised end-to-end task, a combined implementation/test workflow is the simpler alternative.</p>
+<div class="sources">Evidence: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md">implement:31–44,248</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui:30–40</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md">implementation-prompts / Select and Order Sessions, Final Chat Response</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-status/references/service-discovery.md">service-discovery / Evidence Rules</a>.</div>
+</section>
+
+<section class="slide" id="canonical" data-title="F11 · Maintainable example set">
+<p class="eyebrow">F11 · Suggestion · Prevent recurrence</p><h2>One checked example beats three drifting copies.</h2>
+<div class="grid"><div class="panel"><span class="label">Smallest repair now</span><ol><li>Correct the inconsistent snippets in both <code>SKILL.md</code> and their mandatory references.</li><li>Define all illustrative contracts: DTO, port, token provider and state/actions.</li><li>Mark incomplete snippets as excerpts and name their omitted dependencies.</li><li>Separate company-specific auth adapters from portable Kotlin/Ktor examples.</li></ol></div><div class="panel"><span class="label">Durable improvement</span><p>Maintain a small compiled reference slice: model → migration/table → repository → route/DTO → client/port → state holder → tests.</p><p>Have skills link to the canonical files. If excerpts remain duplicated, validate them against that source. Record the verified dependency versions without imposing them on target projects.</p><p class="small">Trade-off: a fixture adds maintenance. Start with an existing maintained reference service if one is available; a new showcase application is unnecessary.</p></div></div>
+<p class="check"><strong>Acceptance:</strong> all shown constructors and interfaces agree; the fixture compiles; negative-path tests pass; the referenced files resolve; examples clearly state the platform and library assumptions they require.</p>
+<div class="sources">Evidence: duplicated API-client code in <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md">implement-ui</a> and <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implement-ui/references/ui-style.md">ui-style</a>; contradictory inline/bundled tests in <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">compose-test</a> and <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md">ktor-test</a>. Bundled route skeleton depends on a company-specific auth test library.</div>
+</section>
+
+<section class="slide" id="kobweb-fit" data-title="Kobweb · Recommendation">
+<p class="eyebrow">Kobweb assessment · Proposed addition</p><h2>Yes to a Kobweb skill.<br>Choose it for the web.</h2>
+<p class="lead">I recommend a separate <code>aiup-kobweb-ui</code> skill for browser applications. Keep the current Compose Multiplatform skill for projects that need its shared desktop/browser UI.</p>
+<div class="grid"><div class="panel"><span class="label">What Kobweb changes</span><p>Kobweb builds on Compose HTML and Kotlin/JS: pages render HTML, with browser routing and CSS-based presentation. Silk supplies optional styling and widgets.</p><p>This replaces the current Material 3 / Compose Multiplatform rendering approach. It still uses the Compose runtime.</p></div><div class="panel"><span class="label">My selection criteria</span><p>Prefer Kobweb when browser behaviour, semantic HTML, URLs, CSS and integration with web libraries dominate.</p><p>Retain Compose Multiplatform when reusing the same screen implementations across desktop and browser is a central requirement. A Kotlin language match does not make the UI components interchangeable.</p></div></div>
+<p class="callout"><strong>Start with one representative browser use case.</strong> Measure the resulting accessibility, development effort, payload and interactions. Neither framework guarantees a faster or more accessible application by itself.</p>
+<div class="sources">Framework facts: <a href="https://kobweb.varabyte.com/docs/getting-started/what-is-kobweb">What is Kobweb</a> · <a href="https://kobweb.varabyte.com/docs/concepts/presentation/silk">Silk</a>. Selection criteria are this review’s recommendation. The upstream latest-release link resolved to <a href="https://github.com/varabyte/kobweb/releases/tag/v0.25.1">v0.25.1</a> during research; use a verified compatible toolchain, not an unqualified “latest”.</div>
+</section>
+
+<section class="slide" id="kobweb-mapping" data-title="Kobweb · Reuse and rewrite">
+<p class="eyebrow">Migration boundary</p><h2>Reuse the contract. Rewrite the rendering.</h2>
+<div class="table-wrap"><table><thead><tr><th>Current stack</th><th>Kobweb approach</th><th>Implication</th></tr></thead><tbody>
+<tr><td>Ktor / Exposed / Flyway backend</td><td>Keep the existing service and API.</td><td>No automatic move to Kobweb <code>@Api</code> routes or a second server.</td></tr>
+<tr><td>Shared serialisable DTOs</td><td>Use the same contract through a compatible Kotlin/JS target.</td><td>A JVM/Wasm-only module does not automatically provide a JS variant; inspect dependencies and publication first.</td></tr>
+<tr><td>Ports, state and actions</td><td>Reuse transport-independent contracts and suitable state-holder logic.</td><td>Repair cancellation, concurrency and error behaviour before carrying it over.</td></tr>
+<tr><td>Material 3, Compose UI modifiers and screens</td><td>Compose HTML and Kobweb/Silk presentation in <code>jsMain</code>.</td><td>Rewrite DOM structure and styling. Do not substitute imports mechanically.</td></tr>
+<tr><td>Tabs or app-local navigation</td><td><code>@Page</code>, URL parameters, history and real links.</td><td>Preserve required deep links; test reload, back/forward and invalid URLs.</td></tr>
+<tr><td>Compose semantics tests</td><td>Browser DOM tests plus portable state/transport tests.</td><td>Do not copy <code>runComposeUiTest</code> into the Kobweb skill.</td></tr>
+</tbody></table></div>
+<p class="small">Proposed default deployment: export the frontend and serve it beside the existing API, preferably through an existing same-origin gateway. Separate hosting is also viable, but origin, cookie/token and CORS behaviour must be explicitly verified.</p>
+<div class="sources">Integration: <a href="https://kobweb.varabyte.com/docs/guides/existing-backend">Kobweb with an existing backend</a>. Source-set and routing facts: <a href="https://kobweb.varabyte.com/docs/concepts/foundation/routing">Kobweb routing</a> · <a href="https://kotlinlang.org/docs/multiplatform/multiplatform-configure-compilations.html">Kotlin target compilations</a>. Reuse assessment is conditional on the actual application dependencies.</div>
+</section>
+
+<section class="slide" id="kobweb-skill" data-title="Kobweb · Proposed skill contract">
+<p class="eyebrow">Skill design · Draft, not installed</p><h2>Give Kobweb a clear entry point.</h2>
+<div class="grid"><div class="panel"><span class="label">Proposed frontmatter</span><pre><code>---
+name: aiup-kobweb-ui
+description: &gt;
+  Implement browser UI use cases with Kobweb,
+  Compose HTML and optional Silk, consuming
+  existing backend APIs. Use for Kobweb pages,
+  browser navigation and web UI implementation.
+  Not for Compose Multiplatform screens or
+  backend implementation.
+---</code></pre><p>Pair this with <a href="#kobweb-test-skill"><code>aiup-kobweb-test</code></a> from the outset. Separate implementation and testing sessions already form part of this repository’s workflow.</p></div><div class="panel"><span class="label">Decision-changing instructions</span><ol><li>Discover the Kobweb module, versions, <code>jsMain</code>, app entry, theme, routes, API client and hosting mode.</li><li>Preserve existing DTOs, auth and transport ports; report incompatible JS dependencies before changing the shared build.</li><li>Keep page entry points thin; render semantic HTML from state and actions.</li><li>Use project CSS/Silk conventions; do not import Material 3 or Compose UI modifiers.</li><li>Verify compilation, existing tests, browser behaviour and the chosen export layout.</li></ol></div></div>
+<p class="callout">Implementation runs existing checks and records the exact test handoff. The testing skill creates or updates tests. A user-authorised end-to-end task may apply both sequentially; an explicitly scoped fresh session stops at its assigned boundary.</p>
+<div class="sources">Design proposal informed by the <code>skill-creator</code> guidance and this repository’s current UI workflow. Discovery concepts: <a href="https://kobweb.varabyte.com/docs/getting-started/kobweb-project">Kobweb project structure</a>. At review time, no new skill folder or plugin registration had been created.</div>
+</section>
+
+<section class="slide" id="kobweb-examples" data-title="Kobweb · Required example set">
+<p class="eyebrow">Examples the skill should use</p><h2>Teach a complete browser use case.</h2>
+<div class="table-wrap"><table><thead><tr><th>Proposed canonical example</th><th>What it must demonstrate</th><th>Acceptance evidence</th></tr></thead><tbody>
+<tr><td><code>RecordsPage.kt</code></td><td><code>@Page</code> under the discovered pages package; app-owned dependencies; a thin entry point.</td><td>Direct URL and reload render the same page; app wiring compiles.</td></tr>
+<tr><td><code>RecordSearchContent.kt</code></td><td>Labelled search input, submit behaviour, links, loading/empty/error states and responsive CSS/Silk styling.</td><td>Keyboard submission works; focus and accessible names are correct; narrow layouts remain usable.</td></tr>
+<tr><td><code>RecordSearchState.kt</code> and its controller</td><td>Real query propagation, explicit load policy, cancellation and stable user messages.</td><td>Controlled fake responses prove no stale overwrite or false cancellation error.</td></tr>
+<tr><td>Existing shared DTO + <code>RecordDataPort</code> + HTTP adapter</td><td>Matching signatures, browser-compatible client, token source and explicit HTTP status mapping.</td><td>Request/response and auth-failure tests; shared JS compilation passes.</td></tr>
+<tr><td>Browser test + export configuration</td><td>Semantic locators, invalid route handling, direct navigation and anonymous export state.</td><td>Exported site passes the same navigation smoke test as development.</td></tr>
+</tbody></table></div>
+<p class="callout"><strong>Do not promote tutorial fragments to production templates.</strong> The official custom-backend example demonstrates a request inside a page effect; an AIUP example must additionally show the port, loading/error contract and lifecycle ownership.</p>
+<p class="small">Proposed resource layout: each skill has a short <code>SKILL.md</code> and its own focused reference; the pair uses one maintained example slice with matching production and test contracts. Compile that slice before calling it canonical; do not invent placeholder APIs to make a snippet look complete.</p>
+<div class="sources">Tutorial context: <a href="https://kobweb.varabyte.com/docs/guides/existing-backend">Using a Custom Backend</a>. Page conventions: <a href="https://kobweb.varabyte.com/docs/concepts/foundation/routing">Routing</a>. The example set above is a proposal, not a claim that a verified fixture already exists.</div>
+</section>
+
+<section class="slide" id="kobweb-traps" data-title="Kobweb · Export and auth">
+<p class="eyebrow">Kobweb-specific safeguards</p><h2>Export is another execution environment.</h2>
+<div class="grid"><div class="panel"><span class="label">Static export</span><p>Kobweb exports page snapshots through a headless browser. It offers static and full-stack layouts; static export is a natural fit for keeping the existing backend.</p><p>Dynamic routes are not automatically enumerated. Add known public routes where needed and configure the host’s fallback behaviour for client-side routes.</p><p class="small">Do not describe this as per-request server-side rendering or assume every dynamic page receives pre-rendered HTML.</p></div><div class="panel"><span class="label">Authenticated pages</span><p>Use an anonymous, deterministic shell during export. Kobweb exposes <code>AppGlobals.isExporting</code> for conditional behaviour.</p><p>The skill should prevent login redirects and private API calls during export. At runtime, reuse the real browser auth flow; hiding a page never replaces backend authorisation.</p><p>Test callback URLs, expired sessions and the deployed base path.</p></div></div>
+<p class="check"><strong>Verify:</strong> export without user credentials; check that no private response data enters generated assets; open a deep link directly in production mode. Ensure frontend fallbacks do not turn API errors into HTML success responses.</p>
+<div class="sources">Export behaviour and APIs: <a href="https://kobweb.varabyte.com/docs/concepts/foundation/exporting">Kobweb exporting</a>. Authentication and hosting checks are proposed acceptance criteria. Keep export verification finite and distinguish the development server from the deployed site.</div>
+</section>
+
+<section class="slide" id="kobweb-verification" data-title="Kobweb · Test strategy">
+<p class="eyebrow">Verification contract</p><h2>Test the DOM the user interacts with.</h2>
+<div class="grid three"><div class="panel"><span class="label">Logic</span><h3>Kotlin tests</h3><p>Use the actual JS/common test source sets for portable state holders and ports. Keep MockEngine if the adapter remains Ktor; otherwise test the chosen transport adapter with its supported mechanism.</p><p>Include cancellation, invalid input, empty results and failure recovery.</p></div><div class="panel"><span class="label">Browser</span><h3>DOM tests</h3><p>Use the project’s browser runner, such as Playwright, with roles and labels. Test search submission, navigation, focus and visible errors.</p><p>Prefer observable behaviour over generated CSS classes. Keep manual keyboard and responsive checks.</p></div><div class="panel"><span class="label">Deployment</span><h3>Export smoke test</h3><p>Use the installed Kobweb CLI or owning Gradle wrapper through existing project tasks. Verify the selected static/full-stack layout, assets and direct routes.</p><p>Record missing browser tooling as unverified work; compilation alone is insufficient.</p></div></div>
+<p class="callout">Kobweb uses Playwright internally for exporting. That does not establish an application test suite. The proposed skill must discover whether the project already has a browser test runner.</p>
+<div class="sources">Locator guidance: <a href="https://playwright.dev/docs/locators">Playwright locators</a>. CLI and Gradle workflow: <a href="https://kobweb.varabyte.com/docs/getting-started/kobweb-project">Creating and running Kobweb</a>. Export mechanism: <a href="https://kobweb.varabyte.com/docs/concepts/foundation/exporting">Exporting</a>.</div>
+</section>
+
+<section class="slide" id="kobweb-test-skill" data-title="Kobweb · Dedicated test skill">
+<p class="eyebrow">Companion skill · Proposed, not created</p><h2>Give browser testing its own skill.</h2>
+<div class="grid"><div class="panel"><span class="label">Proposed frontmatter</span><pre><code>---
+name: aiup-kobweb-test
+description: &gt;
+  Create or update tests for Kobweb web UIs:
+  Kotlin state and transport tests, browser DOM
+  interactions, navigation and exported-site
+  smoke tests. Use for testing Kobweb pages or
+  browser flows, not Compose Multiplatform
+  semantics or backend repository tests.
+---</code></pre><p>Like <code>aiup-compose-test</code>, this covers the UI side at several levels. <code>aiup-ktor-test</code> continues to own backend route, service and persistence tests.</p></div><div class="panel"><span class="label">Core instructions</span><ol><li>Read the use-case scenarios, production code and existing tests; update matching suites rather than creating duplicates.</li><li>Choose the lightest test that proves each behaviour: fake-port state test, transport test, DOM test or deployed-site smoke test.</li><li>Discover the actual Kotlin source sets and browser runner; do not assume Kobweb’s export dependency provides an application test suite.</li><li>Use deterministic fixtures, semantic locators and condition-based waits. Keep external services out of ordinary UI tests.</li><li>Run the complete affected suite and report passing, failing and unexecuted scenarios separately.</li></ol></div></div>
+<p class="callout"><strong>Boundary:</strong> expose production defects with failing tests and a concrete implementation handoff. Do not weaken assertions, hide broken behaviour with test-only interfaces, or silently rewrite production code in a test-only session.</p>
+<div class="sources">Proposed division follows <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md">aiup-compose-test</a> and <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md">the separate-session workflow</a>. Browser locator guidance: <a href="https://playwright.dev/docs/locators">Playwright locators</a>.</div>
+</section>
+
+<section class="slide" id="kobweb-test-examples" data-title="Kobweb · Test examples to ship">
+<p class="eyebrow">Canonical testing examples</p><h2>Show the assertions that catch real failures.</h2>
+<div class="table-wrap"><table><thead><tr><th>Example</th><th>Scenario and assertion</th><th>Fixture and boundary</th></tr></thead><tbody>
+<tr><td><code>RecordSearchStateTest.kt</code></td><td>Submit query A then B; complete responses out of order. Assert the selected concurrency policy, loading state and current results. Cancellation produces no visible error.</td><td>Controllable fake of the production port, test scheduler and explicit completion signals; no browser or HTTP client.</td></tr>
+<tr><td><code>RecordApiClientTest.kt</code></td><td>Assert method, URL, encoded query, token header and decoded fields. A 500 with valid list-shaped JSON must still fail.</td><td>MockEngine only when using Ktor; use shared DTOs and the same client configuration as production.</td></tr>
+<tr><td>Record search browser test</td><td>Fill the labelled search field and submit using Enter. Assert the outgoing query and visible result. On failure, assert the message and successful retry.</td><td>Stub the API at the browser boundary and use the real page/client. This proves wiring without depending on a live backend.</td></tr>
+<tr><td>Navigation and access browser test</td><td>Open a detail URL directly; reload; navigate back/forward. Assert invalid-ID handling, keyboard focus and expired-session behaviour.</td><td>Deterministic responses and fake auth state appropriate to the existing auth design. Separate controlled end-to-end tests prove real auth integration when required.</td></tr>
+<tr><td>Exported-site smoke test</td><td>Serve the exported artefact, open a deep link and check assets and page state. API failures retain their HTTP meaning.</td><td>Actual production layout and host fallback configuration, with controlled API responses. A development-server pass is insufficient.</td></tr>
+</tbody></table></div>
+<p class="small">Bundle complete setup, teardown and fixtures with each example. Use the existing runner and language: TypeScript Playwright is reasonable when configured, while an established Kotlin/JVM browser harness can remain Kotlin. Avoid adding two browser test stacks.</p>
+<p class="check"><strong>Acceptance:</strong> a deliberate defect makes the relevant test fail; the corrected implementation passes. Check keyboard access and narrow layouts, but do not claim full accessibility from automated checks alone.</p>
+<div class="sources">These are proposed examples, not executed tests. Application test selection is separate from <a href="https://kobweb.varabyte.com/docs/concepts/foundation/exporting">Kobweb’s export machinery</a>. Prefer <a href="https://playwright.dev/docs/locators">user-facing browser locators</a> over generated CSS classes.</div>
+</section>
+
+<section class="slide" id="kobweb-rollout" data-title="Kobweb · Adoption plan">
+<p class="eyebrow">Recommended next step</p><h2>Add an alternative without forking the backend.</h2>
+<div class="grid"><div class="panel"><span class="label">Repository integration proposal</span><p>Place <code>aiup-kobweb-ui</code> and <code>aiup-kobweb-test</code> alongside the existing construction skills. If adopted, update package descriptions so web support is discoverable; a package rename is unnecessary for the pilot.</p><p>Teach implementation prompts to select the matching UI/test pair from the actual stack or explicit user choice: implementation → UI tests → status. Add Kobweb pages, JS targets and browser-test evidence to status discovery.</p><p>Do not duplicate backend, migration or DTO skills.</p></div><div class="panel"><span class="label">Pilot acceptance</span><ol><li>Implement one real list/search/detail flow against the current API.</li><li>Compile shared JS contracts and the Kobweb frontend.</li><li>Verify auth, failures, keyboard use, responsive layout and deep links.</li><li>Export and run a production smoke test.</li><li>Compare measured effort and behaviour with the current UI before expanding.</li></ol></div></div>
+<p class="callout"><strong>Verdict:</strong> a Kobweb skill is worthwhile for browser-focused work. Make it a sibling choice with its own checked examples. A wholesale replacement of the Compose Multiplatform skill would remove a useful desktop/shared-UI option.</p>
+<div class="sources">Local packaging inspected: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/.claude-plugin/plugin.json">construction plugin metadata</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/.claude-plugin/marketplace.json">marketplace metadata</a>. Integration targets: <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md">implementation prompts</a> · <a href="https://github.com/sleicht/ai-unified-marketplace/blob/719d42a/aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md">implementation status</a>. This slide records the original proposal; the implementation is linked on the opening slide.</div>
+</section>
+
+<section class="slide" id="delivery" data-title="Recommended change sequence">
+<p class="eyebrow">Recommendation</p><h2>Fix behaviour first, then prevent drift.</h2>
+<div class="grid three"><div class="panel"><span class="label must">First · example correctness</span><h3>F1–F6</h3><p>Repair signatures, mappings and state names. Choose explicit cancellation, concurrency, error and transaction behaviour.</p><p class="check">Verify with compilation, invalid-input cases, controlled concurrent loads and rollback evidence.</p></div><div class="panel"><span class="label">Next · credible verification</span><h3>F7–F10</h3><p>Execute migrations; improve fakes and failure tests; add wire checks and precise deletion/handoff rules.</p><p class="check">Verify the migration path and contract scenarios; report pending work honestly.</p></div><div class="panel"><span class="label">Then · maintenance</span><h3>F11</h3><p>Consolidate repeated examples into a small maintained reference set with recorded versions.</p><p class="check">Verify links and example compilation whenever the skills change.</p></div></div>
+<div class="callout"><strong>My recommendation:</strong> retain the overall design. The highest-value work is making the examples internally consistent and demonstrably correct, rather than adding more architectural rules.</div>
+<p class="small">The original review proposed these changes. The implementation and maintained example are now linked on the opening slide.</p>
+</section>
+
+<section class="slide" id="evidence" data-title="Evidence and review limits">
+<p class="eyebrow">Review record</p><h2>What was inspected and what was proved</h2>
+<div class="grid"><div class="panel"><h3>Local review</h3><ul><li>Seven skill instructions, seven Markdown references and both Kotlin example files in the repository package.</li><li>Sonar secrets scan of that package: no issues reported before reading.</li><li>Semgrep <code>--config auto</code> on both Kotlin skeletons: zero findings; 64 applicable rules across two files.</li><li>Static tracing of model fields, port methods, state properties, request handling and test assertions.</li></ul><p class="small">Semgrep did not analyse Kotlin fenced inside Markdown. Zero findings is not evidence that examples compile or behave correctly.</p></div><div class="panel"><h3>Limits</h3><ul><li>No dependency-resolved target service or complete compilable fixture was supplied within this skill package.</li><li>No Kotlin build, PostgreSQL migration run, application test or runtime performance measurement was performed.</li><li>Compile findings are based on explicit contradictions in the supplied code, not compiler diagnostics.</li><li>Installed skill copies outside this repository were not audited. Source labels give line locations at review time.</li></ul></div></div>
+<p class="small">External checks used primary documentation for Kotlin overrides/cancellation, Exposed transactions, Ktor status validation, serialised names, Kobweb routing/styling/export/backend integration and Playwright locators. The original Kobweb proposal is retained here for context; the maintained skills now link to a compiled fixture. Links sit beside the relevant findings. Library guidance must still be matched to each target project's installed versions.</p>
+<div class="sources">Reviewed repository: <code>ai-unified-marketplace/aiup-compose-ktor-exposed/skills</code> · Review date: 12 September 2026 · Use the controls to present individual slides, or choose “Show all” and print to PDF.</div>
+</section>
+</main>
+<nav class="toolbar" aria-label="Presentation controls">
+<button id="prev" type="button" aria-label="Previous slide">← Previous</button>
+<select id="jump" aria-label="Choose slide"></select>
+<button id="next" type="button" aria-label="Next slide">Next →</button>
+<button id="mode" class="primary" type="button">Show all</button>
+<button id="print" type="button">Print / PDF</button>
+<span id="counter" class="counter" aria-live="polite"></span>
+</nav>
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const jump = document.getElementById('jump');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const mode = document.getElementById('mode');
+  let index = Math.max(0, slides.findIndex(s => '#' + s.id === location.hash));
+  let presenting = true;
+  slides.forEach((slide, i) => {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = `${String(i + 1).padStart(2, '0')} · ${slide.dataset.title}`;
+    jump.append(option);
+  });
+  function render(scroll = false) {
+    document.body.classList.toggle('presenting', presenting);
+    slides.forEach((s, i) => { s.hidden = presenting && i !== index; });
+    jump.value = index;
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+    mode.textContent = presenting ? 'Show all' : 'Present slides';
+    document.getElementById('counter').textContent = `${index + 1} / ${slides.length}`;
+    if (scroll) {
+      if (presenting) window.scrollTo({top: 0, behavior: 'instant'});
+      else slides[index].scrollIntoView({behavior: 'instant'});
+    }
+  }
+  function go(i) {
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    history.replaceState(null, '', '#' + slides[index].id);
+    render(true);
+  }
+  prev.addEventListener('click', () => go(index - 1));
+  next.addEventListener('click', () => go(index + 1));
+  jump.addEventListener('change', () => go(Number(jump.value)));
+  mode.addEventListener('click', () => { presenting = !presenting; render(true); });
+  document.getElementById('print').addEventListener('click', () => window.print());
+  window.addEventListener('hashchange', () => {
+    const target = slides.findIndex(s => '#' + s.id === location.hash);
+    if (target >= 0) { index = target; render(true); }
+  });
+  document.addEventListener('keydown', e => {
+    if (!presenting || e.ctrlKey || e.metaKey || e.altKey || ['SELECT', 'INPUT', 'TEXTAREA', 'BUTTON', 'A'].includes(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(index + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(index - 1); }
+    if (e.key === 'Home') { e.preventDefault(); go(0); }
+    if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

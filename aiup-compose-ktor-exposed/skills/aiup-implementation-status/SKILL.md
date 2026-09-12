@@ -1,7 +1,7 @@
 ---
 name: aiup-implementation-status
 description: >
-  Produces and maintains implementation-status documentation for Compose/Ktor/Exposed projects: entity coverage matrices,
+  Produces and maintains implementation-status documentation for Compose or Kobweb UI with Ktor/Exposed projects: entity coverage matrices,
   migration version ranges, and per-use-case Markdown status pages. Use when the user asks for implementation status,
   coverage, traceability, "what is implemented", entity-to-code mapping, migration coverage, or status pages for use cases.
 ---
@@ -38,7 +38,7 @@ Read these before updating status:
 - `docs/use_cases/UC-*.md` for requested use cases
 - server module `src/main/kotlin/**/modules/**`
 - shared module `src/commonMain/kotlin/**`
-- UI module only when UI implementation status is requested
+- UI module only when UI implementation status is requested; discover Compose common/platform sources or Kobweb jsMain pages, layouts, styles and app entry
 - Feature ports, UI state/action contracts, and transport adapters when UI boundaries are in scope
 - Flyway migrations under `src/main/resources/db/migration`
 - Feature-owned Koin modules and deployable-service DI graph tests
@@ -49,9 +49,9 @@ Read these before updating status:
 
 Maintain a matrix with these columns:
 
-| Entity | DB Table | Domain Model | Repository | Service | Migrations |
-|---|---|---|---|---|---|
-| EXAMPLE | `record` | `Record` | `RecordRepository` / `ExposedRecordRepository` | `RecordService` or route-only | `V001-V003` |
+| Entity  | DB Table | Domain Model | Repository                                     | Service                       | Migrations  |
+|---------|----------|--------------|------------------------------------------------|-------------------------------|-------------|
+| EXAMPLE | `record` | `Record`     | `RecordRepository` / `ExposedRecordRepository` | `RecordService` or route-only | `V001-V003` |
 
 Column rules:
 
@@ -80,8 +80,10 @@ Required sections:
 4. `Entity Coverage` — filtered entity matrix rows
 5. `Backend Coverage` — route, service, repository, DTO, migration evidence
 6. `Architecture and Contract Coverage` — DI graph, dependency rules, shared API checks, and local coverage gates
-7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/UI test evidence if present
-8. `Gaps` — missing or partial items with file-level evidence
+7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/Compose or Kobweb browser test evidence; record scenario, file, command, execution date/revision when available, result and outstanding gap separately
+8. `Gaps` — missing or partial items with file-level evidence, including implementation-to-test handoffs and unexecuted checks
+
+Never infer passing tests from source-file presence. Use `Present, not run`, `Passed`, `Failed`, or `Blocked` with evidence for each verification item; distinguish compiled source, executed unit tests, browser tests and exported-site smoke tests. Shared JSON compatibility is separate from JVM/KLIB API checks.
 
 ## DO NOT
 

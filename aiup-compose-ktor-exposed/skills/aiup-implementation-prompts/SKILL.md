@@ -79,20 +79,25 @@ Generate only the steps required by the requested scope. Include implementation,
 tests, and status by default; honour requests for a narrower backend-only,
 UI-only, or testing scope. Preserve existing implementations through reconciliation.
 
-| Skill | When to include | Required handoff |
-|---|---|---|
-| [aiup-flyway-migration](../aiup-flyway-migration/SKILL.md) | The selected behaviour requires a schema change. Group shared schema work once before dependent backend sessions. | Current entity model and existing migrations; scope the delta to selected UCs. |
-| [aiup-implement](../aiup-implement/SKILL.md) | A UC requires backend behaviour or a shared API change. | Current specification, model, and applicable migrations. |
-| [aiup-implement-ui](../aiup-implement-ui/SKILL.md) | The UC has UI work in scope. | Backend DTOs/routes must already exist or be produced by a listed predecessor. |
-| [aiup-ktor-test](../aiup-ktor-test/SKILL.md) | Backend implementation or backend testing is in scope. | The specified backend behaviour is present on disk. |
-| [aiup-compose-test](../aiup-compose-test/SKILL.md) | UI implementation or UI testing is in scope. | UI, ports, and API contracts are present on disk. |
-| [aiup-implementation-status](../aiup-implementation-status/SKILL.md) | After each UC's requested implementation and testing steps. | Read actual code/test evidence; request UI coverage explicitly when UI is included. |
+| Skill                                                                | When to include                                                                                                   | Required handoff                                                                    |
+|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [aiup-flyway-migration](../aiup-flyway-migration/SKILL.md)           | The selected behaviour requires a schema change. Group shared schema work once before dependent backend sessions. | Current entity model and existing migrations; scope the delta to selected UCs.      |
+| [aiup-implement](../aiup-implement/SKILL.md)                         | A UC requires backend behaviour or a shared API change.                                                           | Current specification, model, and applicable migrations.                            |
+| [aiup-implement-ui](../aiup-implement-ui/SKILL.md)                   | The UC has Compose Multiplatform UI work in scope.                                                                | Backend DTOs/routes must already exist or be produced by a listed predecessor.      |
+| [aiup-ktor-test](../aiup-ktor-test/SKILL.md)                         | Backend implementation or backend testing is in scope.                                                            | The specified backend behaviour is present on disk.                                 |
+| [aiup-compose-test](../aiup-compose-test/SKILL.md)                   | Compose Multiplatform implementation or UI testing is in scope.                                                   | UI, ports, and API contracts are present on disk.                                   |
+| [aiup-kobweb-ui](../aiup-kobweb-ui/SKILL.md)                         | The UC has Kobweb/Compose HTML browser UI work in scope.                                                          | Existing backend contracts, shared JS variants, runtime config and hosting mode.    |
+| [aiup-kobweb-test](../aiup-kobweb-test/SKILL.md)                     | Kobweb UI implementation or testing is in scope.                                                                  | Pages, ports and API contracts exist; discover the configured browser runner.       |
+| [aiup-implementation-status](../aiup-implementation-status/SKILL.md) | After each UC's requested implementation and testing steps.                                                       | Read actual code/test evidence; request UI coverage explicitly when UI is included. |
+
+Select the UI/test pair from the actual stack or explicit user choice: `aiup-implement-ui` + `aiup-compose-test`, or `aiup-kobweb-ui` + `aiup-kobweb-test`. Do not schedule both for one UI unless both targets are requested. If the stack is genuinely undecided, record that blocker instead of choosing silently.
 
 Use one skill invocation per session. Use one UC per backend, UI, test, or status
 session; a shared migration session may list several UC IDs. Put dependent UCs
 after their prerequisites. For each UC, order backend before backend tests and UI,
 UI before UI tests, and status last. Record predecessor session numbers and
 required on-disk outputs; never say only "continue the previous session".
+Implementation sessions must save affected symbols, pending test scenarios, failed/unrun checks and prerequisites in this plan or the existing use-case status artefact. Tests consume that handoff; status distinguishes test presence from execution and passing evidence.
 
 If a prerequisite is uncertain, state the uncertainty. Do not silently omit tests
 or assume missing backend contracts will be supplied by a UI session. For a
@@ -179,7 +184,7 @@ to the next session.
 
 - Confirm every requested UC is covered by applicable sessions or an explicit blocker.
 - Confirm the output filename follows the explicit override, feature, or UC naming rule.
-- Confirm every session invokes exactly one of the six linked construction skills.
+- Confirm every session invokes exactly one of the linked construction skills.
 - Check that existing input paths resolve and future inputs identify a predecessor.
 - Check ordering, unique session numbers, UC IDs, and the index against the prompt blocks.
 - Confirm the shared header plus any single prompt needs no earlier chat context.

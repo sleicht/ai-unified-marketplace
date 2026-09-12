@@ -21,18 +21,11 @@ Place `expect`/`actual` auth and platform behaviour tests in the matching `jvmTe
 - Never assert an obsolete POC token when the application uses OIDC/PKCE.
 - Preserve target-project traceability annotations such as `@UseCase` when present.
 
-```kotlin
-val client =
-    ServiceApiClient(
-        baseUrl = "https://service.invalid",
-        accessTokenProvider = FixedAccessTokenProvider("test-token"),
-        httpClient = httpClient,
-    )
-```
+Use [the compiled client tests](../../aiup-implement/references/record-example/README.md): shared configuration, a defined token fake, success and non-2xx/malformed-body cases, and explicit client cleanup.
 
 ## ViewModel Tests
 
-Use `runTest`, pass the test scope, call the action, and use `advanceUntilIdle()` before state assertions. Fake the production feature port, not the concrete API adapter. If the port is missing, report the production boundary needed by `aiup-implement-ui` rather than adding a test-only interface.
+Use `runTest` and controllable fake completions. Assert loading before completion, real query propagation, cancellation without error, results retained on failure, retry, and out-of-order requests. Use `advanceUntilIdle()` only for final state; it cannot prove intermediate transitions. Fake the production feature port, not the concrete API adapter. If the port is missing, report the production boundary needed by `aiup-implement-ui` rather than adding a test-only interface.
 
 ## State and Action Tests
 

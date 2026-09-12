@@ -43,31 +43,15 @@ Respect `ArchitectureTest.kt` when present:
 - Put only API/UI boundary fields in shared `@Serializable` DTOs.
 - Co-locate cross-layer extension mappers with the target model; keep `ResultRow` mappers private to repositories.
 
-```kotlin
-interface RecordRepository {
-    suspend fun create(record: Record): Record
-    suspend fun findById(id: Long): Record?
-    suspend fun findAll(limit: Int): List<Record>
-}
-```
+## Executable Persistence Example
 
-## Exposed Persistence
+Use [the record fixture](record-example/README.md) as the source of complete domain, table, mapper, repository and transaction examples. Do not maintain duplicate Kotlin snippets in this guide.
 
-Use the imports and transaction helper already present. Reference services often use Exposed v1 DSL:
-
-```kotlin
-object RecordTable : Table("record") {
-    val id = long("id").autoIncrement()
-    val active = bool("active").default(true)
-    val createdAt = timestampWithTimeZone("created_at")
-    override val primaryKey = PrimaryKey(id)
-}
-```
-
-- Match Flyway schema exactly.
-- Use plain `Table` when existing migrations use `BIGSERIAL`/`BIGINT` and current mappings do so.
-- Use coroutine-safe transactions (`suspendTransaction` or the project helper).
-- Keep `ResultRow.toXxx()` and insert/update column helpers private.
+- Match Flyway types, nullability, lengths and constraints. Required strings are non-null in both Kotlin and SQL; inspect and migrate historical rows before tightening a constraint.
+- Map all persisted values, including audit timestamps. Resolve java.time/kotlin.time/kotlinx.datetime and Exposed timestamp APIs from the installed versions.
+- JDBC database operations remain blocking in suspend functions. Reuse the project's I/O dispatcher and transaction helper; R2DBC has a different non-blocking API.
+- For atomic orchestration, one application transaction owns all repository calls. Nested calls must share that transaction; prove rollback with a failure after the first write.
+- Keep ResultRow and insert/update mappers private. Do not introduce a transaction abstraction if an equivalent helper already exists.
 
 ## Application, Routing, and DI
 
@@ -77,15 +61,7 @@ object RecordTable : Table("record") {
 - Register feature repositories, services, and adapters in a Koin module beside the owning feature.
 - Keep the service composition root declarative: it includes feature modules and genuinely shared infrastructure only.
 
-```kotlin
-// modules/record/DependencyInjection.kt
-internal val recordModule = module {
-    single<RecordRepository> { ExposedRecordRepository() }
-}
-
-// di/DependencyInjection.kt
-val appModule = module { includes(infrastructureModule, recordModule) }
-```
+The fixture defines feature-owned bindings and a declarative appModule. Adapt its external Database binding to the target host; do not duplicate feature bindings in the root.
 
 Verify the complete `appModule`, not isolated fragments. Existing graph tests may need explicit
 framework-provided types or constructor parameters; model those with Koin `extraTypes` and
@@ -96,6 +72,7 @@ framework-provided types or constructor parameters; model those with Koin `extra
 Treat public declarations in build-crossing `*-shared` modules as versioned contracts. Run the
 configured JVM/KLIB `apiCheck` after changing them. Update API dumps only for intentional changes;
 an unexpected dump delta is an implementation defect to resolve, not a baseline to accept.
+Also test affected JSON wire names, defaults, nullability and enums with representative old/new payloads. API dumps alone do not prove wire compatibility.
 
 ## Verification
 

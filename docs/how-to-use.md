@@ -208,23 +208,33 @@ The Construction phase for a Kotlin Multiplatform project. These skills are prov
    Reads the entity model, use case specs, source, tests, and migrations and maintains an entity implementation-status matrix (Entity / DB Table / Domain Model / Repository / Service / Migrations). Writes per-use-case Markdown status pages under `docs/use_cases/`, cross-referencing migration version ranges and code/test evidence. Records DI graph, architecture, shared API, and coverage-gate evidence where available. Reports missing or partial implementation honestly; a status page does not replace running tests. Request UI coverage explicitly when needed.
    `monorepo` — `aiup-implementation-status UC-001 in payments-service` → writes `payments-service/docs/use_cases/UC-001-implementation-status.md`
 
+### Kobweb browser alternative
+
+For browser-focused Kotlin UI, select `aiup-kobweb-ui` then `aiup-kobweb-test` in place of the Compose UI/test pair. Kobweb uses Compose HTML and Kotlin/JS; Material 3 screens are not interchangeable. Preserve Ktor/Exposed and compatible shared DTOs. Inspect shared JS variants, runtime auth, URL/base-path and export hosting before implementation.
+
+The implementation skill writes pages, state/actions and client wiring, then runs existing checks. The test skill owns Kotlin state/transport tests, browser DOM/navigation tests and exported-site smoke tests. Fresh-session prompts select the matching pair and save affected symbols, pending scenarios and failed/unrun checks on disk. Status distinguishes tests present from checks executed and passed.
+
+The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/references/record-example/README.md) is the shared, compilable source for both UI choices and backend examples. Keep the full construction plugin when exposing skills, since references cross skill directories.
+
 ## Skills Reference
 
-| Skill                                                                                                   | Phase        | Input                      | Output                              | Plugin               |
-|---------------------------------------------------------------------------------------------------------|--------------|----------------------------|-------------------------------------|----------------------|
-| [`aiup-requirements`](../aiup-core/skills/aiup-requirements/SKILL.md)                                   | Inception    | `<service>/docs/vision.md` | `requirements.md`                   | core                 |
-| [`aiup-entity-model`](../aiup-core/skills/aiup-entity-model/SKILL.md)                                   | Elaboration  | `requirements.md`          | `entity_model.md`                   | core                 |
-| [`aiup-use-case-diagram`](../aiup-core/skills/aiup-use-case-diagram/SKILL.md)                           | Elaboration  | `requirements.md`          | same file's Mermaid slot            | core                 |
-| [`aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)                                 | Construction | UC ID(s) + requirements    | `docs/use_cases/UC-*.md`            | core                 |
-| [`aiup-architecture`](../aiup-core/skills/aiup-architecture/SKILL.md)                                   | Construction | service docs + source      | `architecture.md`                   | core                 |
-| [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)                                         | Any          | service docs + source      | `REFERENCE.md`                      | core                 |
-| [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md)                           | Any          | existing service source    | requirements + specs + model        | core                 |
-| [`aiup-flyway-migration`](../aiup-compose-ktor-exposed/skills/aiup-flyway-migration/SKILL.md)           | Construction | model + use cases          | server module `V*.sql`              | compose-ktor-exposed |
-| [`aiup-implement`](../aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md)                         | Construction | UC ID                      | Ktor backend + shared DTOs          | compose-ktor-exposed |
-| [`aiup-implement-ui`](../aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md)                   | Construction | UC ID                      | Compose screen + ViewModel + client | compose-ktor-exposed |
-| [`aiup-ktor-test`](../aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md)                         | Construction | UC ID + backend            | route / unit / integration tests    | compose-ktor-exposed |
-| [`aiup-compose-test`](../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md)                   | Construction | UC ID + UI                 | client / ViewModel / UI tests       | compose-ktor-exposed |
-| [`aiup-implementation-status`](../aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md) | Construction | UC ID(s)                   | status matrix + Markdown pages      | compose-ktor-exposed |
+| Skill                                                                                                     | Phase                 | Input                            | Output                                                  | Plugin               |
+|-----------------------------------------------------------------------------------------------------------|-----------------------|----------------------------------|---------------------------------------------------------|----------------------|
+| [`aiup-requirements`](../aiup-core/skills/aiup-requirements/SKILL.md)                                     | Inception             | `<service>/docs/vision.md`       | `requirements.md`                                       | core                 |
+| [`aiup-entity-model`](../aiup-core/skills/aiup-entity-model/SKILL.md)                                     | Elaboration           | `requirements.md`                | `entity_model.md`                                       | core                 |
+| [`aiup-use-case-diagram`](../aiup-core/skills/aiup-use-case-diagram/SKILL.md)                             | Elaboration           | `requirements.md`                | same file's Mermaid slot                                | core                 |
+| [`aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)                                   | Construction          | UC ID(s) + requirements          | `docs/use_cases/UC-*.md`                                | core                 |
+| [`aiup-architecture`](../aiup-core/skills/aiup-architecture/SKILL.md)                                     | Construction          | service docs + source            | `architecture.md`                                       | core                 |
+| [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)                                           | Any                   | service docs + source            | `REFERENCE.md`                                          | core                 |
+| [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md)                             | Any                   | existing service source          | requirements + specs + model                            | core                 |
+| [`aiup-flyway-migration`](../aiup-compose-ktor-exposed/skills/aiup-flyway-migration/SKILL.md)             | Construction          | model + use cases                | server module `V*.sql`                                  | compose-ktor-exposed |
+| [`aiup-implement`](../aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md)                           | Construction          | UC ID                            | Ktor backend + shared DTOs                              | compose-ktor-exposed |
+| [`aiup-implement-ui`](../aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md)                     | Construction          | UC ID                            | Compose screen + ViewModel + client                     | compose-ktor-exposed |
+| [`aiup-ktor-test`](../aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md)                           | Construction          | UC ID + backend                  | route / unit / integration tests                        | compose-ktor-exposed |
+| [`aiup-compose-test`](../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md)                     | Construction          | UC ID + UI                       | client / ViewModel / UI tests                           | compose-ktor-exposed |
+| [`aiup-kobweb-ui`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-ui/SKILL.md)                           | Construction          | UC ID + existing API             | Kobweb pages, state and client                          | compose-ktor-exposed |
+| [`aiup-kobweb-test`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-test/SKILL.md)                       | Construction          | UC ID + Kobweb UI                | Kotlin / browser / export tests                         | compose-ktor-exposed |
+| [`aiup-implementation-status`](../aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md)   | Construction          | UC ID(s)                         | status matrix + Markdown pages                          | compose-ktor-exposed |
 | [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/*-implementation-prompts.md` | compose-ktor-exposed |
 
 ## Verify Before Continuing

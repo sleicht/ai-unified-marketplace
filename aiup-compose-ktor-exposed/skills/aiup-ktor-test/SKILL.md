@@ -28,13 +28,13 @@ Use:
 
 ## Reconcile Existing Tests
 
-A specification-change diff may accompany the request. When present, treat it as authoritative evidence of added, changed, and removed scenarios. Without one, compare the complete current specification and test suite bidirectionally.
+Use a specification-change diff to identify candidate changes, then confirm their meaning against the current contract. Remove behaviour or tests only when the contract explicitly retires them or an authorised change clearly supersedes them. A moved paragraph, rewritten sentence or omission alone is not evidence of removal. Trace affected callers and dependent use cases before deleting code. Without a diff, compare the current specification and implementation, reporting gaps rather than assuming undocumented behaviour is obsolete.
 
 Before creating tests, search by use-case ID, route/service/repository names, test-class names, and existing traceability annotations. Update the existing class or source set rather than creating a duplicate:
 
 - add tests for new scenarios and business rules;
 - update expectations, fixtures, and cleanup for changed behaviour;
-- delete tests that exist only for removed scenarios or rules;
+- delete tests only for explicitly retired scenarios or rules;
 - preserve still-required passing tests and existing traceability conventions;
 - do not invent a new annotation framework;
 - run the complete affected class or source-set task, not only new methods.
@@ -61,154 +61,16 @@ Read `references/backend-testing.md`, resolved relative to this `SKILL.md`, befo
 - Verify only isolated feature modules when the deployable `appModule` can be checked
 - Instantiate framework-managed dependencies merely to satisfy Koin verification
 
-## Route Test Pattern
+## Canonical Route, Client and Persistence Tests
 
-```kotlin
-class RecordRoutesTest {
+Read [the executable record example](../aiup-implement/references/record-example/README.md). Its tests compile against the same domain, DTOs and repository/client ports used by the implementation examples.
 
-    private val helper =
-        IntegrationTestHelper(
-            additionalConfig = {
-                clients {
-                    authorityBinding("ms-service-name") {
-                        realm = "microservices"
-                        authorities = setOf("MICROSERVICE")
-                    }
-                }
-                roles {
-                    additionalAuthority("DL_COMPANY_APP_ADMIN") {
-                        authorities = listOf("EMPLOYEE")
-                    }
-                }
-            }
-        )
-
-    private val sampleRecord = Record(
-        id = 1L,
-        externalReference = "REC-1001",
-        category = "Standard",
-        displayName = "Example",
-        status = RecordStatus.ACTIVE,
-    )
-
-    private fun fakeRecordRepository(records: List<Record> = listOf(sampleRecord)) =
-        object : RecordRepository {
-            override suspend fun create(record: Record) = record
-            override suspend fun update(record: Record) = record
-            override suspend fun findById(id: Long) = records.find { it.id == id }
-            override suspend fun findAll(limit: Int) = records.take(limit)
-        }
-
-    private fun ApplicationTestBuilder.configureTestApp(
-        recordRepo: RecordRepository = fakeRecordRepository(),
-    ) {
-        helper.installAuth(this)
-        install(Koin) { modules(module { single<RecordRepository> { recordRepo } }) }
-        application {
-            configureSerialization()
-            configureRouting()
-        }
-    }
-
-    private fun employeeToken() =
-        helper.employeeToken(cNumber = "C123456", roles = listOf("DL_COMPANY_APP_ADMIN"))
-
-    @Test
-    fun `GET records returns list`() = testApplication {
-        configureTestApp()
-        client
-            .get("/api/v1/records") {
-                header(HttpHeaders.Authorization, "Bearer ${employeeToken()}")
-            }
-            .apply { assertEquals(HttpStatusCode.OK, status) }
-    }
-}
-```
-
-Use JSON parsing for response shape assertions when the project already does:
-
-```kotlin
-val obj = Json.parseToJsonElement(bodyAsText()).jsonObject
-assertEquals("REC-1001", obj["externalReference"]!!.jsonPrimitive.content)
-```
-
-## Auth Test Coverage
-
-For protected routes, include:
-- Success with allowed employee token or microservice token
-- `401 Unauthorized` without token
-- `403 Forbidden` when authenticated but lacking required authority, if helper supports it
-
-Use existing helper methods such as `employeeToken()` and `microserviceToken()`.
-
-## Outbound Client Test Pattern
-
-Use Ktor `MockEngine` and capture `HttpRequestData`:
-
-```kotlin
-@Test
-fun `listRecords sends default POC bearer token`() = runTest {
-    lateinit var request: HttpRequestData
-    val httpClient =
-        HttpClient(
-            MockEngine { capturedRequest ->
-                request = capturedRequest
-                respond(
-                    content = Json.encodeToString(emptyList<RecordListItem>()),
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
-        ) { install(ContentNegotiation) { json() } }
-
-    val client = ServiceApiClient(baseUrl = testBaseUrl, accessTokenProvider = FakeAccessTokenProvider("test-token"), httpClient = httpClient)
-    client.listRecords(limit = 100)
-
-    assertEquals("Bearer test-token", request.headers[HttpHeaders.Authorization])
-}
-```
-
-## Repository Integration Test Pattern
-
-Use `src/testContainerTest` when testing Exposed repositories against real PostgreSQL:
-
-```kotlin
-@Testcontainers
-class RepositoryIntegrationTest {
-    private val testRunId = UUID.randomUUID()
-    companion object {
-        @Container private val postgres = TestDatabaseContainer.instance
-
-        @JvmStatic
-        @BeforeAll
-        fun setupDatabase() {
-            val ds = HikariDataSource(
-                HikariConfig().apply {
-                    jdbcUrl = postgres.jdbcUrl
-                    username = postgres.username
-                    password = postgres.password
-                    driverClassName = "org.postgresql.Driver"
-                    maximumPoolSize = 2
-                    isAutoCommit = false
-                    transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-                }
-            )
-            Flyway.configure().dataSource(ds).locations("classpath:db/migration").load().migrate()
-            Database.connect(ds)
-        }
-    }
-
-    @AfterEach
-    fun removeOwnedRecords() {
-        transaction {
-            ChildTable.deleteWhere { ChildTable.testRunId eq testRunId }
-            ParentTable.deleteWhere { ParentTable.testRunId eq testRunId }
-        }
-    }
-}
-```
-
-Use explicit use-case postconditions as the cleanup contract when present. Remove only records created or changed by the test, leave seeded and shared data untouched, and delete dependants before parents. Cleanup must be idempotent and safe when the test failed midway and created only part of its data. Avoid broad table deletion. Keep helper factories (`aRecord`, `anImportRun`) private and configurable.
+- Route tests use `testApplication`, production route registration and injected fake ports. Cover response fields, allowed access, missing token (401), insufficient authority (403), malformed IDs/limits (400) and missing records (404). Reuse company auth helpers when present; the portable fixture's test principal is not a replacement for production authentication.
+- A read-only fake may return a fixed list. Write-route tests must capture arguments or use a stateful fake, so echoing a request cannot prove persistence.
+- Outbound-client tests use deterministic tokens, MockEngine and the production client configuration. Assert method, full URL, query/body, auth and decoding; non-2xx responses must fail even with a success-shaped body. Close the client in cleanup.
+- Repository tests apply real Flyway migrations in disposable PostgreSQL. Test create/update/read round trips, null/blank/length constraints, timestamps and multi-write rollback. Also migrate from the previous schema with representative rows when changing it.
+- Track inserted IDs or existing ownership fields; never add production `testRunId` columns solely for cleanup. Delete only owned rows, dependants before parents, including after partial failure. Close the datasource and container at their owning lifecycle boundary.
+- Test-only sessions expose production defects and record concrete fixes for the implementation session; do not weaken expectations or hide coupling behind a test-only port.
 
 ## Architecture Test Pattern
 
@@ -250,15 +112,15 @@ feature bindings beside their owning module and verify their composition through
 
 Derive tests from use case flows:
 
-| Flow | Test examples |
-|---|---|
-| Main success | endpoint returns expected status/body; service persists expected state |
-| Validation failure | invalid ID/body returns `400` |
-| Not found | unknown ID returns `404` |
-| Auth failure | missing token returns `401`, wrong role returns `403` |
-| Idempotency | repeated command returns same or safe result |
-| Error mapping | thrown domain exception maps to expected status/text |
-| Persistence | repository create/update/find round trip in Testcontainers |
+| Flow               | Test examples                                                          |
+|--------------------|------------------------------------------------------------------------|
+| Main success       | endpoint returns expected status/body; service persists expected state |
+| Validation failure | invalid ID/body returns `400`                                          |
+| Not found          | unknown ID returns `404`                                               |
+| Auth failure       | missing token returns `401`, wrong role returns `403`                  |
+| Idempotency        | repeated command returns same or safe result                           |
+| Error mapping      | thrown domain exception maps to expected status/text                   |
+| Persistence        | repository create/update/find round trip in Testcontainers             |
 
 ## Workflow
 
@@ -279,4 +141,4 @@ Derive tests from use case flows:
 ## Resources
 
 - `references/backend-testing.md` — focused backend testing style
-- `references/ExampleRouteTest.kt` — route test skeleton in current style
+- [Record example](../aiup-implement/references/record-example/README.md) — compiled production and test contracts

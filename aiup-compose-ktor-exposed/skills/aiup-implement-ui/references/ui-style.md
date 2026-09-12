@@ -29,32 +29,13 @@ Keep feature ports free of Ktor and Compose dependencies.
 
 ## API Client and Auth
 
-Use a dedicated Ktor client with an injected token source and runtime-derived URL:
+Read the [canonical client and state examples](../../aiup-implement/references/record-example/README.md). Use a dedicated client with injected runtime URL and token provider; its application owner closes it. Tests borrow clients configured through the same configuration function and close them in cleanup.
 
-```kotlin
-class ServiceApiClient(
-    baseUrl: String,
-    private val accessTokenProvider: AccessTokenProvider,
-    val httpClient: HttpClient = createServiceHttpClient(),
-) : RecordDataPort {
-    private val apiBase = "${baseUrl.trimEnd('/')}/api/v1"
-
-    suspend fun listRecords(limit: Int = 50): List<RecordListItem> =
-        httpClient.get("$apiBase/records") {
-            authorization()
-            parameter("limit", limit)
-        }.body()
-
-    private suspend fun HttpRequestBuilder.authorization() {
-        val accessToken = accessTokenProvider.currentAccessToken()
-        if (accessToken != null) bearerAuth(accessToken)
-    }
-}
-```
-
-- Reuse existing OIDC/PKCE, token-provider, and runtime-config boundaries.
-- If no auth stack exists, preserve the project's existing simple token pattern; do not introduce OIDC unasked.
-- Never hardcode localhost when runtime/environment configuration exists.
+- Implement declared feature ports with matching signatures; defaults belong on the port.
+- Handle non-2xx statuses explicitly, even when the body resembles a successful DTO. Follow the project's exception or typed-error contract.
+- Preserve OIDC/PKCE or existing simple auth; do not introduce a competing mechanism.
+- Resolve runtime configuration; do not hardcode a production URL or token.
+- Preserve strict JSON syntax unless an actual interoperability requirement needs leniency.
 
 ## Ports, ViewModels, and Screens
 
@@ -66,18 +47,9 @@ class ServiceApiClient(
 - Split screens into small header, content, empty/loading/error, list/detail, and dialog composables.
 - Prefer visible text/content descriptions that semantics tests can query.
 
-```kotlin
-@Composable
-fun App(recordPort: RecordDataPort) {
-    val scope = rememberCoroutineScope()
-    val recordVm = remember(recordPort, scope) { RecordViewModel(recordPort, scope) }
-    MaterialTheme {
-        RecordBrowserScreen(recordVm.searchUiState, recordVm.searchActions)
-    }
-}
-```
+The fixture uses `searchState` consistently in rendering and tests. Search propagates its submitted query through the port. Latest-request-wins guards success, error and finalisation; refresh-only flows may instead allow one in-flight request. Rethrow cancellation before mapping failures to stable messages. Preserve existing results during refresh/failure and explicitly test intermediate loading states.
 
-Construct `ServiceApiClient` at the platform/application entry point where runtime config and the token provider are available; a no-argument default is invalid for the client contract above.
+Create clients at the application entry point. A screen-scoped coroutine scope owns its state holder's work. Reuse the existing error banner through state, not a nonexistent ViewModel property.
 
 Keep ports and UI contracts in the existing UI module by default. Split a feature into Gradle
 `api`/`impl` modules only when measured ownership, change-frequency, dependency, or build-isolation

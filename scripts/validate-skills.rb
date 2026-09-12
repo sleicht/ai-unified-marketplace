@@ -97,6 +97,18 @@ skill_files.each do |file|
     errors << "broken link #{target}: #{Pathname.new(file).relative_path_from(ROOT)}" unless resolved.exist?
   end
 end
+implementation_references = Dir.glob(ROOT.join("aiup-compose-ktor-exposed/skills/*/references/**/*.md")).reject do |file|
+  file.split(File::SEPARATOR).any? { |part| %w[build node_modules dist __pycache__ .gradle .kotlin].include?(part) }
+end
+implementation_references.each do |file|
+  File.read(file).scan(/\[[^\]]+\]\(([^)]+)\)/).flatten.each do |target|
+    next if target.start_with?("http://", "https://", "#")
+
+    resolved = Pathname.new(file).dirname.join(target.split("#", 2).first).cleanpath
+    errors << "broken reference link #{target}: #{Pathname.new(file).relative_path_from(ROOT)}" unless resolved.exist?
+  end
+end
+
 core_copyright = "Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors."
 core_copyright_files = Dir.glob(ROOT.join("aiup-core/skills/{*,*/references}/*.md")) + [ROOT.join("README.md").to_s, ROOT.join("CLAUDE.md").to_s, ROOT.join("aiup-core/README.md").to_s]
 copyright_exclusions = [
@@ -117,6 +129,7 @@ skill_files.each do |file|
 end
 
 Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |file|
+  next if file.split(File::SEPARATOR).any? { |part| %w[build node_modules dist __pycache__ .gradle .kotlin].include?(part) }
   begin
     data = JSON.parse(File.read(file))
     if File.basename(file) == "criteria.json"

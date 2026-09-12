@@ -87,22 +87,23 @@ match the project in front of you.
 - **Prisma → AIUP type mapping** (never copy Prisma/SQL types into the entity
   model — translate every column):
 
-  | Prisma type                       | AIUP Data Type | Length/Precision | Validation Rules                  |
-  |-----------------------------------|----------------|------------------|-----------------------------------|
-  | `Int @id @default(autoincrement())` | `Long`       | 19               | `Primary Key, Sequence`           |
-  | `Int`                             | `Integer`      | 10               | `Not Null`                        |
-  | `String`                          | `String`       | 255 (or actual)  | `Not Null`                        |
-  | `String @unique`                  | `String`       | 255              | `Not Null, Unique`                |
-  | `String?` (optional)              | `String`       | 255              | `Optional`                        |
-  | `Decimal @db.Decimal(10, 2)`      | `Decimal`      | 10,2             | `Not Null, Min: 0`                |
-  | `Boolean`                         | `Boolean`      | —                | `Not Null`                        |
-  | `DateTime @default(now())`        | `DateTime`     | —                | `Not Null`                        |
-  | relation field `userId Int`       | `Long`         | 19               | `Not Null, Foreign Key (USER.id)` |
+  | Prisma type                         | AIUP Data Type | Length/Precision                                                 | Validation Rules                                                         |
+  |-------------------------------------|----------------|------------------------------------------------------------------|--------------------------------------------------------------------------|
+  | `Int @id @default(autoincrement())` | `Integer`      | 10                                                               | `Primary Key`; resolve Sequence/Identity from the actual provider schema |
+  | `Int`                               | `Integer`      | 10                                                               | `Not Null`                                                               |
+  | `String`                            | `String`       | Actual bound, Unbounded or Unknown from provider/schema evidence | `Not Null`                                                               |
+  | `String @unique`                    | `String`       | Evidenced bound or Unknown                                       | `Not Null, Unique`                                                       |
+  | `String?` (optional)                | `String`       | Evidenced bound or Unknown                                       | `Optional`                                                               |
+  | `Decimal @db.Decimal(10, 2)`        | `Decimal`      | 10,2                                                             | `Not Null`; no range unless separately constrained                       |
+  | `Boolean`                           | `Boolean`      | —                                                                | `Not Null`                                                               |
+  | `DateTime @default(now())`          | `DateTime`     | —                                                                | `Not Null`                                                               |
+  | relation field `userId Int`         | `Integer`      | 10                                                               | `Not Null, Foreign Key (USER.id)`                                        |
 
-  `@db.Decimal`, `Decimal(10,2)`, `Int`, `String?`, `bigint`, `VARCHAR` and `TEXT`
-  must **not** appear anywhere in `entity_model.md` — they are implementation
-  details, not the AIUP vocabulary. A `// "customer" or "admin"` comment on a
-  `String` column maps to `Not Null, Values: customer, admin`.
+  Use the AIUP vocabulary in attribute cells; preserve source paths and explain
+  unsupported mappings separately. Comments suggesting allowed values are clues,
+  not enforced constraints: corroborate them with validation/schema/tests or
+  record them as unconfirmed. Do not infer a length or non-negative range from
+  the examples above.
 - **Validation**: class-validator decorators, Zod schemas, Joi schemas,
   Yup schemas — these are the richest source of business rules in the
   Node ecosystem.
@@ -146,11 +147,11 @@ When the ORM doesn't capture everything, fall back to the schema:
 
 - **Migrations directory**: usually authoritative. Look for the latest
   state of each table by walking forward through the migrations.
-- **Foreign key constraints**: `REFERENCES` clauses give cardinality.
-  `ON DELETE CASCADE` often signals composition (the child can't exist
-  without the parent — typically `||--o{`); `ON DELETE SET NULL` signals
-  a weaker association.
-- **Unique constraints**: a unique foreign key is a 1:1 relationship.
+- **Foreign key constraints**: `REFERENCES` identifies the related key. Derive
+  cardinality from nullability, uniqueness and participation constraints.
+  `ON DELETE CASCADE` and `ON DELETE SET NULL` describe deletion behaviour, not
+  mandatory participation; a nullable cascading FK still permits an unattached child.
+- **Unique constraints**: a unique foreign key limits multiplicity to at most one. Derive optional participation separately at both ends from nullability and other enforced rules.
 - **CHECK constraints**: directly translate to business rules.
 - **Lookup tables**: small tables with `(id, code, label)` shape often
   represent enumerated values; in the entity model these can become a

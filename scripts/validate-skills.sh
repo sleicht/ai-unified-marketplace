@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+ruby scripts/validate-skills.rb --self-test
 ruby scripts/validate-skills.rb
 python3 aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py --self-test
 python3 aiup-core/skills/aiup-use-case-spec/scripts/validate_use_case.py --strict \

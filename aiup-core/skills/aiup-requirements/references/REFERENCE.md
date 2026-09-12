@@ -16,41 +16,50 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 ## Priority
 
-| Priority | Description                                         |
-|----------|-----------------------------------------------------|
-| High     | Must have. Core functionality or critical quality.  |
-| Medium   | Should have. Important but system works without it. |
-| Low      | Nice to have. Can be deferred to future releases.   |
+| Priority   | Description                                         |
+|------------|-----------------------------------------------------|
+| High       | Must have. Core functionality or critical quality.  |
+| Medium     | Should have. Important but system works without it. |
+| Low        | Nice to have. Can be deferred to future releases.   |
+| To confirm | Business priority has not been established.         |
 
 ### German Priority Values
 
-| Priority | Description |
-|----------|-------------|
-| Hoch | Must have. Core functionality or critical quality. |
-| Mittel | Should have. Important but system works without it. |
-| Niedrig | Nice to have. Can be deferred to future releases. |
+| Priority      | Description                                         |
+|---------------|-----------------------------------------------------|
+| Hoch          | Must have. Core functionality or critical quality.  |
+| Mittel        | Should have. Important but system works without it. |
+| Niedrig       | Nice to have. Can be deferred to future releases.   |
+| Zu bestätigen | Business priority has not been established.         |
 
 ## Status
 
-| Status      | Description                                    |
-|-------------|------------------------------------------------|
-| Open        | Requirement defined but not yet implemented.   |
-| In Progress | Currently being implemented.                   |
-| Implemented | Implementation complete, pending verification. |
-| Verified    | Tested and confirmed working.                  |
-| Deferred    | Postponed to a future release.                 |
-| Rejected    | Removed from scope.                            |
+| Status      | Description                                                        |
+|-------------|--------------------------------------------------------------------|
+| Open        | Requirement defined but not yet implemented.                       |
+| In Progress | Implementation has started or covers only part of the requirement. |
+| Implemented | Implementation complete, pending verification.                     |
+| Verified    | Tested and confirmed working.                                      |
+| Deferred    | Postponed to a future release.                                     |
+| Rejected    | Removed from scope.                                                |
+| Superseded  | Replaced by another identified requirement.                        |
 
 ### German Status Values
 
-| Status | Description |
-|--------|-------------|
-| Offen | Requirement defined but not yet implemented. |
-| Teilweise | Implementation has started or covers only part of the requirement. |
-| Umgesetzt | Implementation complete, pending verification. |
-| Bestätigt | Tested and confirmed working. |
-| Abgelehnt | Removed from scope. |
-| Ersetzt | Superseded by another requirement. |
+| Status         | Description                                                        |
+|----------------|--------------------------------------------------------------------|
+| Offen          | Requirement defined but not yet implemented.                       |
+| Teilweise      | Implementation has started or covers only part of the requirement. |
+| Umgesetzt      | Implementation complete, pending verification.                     |
+| Bestätigt      | Tested and confirmed working.                                      |
+| Zurückgestellt | Postponed to a future release.                                     |
+| Abgelehnt      | Removed from scope.                                                |
+| Ersetzt        | Superseded by another requirement.                                 |
+
+Translate states by meaning: `Deferred` ↔ `Zurückgestellt`, `Rejected` ↔
+`Abgelehnt`, and `Superseded` ↔ `Ersetzt`. Identify the replacement ID for a
+superseded requirement. Keep review/conflict notes separate from these states;
+proposed thresholds and priorities remain unconfirmed until reviewed.
 
 ## NFR Categories
 

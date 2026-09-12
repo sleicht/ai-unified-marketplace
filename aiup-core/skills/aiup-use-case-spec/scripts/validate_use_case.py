@@ -28,7 +28,10 @@ Requires Python 3.9+, standard library only.
 import argparse
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 # ---------------------------------------------------------------------------
 # Language definitions (UseCaseLanguage.java)
@@ -107,7 +110,8 @@ RULE_NUMBER = re.compile(r"(?:BR|GR)-(\d+)\s*:")
 PLACEHOLDER = re.compile(r"_[^_].*_|\*[^*].*\*")
 UC_ID_GRAMMAR = re.compile(r"[SB]?UC-[A-Za-z0-9_-]+")
 
-STEP_REFERENCE = re.compile(r"\((?:step|schritt)\s*\d", re.IGNORECASE)
+STEP_REFERENCE = re.compile(r"\((?:step|schritt)\s+(\d+)\)", re.IGNORECASE)
+MAIN_STEP_REFERENCE = re.compile(r"\b(?:step|schritt)\s+(\d+)\b", re.IGNORECASE)
 FLOW_TERMINATION = re.compile(
     r"continues at step \d+|use case ends"
     r"|wird bei schritt \d+ fortgesetzt|use case endet",
@@ -121,9 +125,9 @@ TECHNICAL_TERMS = [
     (re.compile(r"\bemail server\b", re.IGNORECASE), "email server"),
     (re.compile(r"\bJWT\b", re.IGNORECASE), "JWT"),
     (re.compile(r"\bbcrypt\b", re.IGNORECASE), "bcrypt"),
-    (re.compile(r"\bhash(?:es|ed|ing)?\b", re.IGNORECASE), "hash"),
-    (re.compile(r"\bsalt(?:ed)?\b", re.IGNORECASE), "salt"),
-    (re.compile(r"\btokens?\b", re.IGNORECASE), "token"),
+    (re.compile(r"\b(?:password\s+hash(?:es|ing)?|hash(?:es|ed|ing)?\s+(?:the\s+)?passwords?)\b", re.IGNORECASE), "password hashing"),
+    (re.compile(r"\b(?:salt(?:s|ed|ing)?\s+(?:the\s+)?passwords?|password\s+salt)\b", re.IGNORECASE), "password salting"),
+    (re.compile(r"\b(?:access|refresh|bearer|session)\s+tokens?\b", re.IGNORECASE), "authentication token"),
     (re.compile(r"\bSHA-?\d*\b"), "SHA"),
     (re.compile(r"\bSQL\b"), "SQL"),
     (re.compile(r"\bSELECT\b"), "SELECT"),
@@ -608,6 +612,12 @@ def check_contract(doc, path):
             doc.add(flow["line"], WARN, "TRIGGER_STEP_REF",
                     "trigger of '" + flow["heading"] + "' does not reference "
                     "a main-scenario step as '(step N)'")
+        for reference_line, text in [(flow["line"], flow["trigger"])] + flow["steps"]:
+            for match in MAIN_STEP_REFERENCE.finditer(text):
+                if int(match.group(1)) not in doc.main_scenario_numbers:
+                    doc.add(reference_line, WARN, "STEP_REFERENCE_INVALID",
+                            "reference to nonexistent main-scenario step "
+                            + match.group(1))
         if flow["steps"] and not FLOW_TERMINATION.search(flow["steps"][-1][1]):
             doc.add(flow["line"], WARN, "FLOW_TERMINATION",
                     "'" + flow["heading"] + "' does not end with 'Use case "
@@ -842,6 +852,54 @@ def self_test():
     check_contract(doc, "UC-002-broken.md")
     expect("invalid", doc.problems,
            ["STATUS_INVALID", "UNEXPECTED_CONTENT", "FLOW_INCOMPLETE"])
+
+    for name, text in [
+        ("invalid-trigger", VALID_EN.replace("(step 2)", "(step 99)")),
+        ("invalid-resume", VALID_EN.replace("continues at step 3.", "continues at step 0.")),
+        ("invalid-conditional-resume", VALID_EN.replace(
+            "Use case continues at step 3.",
+            "If corrected, use case continues at step 99. Otherwise, use case ends.")),
+        ("invalid-german-trigger", VALID_DE_TOLERANT.replace("(Schritt 1)", "(Schritt 99)")),
+        ("invalid-german-resume", VALID_DE_TOLERANT.replace("bei Schritt 1", "bei Schritt 99")),
+    ]:
+        doc = parse_document(text)
+        check_contract(doc, "example.md")
+        expect(name, doc.problems, ["STEP_REFERENCE_INVALID"])
+
+    for step in ["Clerk redeems a loyalty token.", "Clerk adds salt to the order.",
+                 "Clerk orders hash browns."]:
+        doc = parse_document(VALID_EN.replace('Clerk selects "New Reservation".', step))
+        check_contract(doc, "example.md")
+        expect("domain-vocabulary", doc.problems, [], forbidden_severity=WARN)
+        expect("domain-vocabulary", doc.problems, [], forbidden_severity=ERROR)
+
+    for step in ["System issues an access token.", "System hashes the password.",
+                 "System salts the password.", "System sends via SMTP.",
+                 "System runs SQL."]:
+        doc = parse_document(VALID_EN.replace('Clerk selects "New Reservation".', step))
+        check_contract(doc, "example.md")
+        expect("implementation-vocabulary", doc.problems, ["TECHNICAL_TERM"])
+
+    with tempfile.TemporaryDirectory(prefix="aiup scoped validation ") as temporary:
+        installed = os.path.join(temporary, "installed skill")
+        service = os.path.join(temporary, "project", "billing")
+        docs = os.path.join(service, "docs", "use_cases")
+        os.makedirs(installed)
+        os.makedirs(docs)
+        script = shutil.copyfile(__file__, os.path.join(installed, "validate_use_case.py"))
+        selected = os.path.join(docs, "UC-001-create-reservation.md")
+        unrelated = os.path.join(docs, "UC-002-broken.md")
+        for path, text in [(selected, VALID_EN), (unrelated, INVALID)]:
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(text)
+        for cwd in [os.path.dirname(service), service]:
+            result = subprocess.run([sys.executable, script, "--strict", selected],
+                                    cwd=cwd, capture_output=True, text=True, timeout=10)
+            if result.returncode != 0 or "1 file(s) checked" not in result.stdout:
+                failures.append("external-install: explicit scoped validation failed")
+        with open(unrelated, encoding="utf-8") as handle:
+            if handle.read() != INVALID:
+                failures.append("external-install: unrelated specification changed")
 
     if failures:
         for failure in failures:

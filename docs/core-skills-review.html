@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
-  <header class="masthead"><span class="brand">AIUP / CORE SKILLS REVIEW</span><span>Updated 12 September 2026 · core 103.12.0 · delivered ec006c4</span></header>
+  <header class="masthead"><span class="brand">AIUP / CORE SKILLS REVIEW</span><span>Updated 12 September 2026 · core 103.12.0 · Kotlin follow-up 8926dc2</span></header>
   <main id="deck">
     <section class="slide cover" id="verdict" aria-labelledby="title-1" data-title="Verdict">
       <p class="eyebrow">Review → implementation complete</p>
@@ -32,7 +32,7 @@
         <div class="file"><b>UC</b><span>Use cases specify the behaviour.</span></div><div class="connector" aria-hidden="true">→</div>
         <div class="file"><b>TC</b><span>Journeys connect the outcomes.</span></div>
       </div>
-      <p class="lead">Delivered in core 103.12.0, commit ec006c4, on fix/core-skill-contracts. Full validation passed in an isolated core-only checkout.</p>
+      <p class="lead">Core fixes validated in isolation. Follow-up 8926dc2 adds Ktor, Koin, Compose and Exposed discovery examples; see the Kotlin stack slide for its checks.</p>
       <div class="sources">Original review: 11 September, core 103.11.0 / 719d42a. Implementation: 12 September, 22 changed files. This presentation records the delivered fixes and their verification limits.</div>
     </section>
 
@@ -46,7 +46,7 @@
           <tr><td><a href="#identity"><code>aiup-use-case-diagram</code></a></td><td><span class="tag keep">Updated</span></td><td>Preserved UC IDs and added FR → UC mappings in Mermaid comments.</td></tr>
           <tr><td><a href="#validation"><code>aiup-use-case-spec</code></a></td><td><span class="tag keep">Updated</span></td><td>Corrected validator paths, step-reference checks and update reconciliation.</td></tr>
           <tr><td><a href="#test-case"><code>aiup-test-case</code></a></td><td><span class="tag keep">Updated</span></td><td>Repaired integration; added scoped updates, status evidence and compatible handoffs.</td></tr>
-          <tr><td><a href="#reverse"><code>aiup-reverse-engineer</code></a></td><td><span class="tag keep">Updated</span></td><td>Aligned recovered FR tables; removed invented schema constraints and count ratios.</td></tr>
+          <tr><td><a href="#reverse"><code>aiup-reverse-engineer</code></a></td><td><span class="tag keep">Updated</span></td><td>Aligned FR/schema recovery; added <a href="#kotlin-stack">Ktor, Koin, Compose and Exposed examples</a>.</td></tr>
           <tr><td><a href="#retain"><code>aiup-architecture</code></a></td><td><span class="tag keep">Updated</span></td><td>Added claim provenance and guidance for brief small-service sections.</td></tr>
           <tr><td><a href="#retain"><code>aiup-reference</code></a></td><td><span class="tag keep">Updated</span></td><td>Required explicit reporting of code/decision divergence.</td></tr>
         </tbody>
@@ -103,6 +103,17 @@
       </div>
       <div class="callout"><strong>Verification:</strong> the aligned contracts were reviewed and recovery acceptance fixtures were added. A full generated FR → UC → TC pipeline was not exercised in this change.</div>
       <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/artifact-contract.md">reverse-engineer/references/artifact-contract.md</a> · <a href="../aiup-core/skills/aiup-requirements/SKILL.md">requirements/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-diagram/SKILL.md">use-case-diagram/SKILL.md</a> · <a href="../aiup-core/skills/aiup-use-case-spec/references/format-spec.md">use-case-spec/references/format-spec.md</a></div>
+    </section>
+
+    <section class="slide" id="kotlin-stack" aria-labelledby="title-kotlin" data-title="Kotlin stack · Examples added">
+      <p class="eyebrow">Follow-up · Implemented · 8926dc2</p><h2 id="title-kotlin">Kotlin stack discovery now has concrete examples.</h2>
+      <p class="lead">The stack guide omitted Ktor, Koin, Compose and Exposed. It now traces UI actions through dependency wiring, server behaviour and persistence.</p>
+      <div class="grid">
+        <div class="panel"><span class="label">Entry points and behaviour</span><h3>Ktor + Compose</h3><ul><li>Ktor application modules, nested routes, request handling, authentication and role/ownership checks.</li><li>Reachable Compose screens, navigation, submit callbacks and loading/error/success states.</li><li>Example: follow <code>viewModel.save()</code> through the API client to the matching server handler. Group by actor goal.</li><li>UI visibility does not establish server authorisation; authentication provider names do not define actors.</li></ul></div>
+        <div class="panel"><span class="label">Wiring and persisted state</span><h3>Koin + Exposed</h3><ul><li>Resolve active Koin bindings, qualifiers and platform registrations; distinguish test doubles.</li><li>Map Exposed columns to AIUP types: bounded strings, nullable unique values, signed decimals, UUIDs and optional foreign keys.</li><li>Reconcile tables and DAO mappings with migrations; derive key generation and cardinality from evidence.</li><li>Use Gradle aliases and source sets to identify the stack; DTOs alone do not establish database constraints.</li></ul></div>
+      </div>
+      <div class="callout"><strong>Checked:</strong> examples reviewed against official documentation; skill validation passed in a clean tracked snapshot, plus secrets and whitespace checks. No Kotlin recovery exercise or full compilation gate was run for this documentation follow-up.</div>
+      <div class="sources"><a href="../aiup-core/skills/aiup-reverse-engineer/references/stack-signals.md#kotlin--ktor--koin--compose--exposed">stack-signals.md · Kotlin examples and official sources</a> · Includes Ktor and Compose test-discovery guidance. The workspace validator encountered generated dependency JSON; the clean snapshot passed.</div>
     </section>
 
     <section class="slide" id="identity" aria-labelledby="title-7" data-title="R5 · Stable updates">
@@ -186,7 +197,7 @@
         <div class="track"><strong>Source fidelity<br><span class="small">R3, R4, R6 · Complete</span></strong><div><p>Corrected schema recovery, aligned recovered requirements and added step-reference/vocabulary regressions.</p><p class="small">Evidence: schema exercise and validator regressions passed; the FR handoff contract was reviewed.</p></div></div>
         <div class="track"><strong>Predictable updates<br><span class="small">R5, R8 · Complete</span></strong><div><p>Added identity reconciliation, BR mappings, lifecycle translations and status-evidence rules; applied the smaller refinements.</p><p class="small">Evidence: instruction review and TC update exercise. Broader rename/translation workflows remain evaluation opportunities.</p></div></div>
       </div>
-      <div class="callout"><strong>Delivered:</strong> core 103.12.0 · 22 files · commit <code>ec006c4</code> · branch <code>fix/core-skill-contracts</code>. One version bump covered the published-skill fixes; this HTML update adds none.</div>
+      <div class="callout"><strong>Initial fixes:</strong> core 103.12.0 · 22 files · snapshot <code>ec006c4</code>. <strong>Follow-up:</strong> Kotlin stack examples in <code>8926dc2</code>, on <code>fix/core-skill-contracts</code>. Both belong to the same pending release; no further version bump.</div>
       <div class="sources"><a href="../CLAUDE.md">CLAUDE.md · Versions</a> · <a href="../aiup-core/.claude-plugin/plugin.json">Core plugin manifest</a> · Record refers to the delivered core-only snapshot; unrelated Kotlin/Compose work was excluded.</div>
     </section>
 

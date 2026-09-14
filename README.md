@@ -8,6 +8,31 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 Internal Claude Code marketplace for the AI Unified Process methodology and the Sanitas Kotlin Multiplatform stack.
 
+AI Unified Process is a requirements-first workflow for taking software from a product vision to reviewed
+specifications, implementation, and traceable tests. This repository distributes the workflow as portable Agent
+Plugins and Agent Skills for Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Gemini CLI, OpenCode, and other
+compatible coding agents.
+
+[Get started](docs/getting-started.md) · [Understand the workflow](docs/workflow.md) ·
+[Choose a plugin](#choose-your-plugins) · [Installation guides](#installation)
+
+## Why AI Unified Process?
+
+AI-assisted development often jumps from a vague prompt directly to code. AI Unified Process inserts durable,
+human-reviewable artifacts between intent and implementation:
+
+- requirements with stable identifiers;
+- an explicit domain entity model;
+- use cases that define user goals and behavior;
+- test journeys that trace back to those use cases;
+- stack-specific implementation and tests built from the reviewed specifications.
+
+The workflow is inspired by the phases of the
+[Rational Unified Process](https://en.wikipedia.org/wiki/Rational_unified_process), adapted for coding agents and
+plain-text artifacts that live with the source code.
+
+## Sanitas
+
 The repository deliberately contains two plugins:
 
 | Plugin | Version | Scope |

@@ -39,6 +39,80 @@ match the project in front of you.
   case (e.g. `UC001NameOfUcTest`) are gold — they encode the success
   scenario and alternative flows already.
 
+## Kotlin / Ktor / Koin / Compose / Exposed
+
+- **Build files**: `settings.gradle.kts`, module `build.gradle.kts` files and
+  `gradle/libs.versions.toml`. Resolve aliases to actual dependencies: `io.ktor:ktor-server-*`
+  versus `ktor-client-*`, `io.insert-koin:koin-*`, Compose plugins/dependencies,
+  and `org.jetbrains.exposed:exposed-*`. Follow the configured source sets, such
+  as `commonMain`, `jvmMain`, `androidMain` and `wasmJsMain`; shared DTOs and
+  platform implementations can live in different modules. These libraries are
+  independent signals: finding one does not prove the others are present.
+- **Ktor entry points and actors**:
+  - Start at the configured `Application` module or `embeddedServer` setup;
+    follow installed routing functions and nested `route(...)` blocks to
+    `get`, `post`, `put`, `patch`, `delete` and `webSocket` handlers.
+  - For example, `route("/records") { post { ... } }` identifies a candidate
+    create operation. Trace `call.receive<CreateRecordRequest>()` through the
+    service call, validation and response before naming the actor's goal.
+  - Follow `install(Authentication)` providers, `authenticate("auth") { ... }`,
+    principal access and application-specific role/ownership checks. Provider
+    names are not actor names; optional authentication and unguarded routes
+    need separate inspection. Authentication alone does not prove an admin role.
+    See [Ktor authentication](https://ktor.io/docs/server-auth.html).
+- **Koin wiring**:
+  - Follow registered `module { ... }` definitions, included modules and
+    `single`, `factory`, `scoped` or annotation-based definitions to the concrete
+    implementation selected by `get()` / `inject()`. Check qualifiers and
+    platform-specific registrations rather than assuming every implementation
+    of an interface is active. See [Koin definitions](https://insert-koin.io/docs/reference/koin-core/definitions/).
+  - For example, `single<RecordRepository> { ExposedRecordRepository(get()) }`
+    connects a service's repository interface to database code. A test binding
+    to `FakeRecordRepository` is evidence about the test, not production storage.
+    Dependency-injection scopes and registrations are not actors or use cases.
+- **Compose entry points and scenarios**:
+  - Follow reachable `@Composable` screens from the application root and its
+    navigation mechanism. With Navigation Compose, inspect `NavHost` destinations,
+    `composable(...)` / `composable<Destination>` and `navigate(...)` calls.
+    Other routers or state-based screen switches need the same reachability check.
+    See [Compose navigation](https://kotlinlang.org/docs/multiplatform/compose-navigation-routing.html).
+  - For example, `Button(onClick = { viewModel.save() })` leads to the ViewModel
+    or presenter, state updates, API client and matching server handler. Follow
+    submit callbacks, loading/error/success states and navigation after completion
+    to recover scenarios; a reusable composable or preview is not a use case.
+  - Hidden or disabled controls reveal UI behaviour, not enforced server
+    authorisation. Corroborate access rules on the backend. Do not count the
+    client action and its server route as separate goals automatically.
+- **Exposed entities and constraints**:
+  - Inspect `Table`, `IntIdTable`, `LongIdTable`, `UUIDTable`, and DAO mappings
+    where used. Follow repository queries and transactions to establish which
+    tables carry domain state. Reconcile declarations with the current schema
+    reconstructed from migrations before emitting the entity model.
+  - Examples below are column fragments, not complete table definitions. Check
+    the installed Exposed version and database dialect; import paths and key
+    generation details vary. See [Exposed table definitions](https://www.jetbrains.com/help/exposed/working-with-tables.html).
+
+  | Exposed declaration                                                  | AIUP Data Type | Length/Precision | Validation Rules                                                          |
+  |----------------------------------------------------------------------|----------------|------------------|---------------------------------------------------------------------------|
+  | `varchar("name", 120)`                                               | `String`       | 120              | `Not Null`                                                                |
+  | `varchar("alias", 40).nullable().uniqueIndex()`                      | `String`       | 40               | `Optional, Unique`                                                        |
+  | `decimal("balance", 10, 2)`                                          | `Decimal`      | 10,2             | `Not Null`; no range without another constraint                           |
+  | `uuid("external_id")`                                                | `UUID`         | —                | `Not Null`; neither a primary key nor generated merely because it is UUID |
+  | `reference("owner_id", Owners).nullable()` with an integer owner key | `Integer`      | 10               | `Optional, Foreign Key (OWNER.id)`                                        |
+
+  Derive primary-key status and generation separately from explicit key declarations,
+  ID-table behaviour and migrations. Nullable foreign keys permit missing parents;
+  uniqueness limits multiplicity independently. Kotlin `data class`, `@Serializable`
+  and nullable request fields alone do not establish persisted entities or database
+  constraints. Keep request validation and persistence constraints distinguishable.
+- **Tests**: Ktor `testApplication { ... }` with client requests reveals response
+  and access behaviour; repository tests against the configured database reveal
+  constraints and rollback outcomes. Compose `runComposeUiTest`, node selectors,
+  `performClick()` and assertions reveal user-visible flows. Check the project's
+  source sets, test doubles and actual assertions before claiming end-to-end
+  coverage. See [Ktor testing](https://ktor.io/docs/server-testing.html) and
+  [Compose UI testing](https://kotlinlang.org/docs/multiplatform/compose-test.html).
+
 ## Python / Django
 
 - **Build files**: `requirements.txt`, `pyproject.toml`, `manage.py`.

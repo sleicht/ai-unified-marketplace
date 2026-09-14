@@ -112,16 +112,19 @@ containing these sections:
 
 1. `# Implementation Session Prompts` and the resolved service, docs path, output
    filename, feature name when supplied, and UC scope.
-2. `## How to Use`: start a fresh chat for every numbered session, paste the shared
-   header followed by exactly one session prompt, and use the same working tree
-   containing previous sessions' reviewed changes. Run sessions sequentially;
+2. `## How to Use`: start a fresh chat for every numbered session, reuse the final
+   chat launcher unchanged, and use the same working tree containing previous
+   sessions' reviewed changes. Run sessions sequentially;
    resolve failures before dependent sessions. The document does not start chats.
 3. `## Shared Session Header Prompt`: one fenced `text` block common to every
    session. Include the actual service/docs paths, repository instruction handling,
    re-reading current files, following the named skill and its references, scope
    limits, preservation of unrelated work, and verification/reporting expectations.
    Require reporting unresolved prerequisites rather than guessing.
-4. `## Session Index`: number, UC IDs, skill, predecessors, and expected outputs.
+4. `## Session Index`: number, UC IDs, skill, predecessors, expected outputs and
+   status (`Pending`, `Complete`, or `Blocked`). Initialise new sessions as
+   `Pending`; retain supported completion evidence when updating a plan. Reopen
+   changed sessions and affected dependants when previous evidence no longer applies.
 5. `## Session Prompts`: a numbered subsection per session with one fenced `text`
    prompt. Name the exact `aiup-` skill, selected UC ID/name, actual specification
    path, applicable inputs, expected changes, required checks from that skill, and
@@ -143,42 +146,36 @@ An update replaces obsolete prompts rather than appending a duplicate plan.
 
 ## Final Chat Response
 
-After writing the Markdown file, explain how to use it in the final chat response,
-separately from the file itself. Include:
-
-- A link to the generated file, the planned/runnable session counts, and blockers.
-- The manual copy method: paste the contents of `Shared Session Header Prompt`,
-  a blank line, and the contents of exactly one session's prompt block into a
-  single message in a fresh chat. Do not copy the Markdown fences or headings.
-- A simpler, recommended method: copy the launcher below. It tells the agent to
-  read the entire plan for context and execute only the selected session, so the
-  user does not need to assemble the header and session text manually.
-
-Fill this launcher with the generated file's actual absolute path and the exact
-heading of its first planned session. If that session is blocked, say so before
-the launcher; it does not authorise bypassing prerequisites. If no sessions were
-generated, report the blockers without inventing a launcher.
+After writing the Markdown file, return only one fenced `text` block containing
+the reusable launcher below. Substitute the actual absolute plan path. Do not
+include a session number, selected-session placeholder, counts or usage commentary
+outside the block. The user must be able to paste it unchanged into every fresh
+chat. Keep usage instructions and blockers in the plan itself.
 
 ```text
 Read the complete implementation plan:
 <absolute path to the generated Markdown file>
 
-Apply its Shared Session Header Prompt and execute only:
-<exact selected session heading>
+Follow applicable repository instructions. Read the session index, blockers,
+shared header and session descriptions, then check the current project files
+and saved verification evidence. Do not rely on previous chat history.
 
-Read the session index, blockers, and other session descriptions for context.
-Respect applicable repository instructions and the selected session's
-prerequisites and scope. Do not execute other sessions. Report unresolved
-blockers rather than guessing.
+Select the first session in plan order that is not Complete. Apply the Shared
+Session Header Prompt and execute only that session's prompt. Respect its skill,
+scope and prerequisites. If a predecessor or prerequisite is incomplete, record
+the blocker and stop; do not skip ahead or execute another session.
+
+Save changed files, verification results and the handoff in the plan or its
+linked status artefact. Update the session index to Complete only when this
+session's required outputs and checks are satisfied; otherwise leave it Pending
+or mark it Blocked with the reason. Report the result and stop after this session.
+If all sessions are Complete, report completion without running more work. If the
+plan contains no sessions, report its blockers without inventing a session.
 ```
 
-Explain that each subsequent fresh chat uses the same launcher with the next
-session's exact heading. A reference to another session provides context or
-identifies later work; it does not instruct the current agent to run that session.
-For example, Session 01 reports test work for Session 02 while Session 02 creates
-the tests. Each agent reads the plan and current project files; it does not inherit
-previous chat history. Any handoff available only in chat must be saved or supplied
-to the next session.
+A reference to another session supplies context or identifies later work; it does
+not authorise executing it. Persist handoffs on disk so the same launcher can
+resume after an interrupted, failed or blocked session without advancing silently.
 
 ## Verification
 
@@ -190,5 +187,7 @@ to the next session.
 - Confirm the shared header plus any single prompt needs no earlier chat context.
 - Confirm checks reflect the chosen skill; do not assign test creation to implementation skills.
 - Confirm no implementation has been run and only the requested prompt document was written.
-- Confirm the final chat response includes the usage explanation and, when sessions
-  exist, a launcher with the actual output path and an exact session heading.
+- Confirm the final chat response is only the reusable launcher with the actual
+  output path, and requires no edits between sessions.
+- Check selection for a new plan, a completed predecessor, an interrupted or
+  blocked session, and a completed or empty plan; never skip unfinished work.

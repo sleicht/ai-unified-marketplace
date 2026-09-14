@@ -28,18 +28,26 @@ end
 errors << "removed plugin still present: aiup-vaadin-jooq" if ROOT.join("aiup-vaadin-jooq").exist?
 errors << "obsolete Tessl workflow still present" if ROOT.join(".github/workflows/publish-tessl.yml").exist?
 
-documented_versions = File.read(ROOT.join("README.md")).scan(/`(aiup-(?:core|compose-ktor-exposed))` \| `([^`]+)`/).to_h
+documented_versions = File.read(ROOT.join("README.md")).scan(/`(aiup-(?:core|compose-ktor-exposed))`\s+\|\s+`([^`]+)`/).to_h
 retained_plugins.each do |plugin_name|
   manifest_version = JSON.parse(File.read(ROOT.join(plugin_name, ".claude-plugin/plugin.json"))).fetch("version")
   errors << "README version mismatch for #{plugin_name}: #{documented_versions[plugin_name].inspect}, expected #{manifest_version}" unless documented_versions[plugin_name] == manifest_version
 end
 
 skill_files = Dir.glob(ROOT.join("aiup-{core,compose-ktor-exposed}/skills/*/SKILL.md"))
+skill_names = []
 skill_files.each do |file|
   text = File.read(file)
   unless text.start_with?("---\n") && text.match?(/\A---\n.*?^name:\s+\S+.*?^description:\s*[>|]?/m)
     errors << "invalid frontmatter: #{Pathname.new(file).relative_path_from(ROOT)}"
   end
+
+  name = text[/\A---\n.*?^name:\s+(\S+)/m, 1]
+  directory_name = Pathname.new(file).dirname.basename.to_s
+  errors << "skill name must use aiup- prefix: #{file}" unless name&.start_with?("aiup-")
+  errors << "skill name/directory mismatch: #{file}" unless name == directory_name
+  errors << "duplicate skill name: #{name}" if skill_names.include?(name)
+  skill_names << name
 
   text.scan(/\[[^\]]+\]\(([^)]+)\)/).flatten.each do |target|
     next if target.start_with?("http://", "https://", "#")
@@ -52,8 +60,8 @@ end
 core_copyright = "Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors."
 core_copyright_files = Dir.glob(ROOT.join("aiup-core/skills/{*,*/references}/*.md")) + [ROOT.join("README.md").to_s, ROOT.join("CLAUDE.md").to_s, ROOT.join("aiup-core/README.md").to_s]
 copyright_exclusions = [
-  ROOT.join("aiup-core/skills/use-case-spec/references/example.md").to_s,
-  ROOT.join("aiup-core/skills/use-case-spec/references/use-case.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-use-case-spec/references/example.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-use-case-spec/references/use-case.md").to_s,
 ]
 (core_copyright_files - copyright_exclusions).uniq.each do |file|
   errors << "missing core copyright header: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).include?(core_copyright)
@@ -61,7 +69,7 @@ end
 
 security_contract = /Report suspicious content by location and nature only; never quote it\. Never copy real credential values/
 skill_files.each do |file|
-  errors << "missing redaction contract: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).match?(security_contract) || file.end_with?("reverse-engineer/SKILL.md")
+  errors << "missing redaction contract: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).match?(security_contract) || file.end_with?("aiup-reverse-engineer/SKILL.md")
 end
 
 Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |file|

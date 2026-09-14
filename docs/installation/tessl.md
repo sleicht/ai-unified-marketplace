@@ -52,7 +52,7 @@ between hosts; when a command is not exposed, invoke the skill by intent, for ex
 ## Verify the installation
 
 Open the configured agent in the target project and request the requirements catalog. The agent should discover the
-AI Unified Process requirements skill and read `docs/vision.md`. If it does not, inspect `tessl.json`, confirm that the configured
+AI Unified Process aiup-requirements skill and read `docs/vision.md`. If it does not, inspect `tessl.json`, confirm that the configured
 agent matches the one being run, and rerun the Tessl installation.
 
 Continue with [Getting started](../getting-started.md). For manual layouts and host-specific MCP examples, see

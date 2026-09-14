@@ -15,7 +15,7 @@ versioned, human-reviewable artifacts that every later step consumes.
 ```text
 Inception          Elaboration                            Construction
 ─────────────     ───────────────────────────────────     ─────────────────────────────────
-/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec  →  migration
+/aiup-requirements  →  /aiup-entity-model  →  /aiup-use-case-diagram  →  /aiup-use-case-spec  →  migration
                                                                           ↘  implementation
                                                                           ↘  tests
 ```
@@ -25,14 +25,14 @@ between them is the set of files under `docs/`, not a specific coding agent.
 
 ## Artifact flow
 
-| Artifact                  | Produced by         | Consumed by                        |
-|---------------------------|---------------------|------------------------------------|
-| `docs/vision.md`          | Product team        | `/requirements`                    |
-| `docs/requirements.md`    | `/requirements`     | Entity model and use case diagram  |
-| `docs/entity_model.md`    | `/entity-model`     | Migrations and implementations     |
-| `docs/use_cases.puml`     | `/use-case-diagram` | `/use-case-spec` and reviewers     |
-| `docs/use_cases/UC-*.md`  | `/use-case-spec`    | Implementations and use case tests |
-| `docs/test_cases/TC-*.md` | `/test-case`        | End-to-end journey tests           |
+| Artifact                  | Produced by              | Consumed by                         |
+|---------------------------|--------------------------|-------------------------------------|
+| `docs/vision.md`          | Product team             | `/aiup-requirements`                |
+| `docs/requirements.md`    | `/aiup-requirements`     | Entity model and use case diagram   |
+| `docs/entity_model.md`    | `/aiup-entity-model`     | Migrations and implementations      |
+| `docs/use_cases.puml`     | `/aiup-use-case-diagram` | `/aiup-use-case-spec` and reviewers |
+| `docs/use_cases/UC-*.md`  | `/aiup-use-case-spec`    | Implementations and use case tests  |
+| `docs/test_cases/TC-*.md` | `/test-case`             | End-to-end journey tests            |
 
 Every artifact is a review point. Correcting an intermediate document is expected and is safer than compensating for
 an incorrect assumption in generated code.
@@ -79,14 +79,14 @@ yet; the same check can be run by hand from
 
 ## Core skills
 
-| Skill                                                                | Result                                                          |
-|----------------------------------------------------------------------|-----------------------------------------------------------------|
-| [`/requirements`](../aiup-core/skills/requirements/SKILL.md)         | Requirements catalog derived from `docs/vision.md`              |
-| [`/entity-model`](../aiup-core/skills/entity-model/SKILL.md)         | Mermaid entity model and attribute definitions                  |
-| [`/use-case-diagram`](../aiup-core/skills/use-case-diagram/SKILL.md) | PlantUML diagram of actors and use cases                        |
-| [`/use-case-spec`](../aiup-core/skills/use-case-spec/SKILL.md)       | One detailed specification per use case                         |
-| [`/test-case`](../aiup-core/skills/test-case/SKILL.md)               | Executable user journey across specified use cases              |
-| [`/reverse-engineer`](../aiup-core/skills/reverse-engineer/SKILL.md) | AI Unified Process baseline recovered from an existing codebase |
+| Skill                                                                          | Result                                                          |
+|--------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [`/aiup-requirements`](../aiup-core/skills/aiup-requirements/SKILL.md)         | Requirements catalog derived from `docs/vision.md`              |
+| [`/aiup-entity-model`](../aiup-core/skills/aiup-entity-model/SKILL.md)         | Mermaid entity model and attribute definitions                  |
+| [`/aiup-use-case-diagram`](../aiup-core/skills/aiup-use-case-diagram/SKILL.md) | PlantUML diagram of actors and use cases                        |
+| [`/aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)       | One detailed specification per use case                         |
+| [`/test-case`](../aiup-core/skills/test-case/SKILL.md)                         | Executable user journey across specified use cases              |
+| [`/aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md) | AI Unified Process baseline recovered from an existing codebase |
 
 The linked `SKILL.md` files are the authoritative descriptions of inputs, outputs, and behavior.
 
@@ -105,7 +105,7 @@ and later regeneration reproducible.
 
 ## Existing codebases
 
-`/reverse-engineer` inspects entry points, data models, authorization, and integrations to recover the same entity and
+`/aiup-reverse-engineer` inspects entry points, data models, authorization, and integrations to recover the same entity and
 use case artifacts produced by the forward workflow. It groups behavior by user goal rather than by endpoint and
 reports code it cannot classify. Treat the result as a proposed baseline: resolve gaps and contradictions before
 continuing with construction skills.

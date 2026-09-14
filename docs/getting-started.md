@@ -64,10 +64,10 @@ For direct Agent Plugins adoption or manual setup in Codex, Cursor, Copilot, Gem
 Start the coding agent in the target project and create the analysis artifacts in order:
 
 ```text
-/requirements
-/entity-model
-/use-case-diagram
-/use-case-spec UC-001
+/aiup-requirements
+/aiup-entity-model
+/aiup-use-case-diagram
+/aiup-use-case-spec UC-001
 ```
 
 Review every generated file before continuing. The artifacts are deliberately plain Markdown, Mermaid, and PlantUML
@@ -85,14 +85,14 @@ docs/
     └── UC-001-*.md
 ```
 
-If the agent starts by reading `docs/vision.md` after `/requirements`, the core plugin is available. If the command is
+If the agent starts by reading `docs/vision.md` after `/aiup-requirements`, the core plugin is available. If the command is
 not exposed as a slash command by the selected agent, ask it to "generate the requirements catalog from the product
 vision"; Agent Skills can also be activated by intent.
 
 ## 5. Implement and test
 
 Once a use case specification exists, continue with the commands from the selected stack plugin. For example, the
-construction workflow normally consists of a migration, `/implement UC-001`, stack-specific unit or integration tests,
+construction workflow normally consists of a migration, `/aiup-implement UC-001`, stack-specific unit or integration tests,
 and `/playwright-test UC-001`.
 
 For a journey across several use cases, first create a test-case document:
@@ -116,7 +116,7 @@ The complete artifact lifecycle is described in [Workflow and artifacts](workflo
 When a project already contains working code but lacks AI Unified Process documents, start with:
 
 ```text
-/reverse-engineer
+/aiup-reverse-engineer
 ```
 
 The skill recovers an entity model, use case diagram, and use case specifications from the codebase. Review the

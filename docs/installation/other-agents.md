@@ -4,142 +4,47 @@ Part of the AI Unified Process — https://unifiedprocess.ai
 Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 -->
 
-# Agent Plugins and manual installation
+# Other Agents and Manual Skill Setup
 
-AI Unified Process is a methodology implemented as portable Agent Skills. Every plugin directory is also an
-[Agent Plugins](https://agent-plugins.org) package with a root `plugin.json`, `mcp.json`, and `skills/` directory.
-Clients that implement the standard can load a plugin directly from a checkout of this repository.
+The [AIUP workflow](../how-to-use.md) uses reviewed files as the contract between steps. A coding agent can follow it by reading the skill instructions and references, editing the target project, and running the required checks. Native plugin support and slash commands are not required.
 
-For most supported agents, [Tessl](tessl.md) is the shortest installation path. Use this page when adopting the
-packages directly or configuring skills and MCP servers by hand.
+## Make the skills available
 
-## What is portable
+1. Obtain a checkout of this internal repository at a reviewed revision.
+2. Make the required directories from `aiup-core/skills/` available to the agent. For Compose/Ktor/Exposed projects, also expose the required directories from `aiup-compose-ktor-exposed/skills/`.
+3. If the agent supports skill discovery, copy or symlink whole skill directories into its documented skill location. Preserve `SKILL.md`, `references/`, and `scripts/` together.
+4. Otherwise, give the agent the exact path to the relevant `SKILL.md` and ask it to follow that file. Resolve bundled reference and script paths relative to the skill directory; project artefact paths resolve within the selected project or service.
 
-| Component                    | Portability   | Notes                                                                     |
-|------------------------------|---------------|---------------------------------------------------------------------------|
-| `skills/*/SKILL.md`          | Portable      | Conforms to the Agent Skills layout and can be invoked by intent          |
-| `agents/*.md`                | Host-specific | Claude Code loads them as sub-agents; elsewhere use the file as a checklist |
-| `plugin.json`                | Portable      | Agent Plugins v1.0.0 package manifest                                     |
-| `mcp.json`                   | Portable      | Agent Plugins MCP definitions; host configuration shapes may differ       |
-| AI Unified Process artifacts | Portable      | Markdown, Mermaid, and PlantUML files are the contract between steps      |
-| Slash commands               | Host-specific | If `/command` routing is unavailable, state the same intent in the prompt |
+The retained `.claude-plugin/plugin.json` files are Claude Code metadata. This fork does not provide root Agent Plugins manifests or Tessl packages. Do not assume another agent can install these directories as native plugins.
 
-## Load an Agent Plugins package
+## Request a step
 
-Clone the repository and point an Agent Plugins-conformant client at `aiup-core` plus one stack directory:
+With the marketplace checkout beside the target project, ask:
 
-```sh
-git clone https://github.com/AI-Unified-Process/marketplace.git
+```text
+Follow ../ai-unified-marketplace/aiup-core/skills/aiup-requirements/SKILL.md
+for payments-service. Read payments-service/docs/vision.md, create or update
+payments-service/docs/requirements.md, and verify the quality checks.
 ```
 
-The manifests are validated against the Claude Code and Tessl variants in CI. Consult the client's documentation for
-the command or UI used to add a local package.
+Once the use-case diagram exists:
 
-## Manual installation
-
-Without an Agent Plugins loader:
-
-1. Clone this repository next to the target project or add it as a submodule.
-2. Copy or symlink the skill folders from `aiup-core/skills/` and one stack plugin's `skills/` into the location
-   scanned by the coding agent.
-3. Translate the MCP servers from the plugins' `mcp.json` into the host's MCP configuration.
-4. Start the agent in the target project and ask it to generate requirements from `docs/vision.md`.
-
-Install whole skill directories, not only their `SKILL.md` files. Some skills also use bundled references and scripts.
-
-## OpenAI Codex
-
-Codex discovers repository skills from `.agents/skills/` between the current working directory and repository root,
-and user-level skills from `$HOME/.agents/skills/`. It supports symlinked skill directories. For example:
-
-```sh
-mkdir -p .agents/skills
-ln -s /path/to/marketplace/aiup-core/skills/requirements .agents/skills/requirements
+```text
+Follow ../ai-unified-marketplace/aiup-core/skills/aiup-use-case-spec/SKILL.md
+for UC-001 in payments-service. Read its bundled references and run its
+bundled validator on the specification you write.
 ```
 
-Configure MCP servers in `~/.codex/config.toml`, or use a trusted project's `.codex/config.toml` for project-scoped
-configuration:
+If the agent already discovers those skills, request them by name and include the same service scope and use-case IDs. Exact invocation syntax and skill locations depend on the client; use its current documentation.
 
-```toml
-[mcp_servers.Vaadin]
-url = "https://mcp.vaadin.com/docs"
+## Tools and MCP
 
-[mcp_servers.playwright]
-command = "npx"
-args = ["@playwright/mcp@latest"]
-```
+The retained plugin `.mcp.json` files describe MCP services for Claude Code. If a step needs one of those services, translate the relevant entries into the target agent's supported MCP configuration and verify access. Copying a skill directory does not configure MCP automatically.
 
-See the official OpenAI documentation for
-[building Codex skills](https://developers.openai.com/codex/build-skills) and the
-[Codex configuration reference](https://developers.openai.com/codex/config-reference).
+The agent also needs access to the target project's build, database, and test tools for the requested step. If a required tool is unavailable, record which check remains unverified instead of claiming completion.
 
-## Cursor
+## Verify and hand off
 
-Place project skills under `.cursor/skills/` or `.agents/skills/`. For skills that should be available to the user in
-every project, use `~/.cursor/skills/` or `~/.agents/skills/`. Cursor also recognizes the compatible `.claude/skills/`
-and `.codex/skills/` layouts. Configure MCP servers in the project's `.cursor/mcp.json` or the user's Cursor MCP
-configuration. HTTP definitions use a URL; local servers use a command and arguments.
+Check that outputs match the [workflow's artefact and verification contracts](../how-to-use.md#verify-before-continuing). Keep scope and stable IDs unchanged when switching agents. Pass the current reviewed documents, relevant specification changes, and outstanding checks to the next agent.
 
-## GitHub Copilot
-
-Copilot can discover skills from repository locations including `.github/skills/`, `.claude/skills/`, and
-`.agents/skills/`. For a manual MCP setup in VS Code, place shared server definitions in `.vscode/mcp.json`:
-
-```jsonc
-{
-  "servers": {
-    "Vaadin": { "type": "http", "url": "https://mcp.vaadin.com/docs" },
-    "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
-  }
-}
-```
-
-Copilot environments that support Claude Code plugin marketplaces can alternatively use the commands from the
-[Claude Code installation guide](claude-code.md).
-
-## Gemini CLI
-
-Place skills under `.gemini/skills/` in the project or the corresponding user-level directory. Gemini's
-`mcpServers` settings use the familiar URL or command-and-arguments shape, so the plugin MCP definitions require only
-minor translation.
-
-## OpenCode
-
-Place skills under `.opencode/skills/` in the project or the configured user skill directory. OpenCode also scans
-common `.claude/skills/` and `.agents/skills/` layouts. Its `opencode.json` uses `type: "remote"` with a URL for HTTP
-servers and `type: "local"` with a command array for local servers:
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "Vaadin": {
-      "type": "remote",
-      "url": "https://mcp.vaadin.com/docs"
-    },
-    "playwright": {
-      "type": "local",
-      "command": [
-        "npx",
-        "@playwright/mcp@latest"
-      ]
-    }
-  }
-}
-```
-
-## Invocation differences
-
-- When slash commands are unavailable, say "specify UC-001", "implement UC-001", or "test TC-001". The agent can
-  match the request to a skill's description.
-- Pass identifiers in the chat message when the host does not support positional slash-command arguments.
-- HTTP MCP is not supported by every client. A stdio-only client needs an HTTP-to-stdio bridge for remote servers.
-- Sub-agents are not part of the Agent Plugins standard. The
-  [`/coverage-check`](../../aiup-vaadin-jooq/skills/coverage-check/SKILL.md) skill works either way: it delegates to
-  the sub-agent where there is one, and otherwise falls back to following
-  [`uc-coverage`](../../aiup-vaadin-jooq/agents/uc-coverage.md) as an instruction document. Where a host has neither,
-  point the assistant at that file directly — the checklist is host-independent.
-- The files under `docs/` remain compatible even when different steps are run by different agents.
-
-Host capabilities and configuration paths evolve independently. Check the host's current documentation if its layout
-differs from the examples above.
+The same Markdown, Mermaid, source, and test files remain authoritative across clients. Different agents may produce different proposals; review domain correctness before continuing.

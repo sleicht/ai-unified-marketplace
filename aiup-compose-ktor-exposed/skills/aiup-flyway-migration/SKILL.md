@@ -46,102 +46,20 @@ V004__create_example_tables.sql
 
 Inspect existing migrations to determine zero padding and description style.
 
-## Reference SQL Style
+## Canonical Migration Example
 
-Use this style when existing migrations match it:
+Read [the executable record migrations and repository test](../aiup-implement/references/record-example/README.md) with [migration-style.md](references/migration-style.md). The fixture upgrades a populated V001 schema with audit columns and tests the corresponding Exposed mapping against PostgreSQL.
 
-```sql
--- V004__create_example_table.sql
--- Adds example table for UC-XXX.
--- Source: docs/entity_model.md (EXAMPLE)
-
-CREATE TABLE example (
-    id                  BIGSERIAL       PRIMARY KEY,
-    record_id          BIGINT          NOT NULL REFERENCES record(id),
-    external_id         VARCHAR(50)     NOT NULL UNIQUE,
-    status              VARCHAR(20)     NOT NULL CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    payload             TEXT,
-    created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    CONSTRAINT chk_example_external_id CHECK (external_id <> '')
-);
-
-CREATE INDEX idx_example_record_id ON example(record_id);
-CREATE INDEX idx_example_status ON example(status);
-
-CREATE TRIGGER trg_example_updated_at BEFORE UPDATE ON example FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-```
-
-If `set_updated_at()` already exists, reuse it. If creating the initial schema, define it once:
-
-```sql
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-## Column Conventions
-
-| Entity type | SQL convention |
-|---|---|
-| Primary key | `id BIGSERIAL PRIMARY KEY` when existing service uses BIGSERIAL |
-| Foreign key | `record_id BIGINT NOT NULL REFERENCES record(id)` |
-| Strings | `VARCHAR(n)` with entity-model length |
-| Long text / JSON payload snapshots | `TEXT`; use `JSONB` only if existing schema does |
-| Boolean | `BOOLEAN NOT NULL DEFAULT ...` |
-| Date | `DATE` |
-| Timestamp | `TIMESTAMPTZ` |
-| Enums | `VARCHAR(n) NOT NULL CHECK (field IN (...))` |
-| Audit | `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`, `updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()` |
-
-## Constraints and Indexes
-
-Create constraints close to table definition:
-
-```sql
-CONSTRAINT chk_record_external_reference CHECK (external_reference <> ''),
-CONSTRAINT chk_processing_run_records CHECK (
-    processed_records + failed_records <= total_records
-),
-CONSTRAINT uq_example_record_reference UNIQUE (record_id, external_id)
-```
-
-Create indexes after table definition for common query paths:
-
-```sql
-CREATE INDEX idx_record_active ON record(active);
-CREATE INDEX idx_record_external_reference ON record(external_reference);
-CREATE INDEX idx_processing_run_created_at ON processing_run(created_at);
-```
-
-Rely on implicit unique indexes from `UNIQUE` constraints; do not duplicate them.
-
-## Exposed Compatibility Notes
-
-When documenting corresponding Exposed table definitions, match the migration:
-
-```kotlin
-object ExampleTable : Table("example") {
-    val id = long("id").autoIncrement()
-    val recordId = long("record_id")
-    val externalId = varchar("external_id", 50)
-    val status = varchar("status", 20)
-    val createdAt = timestampWithTimeZone("created_at")
-    val updatedAt = timestampWithTimeZone("updated_at")
-
-    override val primaryKey = PrimaryKey(id)
-}
-```
-
-Use plain `Table`, not `LongIdTable`, when the project uses `Table("...")` and `long("id").autoIncrement()`.
+- Applied versioned migrations are immutable; add a new migration for changes.
+- Match entity types, nullability, lengths, foreign keys and validation rules. SQL non-empty and Kotlin non-blank are different contracts; define the accepted whitespace semantics.
+- Preserve the target's ID strategy and timestamp conventions. Map timestamp defaults/database-generated values correctly in Exposed.
+- Define the audit function before its first trigger, including when adding audit behaviour to an existing schema. Do not replace an unrelated shared function.
+- Derive indexes from real query patterns and expected selectivity. Do not copy standalone boolean/status indexes or duplicate UNIQUE indexes automatically.
+- Plan existing-data backfill and constraint validation before tightening a column.
 
 ## Workflow
 
-1. Read `docs/entity_model.md` and relevant `docs/use_cases/UC-*.md`.
+1. Resolve the service docs path, then read its `entity_model.md` and relevant `use_cases/UC-*.md`.
 2. Inspect existing migrations under `<server-module>/src/main/resources/db/migration`.
 3. Determine the next Flyway version and naming format.
 4. Identify new/changed entities, columns, constraints, and indexes.
@@ -149,9 +67,9 @@ Use plain `Table`, not `LongIdTable`, when the project uses `Table("...")` and `
 6. Order tables so referenced tables exist before foreign keys reference them.
 7. Add `updated_at` triggers for tables with `updated_at` when the project uses trigger-based audit timestamps.
 8. Check Exposed compatibility: table names, column names, ID strategy, timestamp types.
-9. Validate SQL mentally against PostgreSQL syntax.
+9. Apply the real migration chain to disposable PostgreSQL; also upgrade the previous schema with representative existing rows. Assert affected constraints, defaults and audit triggers.
 10. If language-server diagnostics are available, run them for related Kotlin table files that were touched.
-11. Verify with project command: prefer `mise run compile` and migration/test task if available; fallback to `./gradlew <server-module>:classes` or Flyway task.
+11. Run the discovered migration/Testcontainers task using the namespaced or local command shape in the reference. Run repository round trips for changed mappings; Kotlin compilation alone does not verify SQL. Report execution prerequisites and unrun checks explicitly.
 
 ## Resources
 

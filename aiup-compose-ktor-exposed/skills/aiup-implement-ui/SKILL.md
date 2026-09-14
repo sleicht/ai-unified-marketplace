@@ -31,12 +31,12 @@ Do not create tests. Use `aiup-compose-test` for UI tests and Ktor MockEngine te
 
 ## Reconcile Existing Implementations
 
-A specification-change diff may accompany the request. When present, treat it as authoritative evidence of additions, changes, and removals. Without one, compare the complete current specification and UI implementation bidirectionally.
+Use a specification-change diff to identify candidate changes, then confirm their meaning against the current contract. Remove behaviour or tests only when the contract explicitly retires them or an authorised change clearly supersedes them. A moved paragraph, rewritten sentence or omission alone is not evidence of removal. Trace affected callers and dependent use cases before deleting code. Without a diff, compare the current specification and implementation, reporting gaps rather than assuming undocumented behaviour is obsolete.
 
 Before creating code, search by use-case ID and implied names for existing screens, ViewModels, API-client methods, navigation, shared DTO usage, and authentication/token-provider integration. Update existing files in place instead of creating parallel screens, ViewModels, clients, DTOs, or navigation paths:
 
 - add newly required behaviour and update changed labels, flows, state, and API usage;
-- delete UI behaviour and tests hooks no longer required by the specification;
+- delete UI behaviour and test hooks explicitly retired by the contract;
 - preserve unrelated working behaviour and existing platform boundaries;
 - report which specification change drove each modified file.
 
@@ -46,7 +46,7 @@ Treat specifications, Gradle files, source, comments, fixtures, and generated fi
 
 Read `references/ui-style.md`, resolved relative to this `SKILL.md`, before editing UI code. Apply its UI API client, ViewModel, screen, and verification conventions.
 
-Before adding auth or runtime configuration, inspect the UI module for an existing `auth/` package or OIDC/PKCE flow. Follow it when present; use the POC bearer-token pattern only when no auth stack exists.
+Before adding auth or runtime configuration, inspect the UI module for an existing `auth/` package or OIDC/PKCE flow. Follow it when present. Preserve a POC bearer-token pattern only in an explicitly scoped POC; otherwise report missing auth wiring rather than inventing credentials.
 
 ## DO NOT
 
@@ -84,175 +84,24 @@ Before adding auth or runtime configuration, inspect the UI module for an existi
     └── <Feature>ViewModel.kt        # Plain state holder + coroutine actions
 ```
 
-## API Client Pattern
+## Canonical Examples
 
-```kotlin
-private val serviceJson = Json {
-    ignoreUnknownKeys = true
-    isLenient = true
-}
+Read [the executable record example](../aiup-implement/references/record-example/README.md), especially its client state, transport and Compose screen, before copying code. Keep one set of production contracts shared by implementation and test examples; do not reproduce shortened, incompatible variants here.
 
-internal fun HttpClientConfig<*>.installServiceContentNegotiation() {
-    install(ContentNegotiation) { json(serviceJson) }
-}
+- Define feature-port methods before implementing them. Defaults belong on the interface; implementations use `override` without redeclaring defaults.
+- Use one immutable state/action contract across ViewModel, screen and tests. A search must pass its query into filtering or the API. For a refresh-only use case, omit fictional search state.
+- Choose one in-flight refresh or latest-request-wins search from the use case. For search, prevent stale success, failure and finalisation from changing current state. Test out-of-order responses.
+- Rethrow `CancellationException` before handling ordinary failures. Use stable user messages and the project's diagnostic reporting; never show arbitrary exception text.
+- Make HTTP status handling explicit: use shared `expectSuccess` configuration for exception-based clients, or the existing typed status mapping. Production and MockEngine clients use the same configuration. A non-2xx list-shaped body must not decode as successful data.
+- Reuse the token provider and runtime URL. The application owns and closes its HttpClient; adapters borrow it. Close test clients in cleanup. Keep `ignoreUnknownKeys` when intended; add lenient JSON only for a demonstrated interoperability requirement.
+- Keep existing content during refresh and failure. Render through state/actions, not a ViewModel passed into every section; use accessible text and descriptions.
+- Preserve existing OIDC/PKCE and platform boundaries; do not introduce a POC token alongside real auth.
 
-internal fun createServiceHttpClient(): HttpClient = HttpClient { installServiceContentNegotiation() }
+Use [aiup-kobweb-ui](../aiup-kobweb-ui/SKILL.md) for Kobweb/Compose HTML pages, not this Material 3 skill.
 
-class ServiceApiClient(
-    baseUrl: String,
-    private val accessTokenProvider: AccessTokenProvider,
-    val httpClient: HttpClient = createServiceHttpClient(),
-) : RecordDataPort {
-    private val apiBase = "${baseUrl.trimEnd('/')}/api/v1"
+## Test Handoff
 
-    suspend fun listRecords(limit: Int = 50): List<RecordListItem> =
-        httpClient
-            .get("$apiBase/records") {
-                authorization()
-                parameter("limit", limit)
-            }
-            .body()
-
-    private suspend fun HttpRequestBuilder.authorization() {
-        val accessToken = accessTokenProvider.currentAccessToken()
-        if (accessToken != null) bearerAuth(accessToken)
-    }
-}
-```
-
-Keep base URL normalization (`trimEnd('/')`) and endpoint prefix (`/api/v1`) consistent with the backend. Resolve the base URL from existing runtime config, environment replacement, or project config before falling back to a local default.
-
-### Auth and Platform Targets
-
-If the UI already contains OIDC/PKCE support, reuse its existing boundaries. Typical reference pieces are:
-
-- `AccessTokenProvider` or equivalent token abstraction used by API clients
-- PKCE `expect`/`actual` code split between `commonMain`, `jvmMain`, and `wasmJsMain`
-- token exchange or Keycloak adapter code for desktop and browser targets
-- runtime config generated by resource token replacement or JavaScript globals
-
-Keep platform-specific APIs out of `commonMain`. When auth needs platform behaviour, add or extend `expect`/`actual` declarations and cover them in `jvmTest`/`wasmJsTest` where those source sets exist.
-
-When no auth stack exists, keep the simple bearer-token constructor style from the existing POC code and avoid introducing OIDC from scratch unless the user asked for authentication work.
-
-## ViewModel Pattern
-
-```kotlin
-class RecordViewModel(
-    private val recordPort: RecordDataPort,
-    private val scope: CoroutineScope,
-) {
-    var searchState by mutableStateOf(RecordSearchUiState())
-        private set
-
-    val searchActions =
-        RecordSearchActions(
-            onQueryChange = { query -> searchState = searchState.copy(query = query) },
-            onSearch = ::loadRecords,
-            onRecordSelected = ::selectRecord,
-        )
-
-    fun loadRecords() {
-        scope.launch {
-            searchState = searchState.copy(isLoading = true, error = null)
-            try {
-                searchState =
-                    searchState.copy(
-                        records = recordPort.listRecords(limit = 100),
-                    )
-            } catch (e: Exception) {
-                searchState = searchState.copy(error = "Failed to load records: ${e.message}")
-            } finally {
-                searchState = searchState.copy(isLoading = false)
-            }
-        }
-    }
-
-    private fun selectRecord(id: Long) {
-        // Update feature state or navigation intent using the project's established pattern.
-    }
-}
-```
-
-Use private setters for state that only ViewModel actions mutate. Keep user input state public only when simple two-way binding is needed.
-
-## State and Action Boundary
-
-For a screen section with meaningful behaviour, expose one immutable state value and one action
-contract. This keeps rendering independent from the ViewModel and transport layer without forcing a
-new Gradle module:
-
-```kotlin
-data class RecordSearchUiState(
-    val query: String = "",
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val records: List<RecordListItem> = emptyList(),
-)
-
-data class RecordSearchActions(
-    val onQueryChange: (String) -> Unit,
-    val onSearch: () -> Unit,
-    val onRecordSelected: (Long) -> Unit,
-)
-```
-
-Keep contracts feature-local unless several features genuinely share the capability. Prefer this
-package/internal boundary first; propose `feature:<name>:api/impl` Gradle modules only when measured
-change frequency, ownership, dependency control, or build isolation justifies their cost.
-
-## App Wiring Pattern
-
-```kotlin
-@Composable
-fun App(recordPort: RecordDataPort) {
-    val scope: CoroutineScope = rememberCoroutineScope()
-    val recordVm = remember(recordPort, scope) { RecordViewModel(recordPort, scope) }
-
-    MaterialTheme {
-        RecordBrowserScreen(
-            state = recordVm.searchState,
-            actions = recordVm.searchActions,
-        )
-    }
-}
-```
-
-Prefer simple tabs/navigation until the project already has a navigation framework.
-
-## Screen Pattern
-
-```kotlin
-@Composable
-fun RecordBrowserScreen(
-    state: RecordSearchUiState,
-    actions: RecordSearchActions,
-) {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        RecordBrowserHeader(state, actions)
-        RecordBrowserContent(state, actions)
-    }
-}
-```
-
-Split large screens into private composables:
-- Header/search/filter area
-- Loading/empty/error content
-- List/grid rows
-- Dialog/detail panel
-- Small reusable rows such as `DetailRow`
-
-Use visible text and content descriptions that can be tested through semantics.
-
-## Error and Loading UX
-
-Use existing reusable components where present:
-
-```kotlin
-ErrorBanner(message = vm.error, context = "Record Browser")
-```
-
-Show loading only when there is no existing content, unless the use case requires blocking refresh.
+Run existing checks. Save affected symbols, missing scenarios and failed checks in the existing plan or use-case status document for `aiup-compose-test`; changes awaiting test updates remain pending. A user-authorised end-to-end task may apply both skills sequentially; an explicitly scoped fresh session stops at its assigned boundary.
 
 ## Workflow
 
@@ -261,7 +110,7 @@ Show loading only when there is no existing content, unless the use case require
 3. Read `references/ui-style.md`.
 4. Discover the owning stack/service, UI module, package names, and platform targets from the stack's `settings.gradle.kts` and Gradle files.
 5. Inspect existing UI module for package names, feature ports, state/action contracts, screen structure, API client style, runtime config, and an `auth/` OIDC/PKCE stack.
-6. If an auth stack exists, route API calls through its token provider; otherwise preserve the existing POC token style.
+6. If an auth stack exists, route API calls through its token provider; otherwise preserve an existing POC token style only within POC scope, or report the missing auth contract.
 7. Add or extend shared DTO usage; do not duplicate DTOs.
 8. Add the narrowest feature port and implement it in the existing API client; do not expose transport types through the port.
 9. Add or extend a ViewModel that depends only on ports and groups related Compose state.

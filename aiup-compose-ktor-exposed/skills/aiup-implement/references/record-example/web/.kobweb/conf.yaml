@@ -1,0 +1,11 @@
+site:
+  title: Record browser
+server:
+  port: 8097
+  files:
+    dev:
+      contentRoot: build/processedResources/js/main/public
+      script: build/kotlin-webpack/js/developmentExecutable/example-web.js
+    prod:
+      script: build/kotlin-webpack/js/productionExecutable/example-web.js
+      siteRoot: .kobweb/site

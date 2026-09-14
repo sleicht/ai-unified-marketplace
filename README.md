@@ -54,7 +54,7 @@ Install `aiup-core` in every project. Add `aiup-compose-ktor-exposed` when the p
 | Plugin                      | Version    | Stack and responsibility                                                                                                                                        |
 |-----------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `aiup-core`                 | `103.12.0` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.9.0`    | Kotlin Multiplatform, Compose UI, Ktor/Exposed backend, Flyway migrations, tests, implementation status, and implementation prompts                             |
+| `aiup-compose-ktor-exposed` | `1.10.0`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
 
 Use only `aiup-core` when working with another implementation stack. The methodology ends at a documented boundary,
 so the specifications can feed a custom implementation workflow.
@@ -114,6 +114,8 @@ After reviewing the use-case specification, continue with the Compose stack:
 /aiup-compose-ktor-exposed:aiup-compose-test UC-001
 /aiup-compose-ktor-exposed:aiup-implementation-status UC-001
 ```
+
+For Kobweb browser UI, use `aiup-kobweb-ui` and `aiup-kobweb-test` instead of the Compose UI/test pair. Keep the same backend and shared contracts; Kobweb needs compatible shared JS variants.
 
 Implementation and testing are separate steps. Both reconcile existing code with the reviewed specifications and
 preserve the target project's conventions. To prepare prompts for separate sessions, use
@@ -200,7 +202,7 @@ scripts/validate-skills.sh
 ```
 
 This checks plugin metadata and versions, skill contracts and links, attribution, use-case specifications, and the
-bundled Kotlin API-client example. See [maintainer guidance](CLAUDE.md) for distribution and versioning rules.
+compiled record example covering shared DTOs, backend persistence, client state, Compose and Kobweb UI. See [maintainer guidance](CLAUDE.md) for distribution and versioning rules.
 
 ## Upstream integration baseline
 

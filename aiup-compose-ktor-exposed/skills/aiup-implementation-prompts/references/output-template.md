@@ -5,6 +5,7 @@ Documentation: <resolved docs path>
 Output: <resolved feature- or UC-based filename>
 Feature: <feature name, when supplied>
 Use cases: <selected UC IDs and names>
+UI/test pair: <detected Compose Multiplatform or Kobweb pair, or Not applicable>
 
 ## How to Use
 
@@ -29,6 +30,9 @@ unrelated changes, and stay within the named skill's boundary. If a required
 file, skill, or tool is unavailable, report the prerequisite and stop dependent
 work. Run the verification required by the named skill using this project's
 actual tasks. Report changed files, checks and results, and remaining blockers.
+Save affected symbols, pending test scenarios and failed/unrun checks in this plan
+or the existing use-case status artefact so the next session can read them.
+Distinguish test files present from executed/passing evidence.
 Finish after this session's skill; do not launch the next session automatically.
 ```
 

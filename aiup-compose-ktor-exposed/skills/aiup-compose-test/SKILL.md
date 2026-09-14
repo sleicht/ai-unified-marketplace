@@ -25,12 +25,12 @@ Prefer this order:
 
 ## Reconcile Existing Tests
 
-A specification-change diff may accompany the request. When present, treat it as authoritative evidence of added, changed, and removed scenarios. Without one, compare the complete current specification and UI tests bidirectionally.
+Use a specification-change diff to identify candidate changes, then confirm their meaning against the current contract. Remove behaviour or tests only when the contract explicitly retires them or an authorised change clearly supersedes them. A moved paragraph, rewritten sentence or omission alone is not evidence of removal. Trace affected callers and dependent use cases before deleting code. Without a diff, compare the current specification and implementation, reporting gaps rather than assuming undocumented behaviour is obsolete.
 
 Before creating tests, search by use-case ID and API-client, ViewModel, screen, and platform-auth names. Update existing MockEngine, coroutine, platform, or semantics tests rather than creating duplicates:
 
 - add tests for newly required behaviour and update changed expectations;
-- delete tests that exist only for removed behaviour;
+- delete tests only for explicitly retired behaviour;
 - preserve still-required passing tests, source-set placement, and traceability conventions;
 - do not add Compose test dependencies or invent annotations merely to force a test shape;
 - run the complete affected class or source-set task.
@@ -57,176 +57,32 @@ Read `references/ui-testing.md`, resolved relative to this `SKILL.md`, before wr
 - Reintroduce concrete API clients into ViewModel or screen tests when feature ports exist
 - Invent coverage thresholds without first measuring a stable passing baseline
 
-## API Client Test Pattern
+## Canonical Client, State and Screen Tests
 
-Use Ktor `MockEngine` to verify URL, method, headers, query params, body, and JSON decoding:
+Read [the executable record example](../aiup-implement/references/record-example/README.md). Compile tests against the production DTO, port and state; do not redeclare a second fixture contract.
 
-```kotlin
-class ServiceApiClientTest {
-
-    private class FixedAccessTokenProvider(private val token: String?) : AccessTokenProvider {
-        override suspend fun currentAccessToken(): String? = token
-    }
-
-    @Test
-    fun `listRecords sends provided bearer token`() = runTest {
-        lateinit var request: HttpRequestData
-        val httpClient =
-            HttpClient(
-                MockEngine { capturedRequest ->
-                    request = capturedRequest
-                    respond(
-                        content =
-                            Json.encodeToString(
-                                listOf(
-                                    RecordListItem(
-                                        id = 1,
-                                        externalReference = "REC-1001",
-                                        displayName = "Example",
-                                        category = "Record",
-                                        status = "ACTIVE",
-                                        active = true,
-                                    )
-                                )
-                            ),
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                }
-            ) { install(ContentNegotiation) { json() } }
-
-        val client = ServiceApiClient(baseUrl = testBaseUrl, accessTokenProvider = FakeAccessTokenProvider("test-token"), httpClient = httpClient)
-
-        val records = client.listRecords(limit = 100)
-
-        assertEquals("Bearer test-token", request.headers[HttpHeaders.Authorization])
-        assertEquals("/api/v1/records", request.url.encodedPath)
-        assertEquals("100", request.url.parameters["limit"])
-        assertEquals(1, records.size)
-    }
-}
-```
-
-Test error handling by returning non-2xx responses from `MockEngine` and asserting the client or ViewModel behavior expected by the project.
-
-For OIDC/PKCE-backed clients, inject a fake `AccessTokenProvider` or equivalent and assert the resolved bearer token and request shape. Test PKCE generation, callback parsing, token exchange, and browser/desktop adapters in platform source sets only when those components exist.
-
-When the target project uses test traceability annotations such as `@UseCase`, preserve them and populate IDs, scenarios, and business rules from the corresponding specification.
-
-## ViewModel Test Pattern
-
-Inject a small fake of the production feature port. If a ViewModel still depends directly on a
-concrete API client, test the client separately and report the missing boundary for `aiup-implement-ui`;
-do not hide the coupling with a test-only abstraction.
-
-When a fake can be injected:
-
-```kotlin
-class RecordViewModelTest {
-    @Test
-    fun `loadRecords stores records`() = runTest {
-        val records = FakeRecordDataPort(records = listOf(aRecordListItem()))
-        val vm = RecordViewModel(records, this)
-
-        vm.loadRecords()
-        testScheduler.advanceUntilIdle()
-
-        assertEquals(1, vm.records.size)
-        assertEquals(null, vm.error)
-    }
-}
-```
-
-Use `kotlinx.coroutines.test.runTest` and `advanceUntilIdle()` for coroutine-driven state changes.
-
-## State and Action Boundary Test Pattern
-
-When a screen section accepts immutable state and actions, exercise it without constructing a
-ViewModel or HTTP client:
-
-```kotlin
-@Test
-fun `search forwards query and submit actions`() = runComposeUiTest {
-    var state by mutableStateOf(RecordSearchUiState())
-    var searchRequested = false
-
-    setContent {
-        RecordSearchContent(
-            state = state,
-            actions =
-                RecordSearchActions(
-                    onQueryChange = { state = state.copy(query = it) },
-                    onSearch = { searchRequested = true },
-                    onRecordSelected = {},
-                ),
-        )
-    }
-
-    onNode(hasSetTextAction()).performTextInput("Ada")
-    onNodeWithText("Search").performClick()
-
-    runOnIdle {
-        assertEquals("Ada", state.query)
-        assertTrue(searchRequested)
-    }
-}
-```
-
-## Compose Semantics Test Pattern
-
-Use only when Compose UI testing dependencies exist in `commonTest`:
-
-```kotlin
-@OptIn(ExperimentalTestApi::class)
-class RecordBrowserScreenTest {
-
-    @Test
-    fun `screen displays records`() = runComposeUiTest {
-        setContent {
-            RecordBrowserScreen(
-                state = RecordSearchUiState(records = listOf(aRecordListItem())),
-                actions = RecordSearchActions({}, {}, {}),
-            )
-        }
-
-        waitUntil(timeoutMillis = 5_000) {
-            onAllNodesWithText("Standard", substring = true).fetchSemanticsNodes().isNotEmpty()
-        }
-
-        onNodeWithText("Record Browser").assertIsDisplayed()
-        onNodeWithText("Example Record").assertIsDisplayed()
-    }
-}
-```
-
-Prefer user-visible text and content descriptions. Use test tags only for structural elements with no accessible text.
-
-## Common Assertions
-
-| Target | Assertion style |
-|---|---|
-| API auth header | `assertEquals("Bearer ...", request.headers[HttpHeaders.Authorization])` |
-| API path | `assertEquals("/api/v1/records", request.url.encodedPath)` |
-| Query param | `assertEquals("100", request.url.parameters["limit"])` |
-| ViewModel state | `assertEquals(expected, vm.records)` |
-| Error state | `assertTrue(vm.error!!.contains("Failed"))` |
-| Screen text | `onNodeWithText("...").assertIsDisplayed()` |
-| Async UI | `waitUntil(timeoutMillis = 5_000) { ... }` |
+- MockEngine tests use the same configuration as production and close the HttpClient in cleanup. Assert method, full URL, query/body, resolved token and decoded fields. Cover 401/403/500, a non-2xx list-shaped body, malformed successful JSON and absent tokens.
+- ViewModel tests inject fake production ports and `runTest` scopes. Assert loading before completion, content retained on failure, cancellation without a visible error, real query propagation and out-of-order completion. `advanceUntilIdle()` alone cannot prove intermediate states; control completion explicitly.
+- Screen tests render state/actions without constructing a transport client. Assert visible loading/empty/error/results and forwarded user intent through Compose semantics where configured. Do not add dependencies solely to force a test shape.
+- Keep OIDC/PKCE and platform adapters in their matching source sets. Use deterministic fake token providers; do not test obsolete POC tokens.
+- Use the target's existing use-case annotations. Do not invent traceability frameworks or arbitrary coverage thresholds.
+- For Kobweb DOM tests use [aiup-kobweb-test](../aiup-kobweb-test/SKILL.md), not Compose semantics APIs.
+- In test-only sessions, report production defects with a concrete implementation handoff; do not loosen assertions or introduce test-only abstractions to conceal them.
 
 ## Scenario Coverage
 
 Derive UI tests from use case behavior:
 
-| Use case need | Preferred test |
-|---|---|
-| API call shape | MockEngine API client test |
-| JSON serialization | MockEngine response/body test |
-| Loading state | ViewModel coroutine test |
-| Error message | ViewModel fake failure test |
-| Search/filter | ViewModel pure state test or screen semantics test |
-| State/action boundary | Screen semantics test with immutable state and captured actions |
-| Button invokes action | Screen semantics test if available |
-| Navigation/tab selection | Screen semantics test or extracted state test |
+| Use case need            | Preferred test                                                  |
+|--------------------------|-----------------------------------------------------------------|
+| API call shape           | MockEngine API client test                                      |
+| JSON serialization       | MockEngine response/body test                                   |
+| Loading state            | ViewModel coroutine test                                        |
+| Error message            | ViewModel fake failure test                                     |
+| Search/filter            | ViewModel pure state test or screen semantics test              |
+| State/action boundary    | Screen semantics test with immutable state and captured actions |
+| Button invokes action    | Screen semantics test if available                              |
+| Navigation/tab selection | Screen semantics test or extracted state test                   |
 
 ## Workflow
 
@@ -249,4 +105,4 @@ Derive UI tests from use case behavior:
 ## Resources
 
 - `references/ui-testing.md` — focused UI testing style
-- `references/ExampleScreenTest.kt` — UI-side API client test skeleton using Ktor MockEngine
+- [Record example](../aiup-implement/references/record-example/README.md) — shared implementation/test contracts

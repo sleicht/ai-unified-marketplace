@@ -38,7 +38,7 @@ The repository deliberately contains two plugins:
 | Plugin                      |    Version | Scope                                                                                                                              |
 |-----------------------------|-----------:|------------------------------------------------------------------------------------------------------------------------------------|
 | `aiup-core`                 | `103.10.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` |    `1.8.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status               |
+| `aiup-compose-ktor-exposed` |    `1.9.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status               |
 
 ## Distribution contract
 

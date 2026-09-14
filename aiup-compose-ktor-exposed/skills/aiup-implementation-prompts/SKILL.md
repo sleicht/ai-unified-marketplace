@@ -136,6 +136,45 @@ The template contains placeholders for illustration. Replace them with discovere
 values; omit inapplicable fields. Do not leave placeholder prompts in the result.
 An update replaces obsolete prompts rather than appending a duplicate plan.
 
+## Final Chat Response
+
+After writing the Markdown file, explain how to use it in the final chat response,
+separately from the file itself. Include:
+
+- A link to the generated file, the planned/runnable session counts, and blockers.
+- The manual copy method: paste the contents of `Shared Session Header Prompt`,
+  a blank line, and the contents of exactly one session's prompt block into a
+  single message in a fresh chat. Do not copy the Markdown fences or headings.
+- A simpler, recommended method: copy the launcher below. It tells the agent to
+  read the entire plan for context and execute only the selected session, so the
+  user does not need to assemble the header and session text manually.
+
+Fill this launcher with the generated file's actual absolute path and the exact
+heading of its first planned session. If that session is blocked, say so before
+the launcher; it does not authorise bypassing prerequisites. If no sessions were
+generated, report the blockers without inventing a launcher.
+
+```text
+Read the complete implementation plan:
+<absolute path to the generated Markdown file>
+
+Apply its Shared Session Header Prompt and execute only:
+<exact selected session heading>
+
+Read the session index, blockers, and other session descriptions for context.
+Respect applicable repository instructions and the selected session's
+prerequisites and scope. Do not execute other sessions. Report unresolved
+blockers rather than guessing.
+```
+
+Explain that each subsequent fresh chat uses the same launcher with the next
+session's exact heading. A reference to another session provides context or
+identifies later work; it does not instruct the current agent to run that session.
+For example, Session 01 reports test work for Session 02 while Session 02 creates
+the tests. Each agent reads the plan and current project files; it does not inherit
+previous chat history. Any handoff available only in chat must be saved or supplied
+to the next session.
+
 ## Verification
 
 - Confirm every requested UC is covered by applicable sessions or an explicit blocker.
@@ -146,4 +185,5 @@ An update replaces obsolete prompts rather than appending a duplicate plan.
 - Confirm the shared header plus any single prompt needs no earlier chat context.
 - Confirm checks reflect the chosen skill; do not assign test creation to implementation skills.
 - Confirm no implementation has been run and only the requested prompt document was written.
-- Report the output path, number of runnable sessions, and any blockers.
+- Confirm the final chat response includes the usage explanation and, when sessions
+  exist, a launcher with the actual output path and an exact session heading.

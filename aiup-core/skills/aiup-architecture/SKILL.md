@@ -15,6 +15,14 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 # Architecture Documentation
 
+## Target Scope
+
+Prefer an explicitly named project/service and its existing docs. Detect workspace
+boundaries from existing service directories and task/build/workspace manifests,
+including non-Gradle projects. If multiple targets remain plausible, ask which
+one before writing; do not silently choose root docs. Resolve all input/output
+paths against that target, independently of the installed skill directory.
+
 ## Instructions
 
 Create or update `architecture.md` for the system, service, or module named in the user's request. Resolve the docs path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/architecture.md`; otherwise write `docs/architecture.md`.
@@ -61,6 +69,15 @@ Include inline ADR subsections when decisions are known:
 **Consequences:** ...
 ```
 
+## Evidence and Detail
+
+Link source/config/ADR paths beside consequential architecture claims. Distinguish
+observed implementation, accepted decisions and proposed changes; record code/ADR
+divergence without treating code alone as a new approved decision. Use `Not
+documented yet` for missing facts. Scale section length to the system: one
+sentence or an explicit not-applicable explanation is enough for a small service;
+do not invent infrastructure to fill the twelve headings.
+
 ## Mermaid Guidance
 
 Use Mermaid only for diagrams that clarify structure or flow:
@@ -104,6 +121,7 @@ Read the project before writing stack details:
 8. Embed Mermaid diagrams only where they add useful structure.
 9. Validate links and referenced files exist.
 10. Validate heading order, links, tables, and Mermaid fences.
+11. Report the output path, changed sections, checks and open architecture decisions; link durable context for the next session.
 
 ## Output Contract
 

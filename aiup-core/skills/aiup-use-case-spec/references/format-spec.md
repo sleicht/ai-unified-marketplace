@@ -82,27 +82,27 @@ labels, status values and the rule prefix differ. The language is
 detected from the document (majority of matching headings/labels; ties
 and empty files are English) and preserved on save.
 
-| Element              | English                       | German                  |
-|----------------------|-------------------------------|-------------------------|
-| Title prefix         | `# Use Case:`                 | `# Use Case:` (same)    |
-| Overview             | `## Overview`                 | `## Übersicht`          |
-| ID field             | `**Use Case ID:**`            | `**Use-Case-ID:**`      |
-| Name field           | `**Use Case Name:**`          | `**Use-Case-Name:**`    |
-| Primary actor        | `**Primary Actor:**`          | `**Primärer Akteur:**`  |
-| Secondary actors     | `**Secondary Actors:**`       | `**Sekundäre Akteure:**`|
-| Goal                 | `**Goal:**`                   | `**Ziel:**`             |
-| Status               | `**Status:**`                 | `**Status:**` (same)    |
-| Requirements         | `**Requirements:**`           | `**Anforderungen:**`    |
-| Preconditions        | `## Preconditions`            | `## Vorbedingungen`     |
-| Main scenario        | `## Main Success Scenario`    | `## Hauptablauf`        |
-| Alternative flows    | `## Alternative Flows`        | `## Alternativabläufe`  |
-| Trigger field        | `**Trigger:**`                | `**Auslöser:**` (reads `**Trigger:**` too) |
-| Flow field           | `**Flow:**`                   | `**Ablauf:**`           |
-| Postconditions       | `## Postconditions`           | `## Nachbedingungen`    |
-| Success subsection   | `### Success Postconditions`  | `### Erfolgsfall`       |
-| Failure subsection   | `### Failure Postconditions`  | `### Fehlerfall`        |
-| Business rules       | `## Business Rules`           | `## Geschäftsregeln`    |
-| Rule prefix          | `BR`                          | `GR` (reads `BR` too)   |
+| Element            | English                      | German                                     |
+|--------------------|------------------------------|--------------------------------------------|
+| Title prefix       | `# Use Case:`                | `# Use Case:` (same)                       |
+| Overview           | `## Overview`                | `## Übersicht`                             |
+| ID field           | `**Use Case ID:**`           | `**Use-Case-ID:**`                         |
+| Name field         | `**Use Case Name:**`         | `**Use-Case-Name:**`                       |
+| Primary actor      | `**Primary Actor:**`         | `**Primärer Akteur:**`                     |
+| Secondary actors   | `**Secondary Actors:**`      | `**Sekundäre Akteure:**`                   |
+| Goal               | `**Goal:**`                  | `**Ziel:**`                                |
+| Status             | `**Status:**`                | `**Status:**` (same)                       |
+| Requirements       | `**Requirements:**`          | `**Anforderungen:**`                       |
+| Preconditions      | `## Preconditions`           | `## Vorbedingungen`                        |
+| Main scenario      | `## Main Success Scenario`   | `## Hauptablauf`                           |
+| Alternative flows  | `## Alternative Flows`       | `## Alternativabläufe`                     |
+| Trigger field      | `**Trigger:**`               | `**Auslöser:**` (reads `**Trigger:**` too) |
+| Flow field         | `**Flow:**`                  | `**Ablauf:**`                              |
+| Postconditions     | `## Postconditions`          | `## Nachbedingungen`                       |
+| Success subsection | `### Success Postconditions` | `### Erfolgsfall`                          |
+| Failure subsection | `### Failure Postconditions` | `### Fehlerfall`                           |
+| Business rules     | `## Business Rules`          | `## Geschäftsregeln`                       |
+| Rule prefix        | `BR`                         | `GR` (reads `BR` too)                      |
 
 Status values (either language is readable in any document):
 
@@ -191,13 +191,24 @@ The `/aiup-use-case-spec` skill additionally requires:
 - At least one alternative flow; each trigger names its main-scenario
   step as `(step N)` / `(Schritt N)`; each flow's last step ends with
   `Use case continues at step N.` or `Use case ends.` (German: `Der Use
-  Case wird bei Schritt N fortgesetzt.` / `Der Use Case endet.`).
+  Case wird bei Schritt N fortgesetzt.` / `Der Use Case endet.`). Every referenced
+  main-scenario step must exist, including conditional continuations.
 - Success and failure postconditions are non-empty (an explicit italic
   placeholder such as `_None — …_` counts as a deliberate statement).
 - Business rule headings carry a `BR-XXX:` / `GR-XXX:` label, numbered
   `BR-001`, `BR-002`, … without gaps within the document.
-- No implementation-level terms in steps (SMTP, email server, JWT,
-  token, bcrypt, hash, salt, SHA, SQL, SELECT, INSERT).
+- No concrete implementation-level terms in steps (SMTP, email server, JWT,
+  bcrypt, password hashing, access tokens, SHA, SQL, SELECT, INSERT). Ambiguous
+  standalone words such as token, salt and hash need contextual review; legitimate
+  domain language is allowed.
+
+### Generation and updates
+
+The Requirements field remains optional for tolerant parsing of existing files.
+New or updated generated specs include evidenced FR links; unresolved mappings
+are reported and the specification remains Draft. Preserve UC identity and
+unaffected content. If positional BR labels change, record the qualified old/new
+mapping in an extra Change Notes section and reconcile authorised references.
 
 ### Business-rule id scope
 
@@ -210,8 +221,11 @@ referenced from another document is qualified with the use case id
 ## Validation
 
 ```bash
-python3 scripts/validate_use_case.py [--strict] docs/use_cases/UC-*.md
+python3 "<absolute installed skill directory>/scripts/validate_use_case.py" --strict "<absolute scoped docs directory>/use_cases/UC-001-name.md"
 ```
+
+Resolve the script and project paths independently; pass only the explicit files
+created or updated by the task. The paths above are illustrative.
 
 Exit 0 when clean; 1 on any ERROR (with `--strict` also on any WARN);
 `--self-test` runs the built-in fixtures. Newly generated documents must

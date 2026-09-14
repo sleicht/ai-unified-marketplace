@@ -3,6 +3,46 @@
 require "json"
 require "pathname"
 
+def markdown_resource_links(text)
+  fence = nil
+  prose = text.lines.filter_map do |line|
+    if fence
+      fence = nil if line.match?(/\A {0,3}#{Regexp.escape(fence[0])}{#{fence.length},}[ \t]*\r?\n?\z/)
+      next
+    end
+    opening = line.match(/\A {0,3}(`{3,}|~{3,})/)
+    if opening
+      fence = opening[1]
+      next
+    end
+    line
+  end.join
+  prose.gsub(/(`+).*?\1/m, "").scan(/\[[^\]]*\]\(([^)]+)\)/).flatten
+end
+
+if ARGV.include?("--self-test")
+  fixture = <<~'MARKDOWN'
+    [resource](references/real.md)
+    [`script`](scripts/check.py)
+    `[output](../use_cases/UC-001-example.md)`
+    ``[another output](../requirements.md)``
+    ````markdown
+    ```mermaid
+    graph LR
+    ```
+    [example](missing-example.md)
+    ````
+    ~~~text
+    [example](another-example.md)
+    ~~~
+    [missing resource](references/missing.md)
+  MARKDOWN
+  expected = ["references/real.md", "scripts/check.py", "references/missing.md"]
+  abort "Resource-link self-test failed" unless markdown_resource_links(fixture) == expected
+  puts "Resource-link self-test passed"
+  exit 0
+end
+
 ROOT = Pathname.new(__dir__).parent
 errors = []
 
@@ -49,7 +89,7 @@ skill_files.each do |file|
   errors << "duplicate skill name: #{name}" if skill_names.include?(name)
   skill_names << name
 
-  text.scan(/\[[^\]]+\]\(([^)]+)\)/).flatten.each do |target|
+  markdown_resource_links(text).each do |target|
     next if target.start_with?("http://", "https://", "#")
 
     path = target.split("#", 2).first
@@ -60,8 +100,12 @@ end
 core_copyright = "Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors."
 core_copyright_files = Dir.glob(ROOT.join("aiup-core/skills/{*,*/references}/*.md")) + [ROOT.join("README.md").to_s, ROOT.join("CLAUDE.md").to_s, ROOT.join("aiup-core/README.md").to_s]
 copyright_exclusions = [
+  # Output templates and exemplars remain clean copyable documents; the core
+  # package LICENSE/NOTICE and their owning SKILL.md retain attribution.
   ROOT.join("aiup-core/skills/aiup-use-case-spec/references/example.md").to_s,
   ROOT.join("aiup-core/skills/aiup-use-case-spec/references/use-case.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-test-case/references/example.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-test-case/references/test-case.md").to_s,
 ]
 (core_copyright_files - copyright_exclusions).uniq.each do |file|
   errors << "missing core copyright header: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).include?(core_copyright)

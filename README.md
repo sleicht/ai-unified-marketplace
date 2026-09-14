@@ -51,10 +51,10 @@ later result remains traceable to the corresponding requirement or use case.
 
 Install `aiup-core` in every project. Add `aiup-compose-ktor-exposed` when the project uses that implementation stack.
 
-| Plugin | Version | Stack and responsibility |
-|--------|---------|--------------------------|
-| `aiup-core` | `103.11.0` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.9.0` | Kotlin Multiplatform, Compose UI, Ktor/Exposed backend, Flyway migrations, tests, implementation status, and implementation prompts |
+| Plugin                      | Version    | Stack and responsibility                                                                                                                                        |
+|-----------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `aiup-core`                 | `103.12.0` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` | `1.9.0`    | Kotlin Multiplatform, Compose UI, Ktor/Exposed backend, Flyway migrations, tests, implementation status, and implementation prompts                             |
 
 Use only `aiup-core` when working with another implementation stack. The methodology ends at a documented boundary,
 so the specifications can feed a custom implementation workflow.
@@ -132,9 +132,11 @@ The workflow creates a shared documentation contract:
 ├── entity_model.md                   # aiup-entity-model, including Mermaid ER diagram
 ├── architecture.md                   # aiup-architecture
 ├── REFERENCE.md                      # aiup-reference
-└── use_cases/
-    ├── UC-001-<name>.md               # aiup-use-case-spec
-    └── UC-001-implementation-status.md # aiup-implementation-status
+├── use_cases/
+│   ├── UC-001-<name>.md               # aiup-use-case-spec
+│   └── UC-001-implementation-status.md # aiup-implementation-status
+└── test_cases/
+    └── TC-001-<journey>.md            # aiup-test-case
 ```
 
 The stack plugin consumes these files and places generated code and tests according to the conventions of the target
@@ -168,12 +170,12 @@ Tessl packages, root Agent Plugins manifests, and automated publishing workflows
 
 ## Documentation
 
-| Guide | Contents |
-|-------|----------|
-| [Usage and workflow](docs/how-to-use.md) | Service scoping, analysis, Compose/Ktor/Exposed implementation, testing, and traceability |
-| [Vision template](docs/templates/vision.md) | Starting point for `docs/vision.md` |
-| [CLAUDE.md template](docs/templates/CLAUDE.md) | Stack-neutral repository instructions for Claude Code |
-| [Core plugin](aiup-core/) | Stack-independent analysis and specifications |
+| Guide                                          | Contents                                                                                  |
+|------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [Usage and workflow](docs/how-to-use.md)       | Service scoping, analysis, Compose/Ktor/Exposed implementation, testing, and traceability |
+| [Vision template](docs/templates/vision.md)    | Starting point for `docs/vision.md`                                                       |
+| [CLAUDE.md template](docs/templates/CLAUDE.md) | Stack-neutral repository instructions for Claude Code                                     |
+| [Core plugin](aiup-core/)                      | Stack-independent analysis and specifications                                             |
 
 Detailed skill behaviour is documented in each plugin's `skills/*/SKILL.md`. Those files are the authoritative source
 for inputs, outputs, safety constraints, and execution steps; READMEs provide navigation and concise summaries.

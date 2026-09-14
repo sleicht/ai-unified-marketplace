@@ -2,11 +2,12 @@
 
 ## Overview
 
-**Use Case ID:** UC-XXX   
-**Use Case Name:** [Descriptive Name]   
-**Primary Actor:** [Role]   
-**Goal:** [In one sentence: the observable outcome the actor achieves and why — not "use the system"]   
-**Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete   
+**Use Case ID:** UC-XXX
+**Use Case Name:** [Descriptive Name]
+**Primary Actor:** [Role]
+**Goal:** [In one sentence: the observable outcome the actor achieves and why — not "use the system"]
+**Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete
+**Requirements:** [FR-001](../requirements.md)
 
 ## Preconditions
 
@@ -57,7 +58,7 @@ cross-use-case reference with the use case ID, for example `UC-005 BR-002`.
 | Status      | Description                                      |
 |-------------|--------------------------------------------------|
 | Draft       | Initial version, still being written.            |
-| Reviewed    | Complete, awaiting stakeholder review.           |
+| Reviewed    | Review completed; awaiting approval.             |
 | Approved    | Reviewed and approved for implementation.        |
 | Implemented | Implementation complete, pending testing.        |
 | Tested      | All tests pass, pending final acceptance.        |
@@ -69,28 +70,28 @@ cross-use-case reference with the use case ID, for example `UC-005 BR-002`.
 See [format-spec.md](format-spec.md) for the complete German structure and field
 labels. The canonical section names are:
 
-| English | German |
-|---------|--------|
-| Overview | Übersicht |
-| Preconditions | Vorbedingungen |
-| Main Success Scenario | Hauptablauf |
-| Alternative Flows | Alternativabläufe |
-| Postconditions | Nachbedingungen |
-| Business Rules | Geschäftsregeln |
+| English               | German            |
+|-----------------------|-------------------|
+| Overview              | Übersicht         |
+| Preconditions         | Vorbedingungen    |
+| Main Success Scenario | Hauptablauf       |
+| Alternative Flows     | Alternativabläufe |
+| Postconditions        | Nachbedingungen   |
+| Business Rules        | Geschäftsregeln   |
 
 ### Step Writing Guidelines
 
-| Do                                  | Don't                                         |
-|-------------------------------------|-----------------------------------------------|
-| "User clicks Save button"           | "User triggers onClick handler"               |
-| "System validates the email format" | "System runs regex /^[\w]+@[\w]+$/"           |
-| "System displays error message"     | "System throws ValidationException"           |
-| "User enters check-in date"         | "User populates dateField component"          |
-| "System stores the reservation"     | "System executes INSERT INTO reservations..." |
-| "System records the new account"    | "System runs INSERT INTO users / SELECT ..."  |
-| "System sends a confirmation email" | "System opens an SMTP connection to sendmail" |
+| Do                                    | Don't                                               |
+|---------------------------------------|-----------------------------------------------------|
+| "User clicks Save button"             | "User triggers onClick handler"                     |
+| "System validates the email format"   | "System runs regex /^[\w]+@[\w]+$/"                 |
+| "System displays error message"       | "System throws ValidationException"                 |
+| "User enters check-in date"           | "User populates dateField component"                |
+| "System stores the reservation"       | "System executes INSERT INTO reservations..."       |
+| "System records the new account"      | "System runs INSERT INTO users / SELECT ..."        |
+| "System sends a confirmation email"   | "System opens an SMTP connection to sendmail"       |
 | "System securely stores the password" | "System hashes the password with bcrypt/SHA + salt" |
-| "System signs the user in"          | "System issues a JWT / signs a token with expiry" |
+| "System signs the user in"            | "System issues a JWT / signs a token with expiry"   |
 
 Steps describe **what** the actor and system achieve, never **how** it is
 implemented. Keep out protocol and infrastructure terms (SMTP, JWT, bcrypt,

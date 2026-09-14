@@ -1,7 +1,7 @@
 {
   "name": "aiup-core",
   "description": "AI Unified Process core - stack-agnostic requirements, Mermaid modelling, use-case specifications, architecture, and project reference",
-  "version": "103.11.0",
+  "version": "103.12.0",
   "author": {
     "name": "Simon Martinelli",
     "email": "simon@martinelli.ch",

@@ -15,6 +15,14 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 # Project Reference Documentation
 
+## Target Scope
+
+Prefer an explicitly named project/service and its existing docs. Detect workspace
+boundaries from existing service directories and task/build/workspace manifests,
+including non-Gradle projects. If multiple targets remain plausible, ask which
+one before writing; do not silently choose root docs. Resolve all input/output
+paths against that target, independently of the installed skill directory.
+
 ## Instructions
 
 Create or update `docs/REFERENCE.md` for the project, service, or module named in the user's request. Resolve the output path first: if a service/module is in scope or cwd is inside a monorepo service, write `<service>/docs/REFERENCE.md`; otherwise write `<root>/docs/REFERENCE.md`.
@@ -88,7 +96,7 @@ When `docs/REFERENCE.md` or `<service>/docs/REFERENCE.md` exists:
 
 1. Read it first and identify stale, missing, and still-valid sections.
 2. Refresh facts from current repository files.
-3. Preserve user-authored decisions and warnings unless contradicted by the repository.
+3. Preserve user-authored decisions and warnings. When implementation contradicts an agreed convention, record the evidence and divergence as `To confirm`; do not silently replace the decision merely because code differs.
 4. Remove duplicated or obsolete content that your update makes wrong.
 5. Keep heading names stable where downstream tooling or humans may rely on them.
 
@@ -107,7 +115,7 @@ When creating a new file:
 5. Draft or update the required sections.
 6. Verify every command, path, and artifact reference exists or is marked `To confirm`.
 7. Search the new/updated file for accidental secrets, machine-local paths, and stale references.
-8. Report what changed and any gaps left as `Not documented yet`.
+8. Report the output path, changed sections, checks, divergences and any gaps left as `Not documented yet` or `To confirm`.
 
 ## Output Contract
 

@@ -103,6 +103,32 @@ monorepo-root/
     └── settings.gradle.kts
 ```
 
+## Prepare Prompts for Fresh Sessions
+
+After reviewing the use-case specifications, ask:
+
+```text
+Use aiup-implementation-prompts for the Card Payments feature
+(UC-001 and UC-002) in payments-service.
+```
+
+The skill writes `payments-service/docs/card-payments-implementation-prompts.md` with a shared
+session header, an ordered session index, and individual prompts for the required
+migration, backend, UI, testing, and status work. It records missing prerequisites
+and generates prompts without executing them. For a named feature without IDs, it selects the relevant specifications and asks
+if scope is unclear. Omit both feature and IDs to cover all existing specifications
+in the selected service, or request backend-only or UI-only scope.
+
+For one UC, the default filename is based on its specification, for example
+`UC-001-charge-card-implementation-prompts.md`. Several UCs without a feature name
+use their sorted IDs, such as `UC-001-UC-003-implementation-prompts.md`. An explicit
+output path or filename takes precedence.
+
+Start a fresh chat for each numbered session. Paste the shared header followed by
+that session's prompt, using the same working tree with the previous sessions'
+reviewed changes. Complete prerequisites before dependent sessions. The document
+contains the file context needed to work without previous chat history.
+
 ## The Workflow at a Glance
 
 The forward path, left to right. Each arrow consumes artefacts from the same explicitly scoped service.
@@ -199,6 +225,7 @@ The Construction phase for a Kotlin Multiplatform project. These skills are prov
 | [`aiup-ktor-test`](../aiup-compose-ktor-exposed/skills/aiup-ktor-test/SKILL.md)                         | Construction | UC ID + backend            | route / unit / integration tests    | compose-ktor-exposed |
 | [`aiup-compose-test`](../aiup-compose-ktor-exposed/skills/aiup-compose-test/SKILL.md)                   | Construction | UC ID + UI                 | client / ViewModel / UI tests       | compose-ktor-exposed |
 | [`aiup-implementation-status`](../aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md) | Construction | UC ID(s)                   | status matrix + Markdown pages      | compose-ktor-exposed |
+| [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/*-implementation-prompts.md` | compose-ktor-exposed |
 
 ## Verify Before Continuing
 

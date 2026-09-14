@@ -66,6 +66,7 @@ README.md
 - `aiup-ktor-test`: Ktor/service/repository tests.
 - `aiup-compose-test`: MockEngine, ViewModel, platform, and semantics tests at the lightest configured level.
 - `aiup-implementation-status`: evidence-based entity/use-case traceability.
+- `aiup-implementation-prompts`: a shared header and one construction-skill prompt per fresh session, written to a UC- or feature-named file under the scoped `docs/`; no implementation execution.
 
 Implementation and test skills must reconcile existing code in place, consume optional specification diffs without depending on generation workflows, remove behaviour/tests dropped from specifications, and preserve unrelated working code.
 
@@ -78,7 +79,10 @@ Current retained versions:
 - core: `103.10.0`;
 - Compose: `1.8.0`.
 
-For future behavioural changes, bump the changed plugin from its current `.claude-plugin/plugin.json` version. Do not import public-upstream versions.
+Bump a plugin version only when changing an already published skill. Do not bump
+for each commit, documentation-only edits, or work on a new unpublished skill.
+Keep one version bump for the pending release across follow-up commits. Do not
+import public-upstream versions.
 
 ## Validation
 

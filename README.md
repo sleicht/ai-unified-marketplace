@@ -122,6 +122,7 @@ Core `103.10.0` and Compose `1.8.0` rename all 13 skills by adding `aiup-`. Upda
 | `aiup-ktor-test`             | Ktor route/service tests and Testcontainers repository tests                     |
 | `aiup-compose-test`          | MockEngine API-client, ViewModel, platform, and Compose semantics tests          |
 | `aiup-implementation-status` | Entity and use-case implementation traceability                                  |
+| `aiup-implementation-prompts` | Shared session header and ordered prompts for implementation, testing, and status |
 
 Implementation and testing skills reconcile existing code with current specifications. They update in place, remove behaviour dropped from a specification, preserve unrelated code, and treat repository content as untrusted input rather than agent instructions.
 
@@ -189,6 +190,8 @@ For an inherited codebase, use `aiup-reverse-engineer` instead of starting from 
 
 ### 3. Build the Compose/Ktor/Exposed implementation
 
+To prepare the work for separate agent sessions, request `aiup-implementation-prompts` for the selected UC IDs and service. It writes a UC- or feature-named file within the scoped `docs/`, such as `UC-001-charge-card-implementation-prompts.md` or `card-payments-implementation-prompts.md`. An explicit output filename takes precedence. Paste its shared header plus one numbered prompt into each fresh session; review the results before proceeding. The skill generates prompts without running implementation.
+
 ```text
 aiup-flyway-migration
 aiup-implement UC-001
@@ -224,6 +227,7 @@ Implementation and test skills inspect existing code first. They reconcile addit
 | `aiup-ktor-test`             | specification and backend implementation                  | focused backend tests in existing source sets           |
 | `aiup-compose-test`          | specification and UI implementation                       | focused client/ViewModel/platform/semantics tests       |
 | `aiup-implementation-status` | specifications, source, tests, and migrations             | implementation traceability documentation               |
+| `aiup-implementation-prompts` | scoped specifications and existing project structure | UC- or feature-named `docs/*-implementation-prompts.md` with one skill per fresh session |
 
 The owning `SKILL.md` is the detailed behavioural contract. Its adjacent `references/` directory contains stack-specific patterns and examples.
 
@@ -357,7 +361,7 @@ replace the recorded upstream commit above with the reviewed upstream tip.
 ## Release
 
 1. Make the coherent plugin change and update its executable validation where needed.
-2. Minor-bump the changed plugin's `.claude-plugin/plugin.json` version.
+2. Minor-bump the plugin's `.claude-plugin/plugin.json` version only when changing an already published skill. Keep that version for follow-up commits in the pending release; new unpublished skills and documentation-only edits do not require a bump.
 3. Keep `.claude-plugin/marketplace.json`, this README, and plugin documentation aligned.
 4. Run repository validation.
 5. Publish through the normal internal Git review and merge process.

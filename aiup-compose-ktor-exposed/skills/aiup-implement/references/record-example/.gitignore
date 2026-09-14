@@ -1,0 +1,9 @@
+.gradle/
+.kotlin/
+**/build/
+web/.kobweb/site/
+web/.kobweb/server/
+web/.kobweb/export-traces/
+
+!gradle/wrapper/gradle-wrapper.jar
+!server/src/main/resources/db/migration/*.sql

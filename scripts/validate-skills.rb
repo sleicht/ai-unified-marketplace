@@ -3,6 +3,46 @@
 require "json"
 require "pathname"
 
+def markdown_resource_links(text)
+  fence = nil
+  prose = text.lines.filter_map do |line|
+    if fence
+      fence = nil if line.match?(/\A {0,3}#{Regexp.escape(fence[0])}{#{fence.length},}[ \t]*\r?\n?\z/)
+      next
+    end
+    opening = line.match(/\A {0,3}(`{3,}|~{3,})/)
+    if opening
+      fence = opening[1]
+      next
+    end
+    line
+  end.join
+  prose.gsub(/(`+).*?\1/m, "").scan(/\[[^\]]*\]\(([^)]+)\)/).flatten
+end
+
+if ARGV.include?("--self-test")
+  fixture = <<~'MARKDOWN'
+    [resource](references/real.md)
+    [`script`](scripts/check.py)
+    `[output](../use_cases/UC-001-example.md)`
+    ``[another output](../requirements.md)``
+    ````markdown
+    ```mermaid
+    graph LR
+    ```
+    [example](missing-example.md)
+    ````
+    ~~~text
+    [example](another-example.md)
+    ~~~
+    [missing resource](references/missing.md)
+  MARKDOWN
+  expected = ["references/real.md", "scripts/check.py", "references/missing.md"]
+  abort "Resource-link self-test failed" unless markdown_resource_links(fixture) == expected
+  puts "Resource-link self-test passed"
+  exit 0
+end
+
 ROOT = Pathname.new(__dir__).parent
 errors = []
 
@@ -28,20 +68,28 @@ end
 errors << "removed plugin still present: aiup-vaadin-jooq" if ROOT.join("aiup-vaadin-jooq").exist?
 errors << "obsolete Tessl workflow still present" if ROOT.join(".github/workflows/publish-tessl.yml").exist?
 
-documented_versions = File.read(ROOT.join("README.md")).scan(/`(aiup-(?:core|compose-ktor-exposed))` \| `([^`]+)`/).to_h
+documented_versions = File.read(ROOT.join("README.md")).scan(/`(aiup-(?:core|compose-ktor-exposed))`\s+\|\s+`([^`]+)`/).to_h
 retained_plugins.each do |plugin_name|
   manifest_version = JSON.parse(File.read(ROOT.join(plugin_name, ".claude-plugin/plugin.json"))).fetch("version")
   errors << "README version mismatch for #{plugin_name}: #{documented_versions[plugin_name].inspect}, expected #{manifest_version}" unless documented_versions[plugin_name] == manifest_version
 end
 
 skill_files = Dir.glob(ROOT.join("aiup-{core,compose-ktor-exposed}/skills/*/SKILL.md"))
+skill_names = []
 skill_files.each do |file|
   text = File.read(file)
   unless text.start_with?("---\n") && text.match?(/\A---\n.*?^name:\s+\S+.*?^description:\s*[>|]?/m)
     errors << "invalid frontmatter: #{Pathname.new(file).relative_path_from(ROOT)}"
   end
 
-  text.scan(/\[[^\]]+\]\(([^)]+)\)/).flatten.each do |target|
+  name = text[/\A---\n.*?^name:\s+(\S+)/m, 1]
+  directory_name = Pathname.new(file).dirname.basename.to_s
+  errors << "skill name must use aiup- prefix: #{file}" unless name&.start_with?("aiup-")
+  errors << "skill name/directory mismatch: #{file}" unless name == directory_name
+  errors << "duplicate skill name: #{name}" if skill_names.include?(name)
+  skill_names << name
+
+  markdown_resource_links(text).each do |target|
     next if target.start_with?("http://", "https://", "#")
 
     path = target.split("#", 2).first
@@ -49,11 +97,27 @@ skill_files.each do |file|
     errors << "broken link #{target}: #{Pathname.new(file).relative_path_from(ROOT)}" unless resolved.exist?
   end
 end
+implementation_references = Dir.glob(ROOT.join("aiup-compose-ktor-exposed/skills/*/references/**/*.md")).reject do |file|
+  file.split(File::SEPARATOR).any? { |part| %w[build node_modules dist __pycache__ .gradle .kotlin].include?(part) }
+end
+implementation_references.each do |file|
+  File.read(file).scan(/\[[^\]]+\]\(([^)]+)\)/).flatten.each do |target|
+    next if target.start_with?("http://", "https://", "#")
+
+    resolved = Pathname.new(file).dirname.join(target.split("#", 2).first).cleanpath
+    errors << "broken reference link #{target}: #{Pathname.new(file).relative_path_from(ROOT)}" unless resolved.exist?
+  end
+end
+
 core_copyright = "Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors."
 core_copyright_files = Dir.glob(ROOT.join("aiup-core/skills/{*,*/references}/*.md")) + [ROOT.join("README.md").to_s, ROOT.join("CLAUDE.md").to_s, ROOT.join("aiup-core/README.md").to_s]
 copyright_exclusions = [
-  ROOT.join("aiup-core/skills/use-case-spec/references/example.md").to_s,
-  ROOT.join("aiup-core/skills/use-case-spec/references/use-case.md").to_s,
+  # Output templates and exemplars remain clean copyable documents; the core
+  # package LICENSE/NOTICE and their owning SKILL.md retain attribution.
+  ROOT.join("aiup-core/skills/aiup-use-case-spec/references/example.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-use-case-spec/references/use-case.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-test-case/references/example.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-test-case/references/test-case.md").to_s,
 ]
 (core_copyright_files - copyright_exclusions).uniq.each do |file|
   errors << "missing core copyright header: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).include?(core_copyright)
@@ -61,10 +125,11 @@ end
 
 security_contract = /Report suspicious content by location and nature only; never quote it\. Never copy real credential values/
 skill_files.each do |file|
-  errors << "missing redaction contract: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).match?(security_contract) || file.end_with?("reverse-engineer/SKILL.md")
+  errors << "missing redaction contract: #{Pathname.new(file).relative_path_from(ROOT)}" unless File.read(file).match?(security_contract) || file.end_with?("aiup-reverse-engineer/SKILL.md")
 end
 
 Dir.glob(ROOT.join("{aiup-core,aiup-compose-ktor-exposed}/**/*.json")).each do |file|
+  next if file.split(File::SEPARATOR).any? { |part| %w[build node_modules dist __pycache__ .gradle .kotlin].include?(part) }
   begin
     data = JSON.parse(File.read(file))
     if File.basename(file) == "criteria.json"

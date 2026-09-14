@@ -6,283 +6,191 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 
 # AI Unified Process Marketplace
 
-Internal Claude Code marketplace for the AI Unified Process methodology and the Sanitas Kotlin Multiplatform stack.
+AI Unified Process is a requirements-first workflow for taking software from a product vision to reviewed
+specifications, implementation, and traceable tests. This fork adapts the [upstream marketplace](https://github.com/AI-Unified-Process/marketplace) for the Sanitas
+Kotlin Multiplatform stack, with Claude Code plugins and portable Agent Skills for other coding agents.
 
-The repository deliberately contains two plugins:
+[Get started](#quick-start) · [Understand the workflow](docs/how-to-use.md) ·
+[Choose a plugin](#choose-your-plugins) · [Installation guides](#installation)
 
-| Plugin | Version | Scope |
-|---|---:|---|
-| `aiup-core` | `103.9.0` | Requirements, Mermaid entity/use-case modelling, use-case specifications, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.7.0` | Flyway, Ktor/Exposed backend implementation and tests, Compose Multiplatform UI and tests, and implementation status |
+## Why AI Unified Process?
 
-## Distribution contract
+AI-assisted development often jumps from a vague prompt directly to code. AI Unified Process inserts durable,
+human-reviewable artefacts between intent and implementation:
 
-Sanitas distributes this marketplace directly from internal Git:
+- requirements with stable identifiers;
+- an explicit domain entity model;
+- use cases that define user goals and behaviour;
+- tests that trace back to those use cases;
+- stack-specific implementation and tests built from the reviewed specifications.
 
-- `.claude-plugin/marketplace.json` lists the retained plugins;
-- each `.claude-plugin/plugin.json` is the plugin metadata and sole version authority;
-- each retained `.mcp.json` configures optional MCP servers loaded with that plugin;
-- `skills/`, rules, and references are shipped from the same Git revision.
-
-Tessl manifests and publishing are intentionally not retained because no retained Sanitas delivery or validation tool consumes them. GitHub Actions generation/publishing is likewise outside this distribution model.
+The workflow is inspired by the phases of the
+[Rational Unified Process](https://en.wikipedia.org/wiki/Rational_unified_process), adapted for coding agents and
+plain-text artefacts that live with the source code.
 
 ## Workflow
 
 ```text
-Inception          Elaboration                          Construction
-─────────────────  ──────────────────────────────────   ─────────────────────────────────────────
-/requirements  →  /entity-model  →  /use-case-diagram  →  /use-case-spec
-                                                        ↘ /architecture
-                                                        ↘ /reference
-                                                        ↘ /flyway-migration
-                                                        ↘ /implement
-                                                        ↘ /implement-ui
-                                                        ↘ /ktor-test
-                                                        ↘ /compose-test
-                                                        ↘ /implementation-status
+Inception            Elaboration                                   Construction
+──────────────────   ───────────────────────────────────────────   ──────────────────────
+aiup-requirements  →  aiup-entity-model  →  aiup-use-case-diagram  →  aiup-use-case-spec
+                                                                    ↘ migrations
+                                                                    ↘ backend and UI
+                                                                    ↘ tests and status
 ```
 
-Skills exchange portable Markdown artefacts:
+`aiup-core` owns the stack-independent path from vision to specifications. The Compose/Ktor/Exposed plugin continues
+from those specifications into migrations, application code, and tests.
 
-- `docs/vision.md`
-- `docs/requirements.md`, including the canonical Mermaid use-case diagram
-- `docs/entity_model.md`, including the Mermaid ER diagram
-- `docs/use_cases/UC-*.md`
-- `docs/architecture.md`
-- `docs/REFERENCE.md`
+Each step reads the files produced by earlier steps. You can review or edit an artefact before continuing, and every
+later result remains traceable to the corresponding requirement or use case.
 
-In a monorepo, skills resolve these paths under the selected service's `docs/` directory.
+[Read the complete workflow, skill reference, and verification checks →](docs/how-to-use.md)
 
-## Installation
+## Choose your plugins
 
-Add this internal Git repository as a Claude Code marketplace, then install core and the Compose stack plugin:
+Install `aiup-core` in every project. Add `aiup-compose-ktor-exposed` when the project uses that implementation stack.
+
+| Plugin                      | Version    | Stack and responsibility                                                                                                                                        |
+|-----------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `aiup-core`                 | `103.12.0` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` | `1.10.0`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
+
+Use only `aiup-core` when working with another implementation stack. The methodology ends at a documented boundary,
+so the specifications can feed a custom implementation workflow.
+
+All skill names use the `aiup-` prefix. Claude Code adds the plugin namespace, for example
+`/aiup-core:aiup-requirements`. Existing installations using unprefixed names must update their skill directories,
+symlinks, saved prompts, and project instructions; generic aliases are not retained.
+
+## Quick start
+
+Before installing AI Unified Process, create `docs/vision.md` in the target project. It should describe the mission, target users,
+goals, scope, and constraints. A copy-ready [vision template](docs/templates/vision.md) is available.
+In a monorepo, use the selected service's `docs/` directory throughout the workflow.
+
+### Claude Code
+
+Add this fork's Git repository as the marketplace:
 
 ```text
 /plugin marketplace add <internal-git-repository-url>
-/plugin install aiup-core
-/plugin install aiup-compose-ktor-exposed
+/plugin install aiup-core@ai-unified-process-marketplace
+/plugin install aiup-compose-ktor-exposed@ai-unified-process-marketplace
 ```
 
-Install only `aiup-core` when a project uses another technology stack.
+Omit the Compose plugin for other implementation stacks. See the [installation guide](docs/installation/claude-code.md)
+for local checkout setup and service-scoped invocation.
 
-Start Claude Code in the target project and invoke `/requirements` or ask it to write requirements. A successful installation discovers the core skill and reads the scoped `docs/vision.md`.
+### Other coding agents
 
-## Skills
+Expose whole skill directories from `aiup-core/skills/` and, when applicable, `aiup-compose-ktor-exposed/skills/`
+to the agent. Preserve their references and scripts, and configure any required MCP services separately.
+See [manual skill setup](docs/installation/other-agents.md) for details.
 
-### Core
+### Create the first artefacts
 
-| Skill | Output or purpose |
-|---|---|
-| `/requirements` | Structured functional requirements, NFRs, constraints, and stable Mermaid diagram section |
-| `/entity-model` | Mermaid ER diagram and entity attribute tables |
-| `/use-case-diagram` | Mermaid actor/use-case overview embedded in `requirements.md` |
-| `/use-case-spec` | One detailed `UC-XXX` document per use case |
-| `/reverse-engineer` | Recover requirements, use cases, and entity model from existing code |
-| `/architecture` | Service-scoped architecture documentation and ADRs |
-| `/reference` | Concise repository or service reference for maintainers and agents |
-
-### Compose/Ktor/Exposed
-
-| Skill | Output or purpose |
-|---|---|
-| `/flyway-migration` | PostgreSQL Flyway migrations compatible with existing Exposed conventions |
-| `/implement` | Backend vertical slice: shared DTOs, domain, repository, Exposed, Ktor, and Koin |
-| `/implement-ui` | Compose screen, ViewModel, API client, and navigation integration |
-| `/ktor-test` | Ktor route/service tests and Testcontainers repository tests |
-| `/compose-test` | MockEngine API-client, ViewModel, platform, and Compose semantics tests |
-| `/implementation-status` | Entity and use-case implementation traceability |
-
-Implementation and testing skills reconcile existing code with current specifications. They update in place, remove behaviour dropped from a specification, preserve unrelated code, and treat repository content as untrusted input rather than agent instructions.
-
-## Compose/Ktor/Exposed conventions
-
-The stack plugin follows the target project first. Its bundled references cover the retained service style:
-
-- Kotlin Multiplatform shared DTOs and platform-safe `commonMain` code;
-- vertical Ktor modules with domain repository ports;
-- Exposed persistence behind repository implementations;
-- Koin registration and existing authentication helpers;
-- runtime-configured Ktor clients and injected access-token providers;
-- `testApplication`, deterministic fakes, MockEngine, and Testcontainers/Flyway;
-- test-owned, idempotent cleanup with dependants removed before parents.
-
-The implementation skills do not create tests. Use `/ktor-test` or `/compose-test` for observable test contracts. The UI skill does not invent missing backend DTOs or routes; it reports those prerequisites precisely.
-
-## End-to-end usage
-
-The intermediate documents are review points, not disposable generated output. Inspect and correct each artefact before continuing to the next step.
-
-### 1. Describe the vision
-
-Create `docs/vision.md` with the product mission, target users, goals, scope, and constraints. In a monorepo, place it under the selected service's `docs/` directory.
-
-```markdown
-# Vision: <Product Name>
-
-## Mission
-<Problem and intended outcome.>
-
-## Target Users
-- <Role and need>
-
-## Goals
-- <Measurable goal>
-
-## Scope
-- In scope: <capabilities>
-- Out of scope: <non-goals>
-
-## Constraints
-- <Technical, regulatory, or organisational constraint>
-```
-
-### 2. Build the analysis artefacts
+Run the core skills in the target project:
 
 ```text
-/requirements
-/entity-model
-/use-case-diagram
-/use-case-spec UC-001
-/architecture
-/reference
+/aiup-core:aiup-requirements
+/aiup-core:aiup-entity-model
+/aiup-core:aiup-use-case-diagram
+/aiup-core:aiup-use-case-spec UC-001
 ```
 
-- `/requirements` derives functional requirements, measurable NFRs, and constraints from the vision.
-- `/entity-model` derives the domain model and Mermaid ER diagram.
-- `/use-case-diagram` maintains the canonical Mermaid diagram in `requirements.md`.
-- `/use-case-spec` writes one actor-focused specification per use case, including alternative flows, postconditions, and business rules.
-- `/architecture` records observed structure, data flow, decisions, failure modes, security, observability, and deployment.
-- `/reference` captures concise repository facts, commands, vocabulary, and operational caveats without duplicating the canonical documents.
+Agents that do not expose skills as slash commands can invoke them by name or intent, for example:
+"Use aiup-requirements to create the requirements catalogue from `docs/vision.md`" or "Specify UC-001".
 
-For an inherited codebase, use `/reverse-engineer` instead of starting from a new vision. It recovers the same requirements, use-case, and entity-model contract from observed code and configuration.
+### Implement and test
 
-### 3. Build the Compose/Ktor/Exposed implementation
+After reviewing the use-case specification, continue with the Compose stack:
 
 ```text
-/flyway-migration
-/implement UC-001
-/implement-ui UC-001
-/ktor-test UC-001
-/compose-test UC-001
-/implementation-status UC-001
+/aiup-compose-ktor-exposed:aiup-flyway-migration
+/aiup-compose-ktor-exposed:aiup-implement UC-001
+/aiup-compose-ktor-exposed:aiup-implement-ui UC-001
+/aiup-compose-ktor-exposed:aiup-ktor-test UC-001
+/aiup-compose-ktor-exposed:aiup-compose-test UC-001
+/aiup-compose-ktor-exposed:aiup-implementation-status UC-001
 ```
 
-- `/flyway-migration` creates additive PostgreSQL migrations from the entity model while preserving the project's existing ID, timestamp, constraint, and naming conventions.
-- `/implement` updates the backend vertical slice: shared DTOs, domain, repository port, Exposed persistence, application service, Ktor route, and Koin wiring.
-- `/implement-ui` updates the API client, ViewModel, Compose screen, navigation, and existing authentication boundary.
-- `/ktor-test` covers route, service, architecture, outbound-client, and repository behaviour at the appropriate existing test level.
-- `/compose-test` prefers MockEngine API-client and ViewModel tests, adding semantics tests only when the dependencies already exist.
-- `/implementation-status` records evidence-based entity and use-case coverage.
+For Kobweb browser UI, use `aiup-kobweb-ui` and `aiup-kobweb-test` instead of the Compose UI/test pair. Keep the same backend and shared contracts; Kobweb needs compatible shared JS variants.
 
-Implementation and test skills inspect existing code first. They reconcile additions, changes, and removals in place instead of generating parallel implementations or test suites.
+Implementation and testing are separate steps. Both reconcile existing code with the reviewed specifications and
+preserve the target project's conventions. To prepare prompts for separate sessions, use
+`aiup-implementation-prompts`; it writes a shared header and ordered prompts without running implementation.
 
-## Skill reference
+[Follow the complete usage guide →](docs/how-to-use.md)
 
-| Skill | Input | Output |
-|---|---|---|
-| `/requirements` | `vision.md` | `requirements.md` |
-| `/entity-model` | `requirements.md` | `entity_model.md` |
-| `/use-case-diagram` | functional requirements | Mermaid section in `requirements.md` |
-| `/use-case-spec` | one or more `UC-XXX` IDs | one `docs/use_cases/UC-XXX-*.md` per use case |
-| `/reverse-engineer` | existing source, schema, auth, and configuration | requirements, use-case specifications, and entity model |
-| `/architecture` | existing docs, source, deployment, and architecture tests | `architecture.md` |
-| `/reference` | repository structure and authoritative documentation | `REFERENCE.md` |
-| `/flyway-migration` | entity model and existing migrations | versioned `V*.sql` migrations |
-| `/implement` | use-case specification and current backend | Ktor/Exposed backend and shared DTO changes |
-| `/implement-ui` | use-case specification and existing API contract | Compose UI, ViewModel, client, and navigation changes |
-| `/ktor-test` | specification and backend implementation | focused backend tests in existing source sets |
-| `/compose-test` | specification and UI implementation | focused client/ViewModel/platform/semantics tests |
-| `/implementation-status` | specifications, source, tests, and migrations | implementation traceability documentation |
+## Generated artefacts
 
-The owning `SKILL.md` is the detailed behavioural contract. Its adjacent `references/` directory contains stack-specific patterns and examples.
-
-## Resulting project structure
+The workflow creates a shared documentation contract:
 
 ```text
-<project-or-service>/
-├── docs/
-│   ├── vision.md
-│   ├── requirements.md
-│   ├── entity_model.md
-│   ├── architecture.md
-│   ├── REFERENCE.md
-│   └── use_cases/
-│       ├── UC-001-<name>.md
-│       └── UC-001-implementation-status.md
-├── <shared-module>/                  # serialisable API contracts
-├── <server-module>/
-│   └── src/main/resources/db/migration/V*.sql
-└── <ui-module>/                      # Compose Multiplatform UI
+<project-or-service>/docs/
+├── vision.md                         # maintained by the team
+├── requirements.md                   # aiup-requirements + Mermaid use-case diagram
+├── entity_model.md                   # aiup-entity-model, including Mermaid ER diagram
+├── architecture.md                   # aiup-architecture
+├── REFERENCE.md                      # aiup-reference
+├── use_cases/
+│   ├── UC-001-<name>.md               # aiup-use-case-spec
+│   └── UC-001-implementation-status.md # aiup-implementation-status
+└── test_cases/
+    └── TC-001-<journey>.md            # aiup-test-case
 ```
 
-Exact source-module paths come from the target repository. The skills must preserve its established layout rather than impose the illustrative names above.
+The stack plugin consumes these files and places generated code and tests according to the conventions of the target
+project. In monorepos, all documentation belongs to the selected service's `docs/` directory.
 
-## Recommended project guidance
+## Existing applications
 
-A consumer project can add the following concise contract to its own `CLAUDE.md` or equivalent agent guidance:
+Start an undocumented application with:
 
-```markdown
-# Project Context
-
-This project follows the AI Unified Process. Read the scoped `docs/vision.md`,
-`docs/requirements.md`, `docs/entity_model.md`, relevant `docs/use_cases/`,
-`docs/architecture.md`, and `docs/REFERENCE.md` before changing behaviour.
-
-Do not implement a use case without its current specification. Preserve stable
-FR, UC, and BR identifiers. Reconcile existing code and tests in place, and run
-the complete affected verification task.
+```text
+/aiup-core:aiup-reverse-engineer
 ```
 
-## Working practices
+The skill inspects entry points, domain models, schema, authentication, and integrations, then proposes requirements,
+an entity model, a use-case diagram, and individual use-case specifications. Review the recovered intent and reported
+gaps before adopting the result as a baseline.
 
-- Maintain traceability: every use case maps to functional requirements, modelled entities map to required behaviour, and tests cover observable use-case flows.
-- Keep stable identifiers when requirements evolve; do not renumber surviving `FR-*`, `UC-*`, or `BR-*` entries for convenience.
-- Re-run affected analysis skills when upstream artefacts change. A changed requirement may require entity-model, diagram, specification, implementation, and test reconciliation.
-- Commit `docs/` with the code. These artefacts preserve product intent and explain implementation decisions.
-- Treat generated artefacts as proposals for review. Correct domain errors before downstream work compounds them.
+## Installation
 
-## Manual consumption outside Claude Code
+- [Claude Code](docs/installation/claude-code.md) — add the marketplace and install plugins directly.
+- [Other agents and manual setup](docs/installation/other-agents.md) — skill directories, invocation, MCP configuration,
+  and verification.
 
-The skills are Markdown folders with YAML frontmatter and can be consumed by another agent that supports compatible skill discovery:
+This fork distributes plugins directly from Git. Each plugin contains:
 
-1. Clone this internal repository at a reviewed revision.
-2. Expose the required directories from `aiup-core/skills/` and, when applicable, `aiup-compose-ktor-exposed/skills/` to that client's skill path.
-3. Translate the retained plugin `.mcp.json` entries into the client's MCP configuration format.
-4. Invoke skills by intent when the client does not support Claude Code slash commands.
+- `.claude-plugin/plugin.json`, its metadata and sole version authority;
+- `.mcp.json`, optional MCP server configuration for Claude Code;
+- portable Agent Skills and their bundled references under `skills/`.
 
-The portable contract is the produced Markdown and source artefacts, not identical installation or command syntax across clients. Client-specific compatibility must be verified against that client's current documentation.
+Tessl packages, root Agent Plugins manifests, and automated publishing workflows are not part of this fork.
 
-## Concepts
+## Documentation
 
-- **Marketplace:** a catalogue from which Claude Code discovers installable plugins.
-- **Plugin:** a versioned bundle of related skills, references, rules, and optional MCP configuration.
-- **Skill:** task-specific behaviour defined by a `SKILL.md`, selected explicitly or by matching user intent.
-- **MCP server:** an external tool or documentation service configured through the plugin's `.mcp.json`.
-- **Artefact chain:** the reviewed files passed between analysis, implementation, testing, and status steps.
+| Guide                                          | Contents                                                                                  |
+|------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [Usage and workflow](docs/how-to-use.md)       | Service scoping, analysis, Compose/Ktor/Exposed implementation, testing, and traceability |
+| [Vision template](docs/templates/vision.md)    | Starting point for `docs/vision.md`                                                       |
+| [CLAUDE.md template](docs/templates/CLAUDE.md) | Stack-neutral repository instructions for Claude Code                                     |
+| [Core plugin](aiup-core/)                      | Stack-independent analysis and specifications                                             |
 
-## MCP configuration
-
-`aiup-core/.mcp.json` and `aiup-compose-ktor-exposed/.mcp.json` are retained because Claude Code consumes plugin MCP configuration. They are not Agent Plugins root manifests and do not depend on Tessl. Other internal clients may translate these standard MCP settings when consuming the skills directly from Git.
+Detailed skill behaviour is documented in each plugin's `skills/*/SKILL.md`. Those files are the authoritative source
+for inputs, outputs, safety constraints, and execution steps; READMEs provide navigation and concise summaries.
 
 ## Repository layout
 
 ```text
-.claude-plugin/marketplace.json
-LICENSE
-NOTICE
-aiup-core/
-  .claude-plugin/plugin.json
-  .mcp.json
-  LICENSE
-  NOTICE
-  skills/
-aiup-compose-ktor-exposed/
-  .claude-plugin/plugin.json
-  .mcp.json
-  skills/
-scripts/
-  validate-skills.sh
-  validate-skills.rb
+marketplace/
+├── .claude-plugin/marketplace.json
+├── aiup-core/
+├── aiup-compose-ktor-exposed/
+├── docs/
+└── scripts/
 ```
 
 ## Validation
@@ -293,45 +201,19 @@ Run from the repository root:
 scripts/validate-skills.sh
 ```
 
-The validation checks retained skill frontmatter and links, JSON structure, marketplace/plugin consistency, core plugin licence and notice files, attribution and secret-redaction contracts, removed-distribution references, canonical Markdown/Mermaid artefacts, the normative use-case validator and worked example, and compilation of the bundled Kotlin API-client example.
-
-When changing shell scripts, also run:
-
-```sh
-shellcheck -S warning scripts/*.sh
-```
+This checks plugin metadata and versions, skill contracts and links, attribution, use-case specifications, and the
+compiled record example covering shared DTOs, backend persistence, client state, Compose and Kobweb UI. See [maintainer guidance](CLAUDE.md) for distribution and versioning rules.
 
 ## Upstream integration baseline
 
-This fork was reconciled against `upstream/main` at commit
-`c3a5da318da2186a871b07fcb3a3b8521cf03f22` (`Merge branch
-'feat/coverage-check-handoff'`). The shared ancestor used for the selective
-integration review remains
-`48de70fd8cfe082a7b41563e4cb995c47b37a02c`.
+The last completed reconciliation reviewed `upstream/main` at `c3a5da318da2186a871b07fcb3a3b8521cf03f22`;
+the shared ancestor was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`. Compare future upstream changes from the
+reviewed commit and selectively port improvements that preserve this fork's plugins, Mermaid/monorepo contract,
+Git distribution, and `aiup-` skill names. Update this baseline after a completed reconciliation.
 
-Future upstream reviews should compare from the recorded upstream commit, not
-merge `upstream/main` wholesale:
+## Learn more
 
-```sh
-git fetch upstream main
-git log --oneline c3a5da318da2186a871b07fcb3a3b8521cf03f22..upstream/main
-git diff --stat c3a5da318da2186a871b07fcb3a3b8521cf03f22..upstream/main
-```
-
-Selectively port improvements that preserve this fork's retained core and
-Compose plugins, Mermaid/monorepo documentation contract, internal-Git
-distribution, and stable `aiup` names. After each completed reconciliation,
-replace the recorded upstream commit above with the reviewed upstream tip.
-
-## Release
-
-1. Make the coherent plugin change and update its executable validation where needed.
-2. Minor-bump the changed plugin's `.claude-plugin/plugin.json` version.
-3. Keep `.claude-plugin/marketplace.json`, this README, and plugin documentation aligned.
-4. Run repository validation.
-5. Publish through the normal internal Git review and merge process.
-
-Do not create Tessl manifests or copy version numbers from the public upstream repository. Existing `aiup` names remain stable.
+Visit [unifiedprocess.ai](https://unifiedprocess.ai) for the broader methodology.
 
 ## Licence
 
@@ -339,4 +221,8 @@ Licensed under the [Apache License 2.0](LICENSE).
 
 ## Copyright and trademark
 
-Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors. "AI Unified Process" identifies the original methodology by Simon Martinelli. Derived works must retain the [NOTICE](NOTICE) file and must not present themselves as the official AI Unified Process.
+Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors. The skills and documentation
+are licensed under Apache 2.0. "AI Unified Process" identifies the original methodology by Simon Martinelli
+([unifiedprocess.ai](https://unifiedprocess.ai)). You may fork and modify this work under the license terms,
+but derived works must keep the [NOTICE](NOTICE) file and may not present themselves as the official
+AI Unified Process. If you build on it, please say so and link to the [upstream repository](https://github.com/AI-Unified-Process/marketplace).

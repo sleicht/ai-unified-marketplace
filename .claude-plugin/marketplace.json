@@ -14,7 +14,7 @@
     {
       "name": "aiup-compose-ktor-exposed",
       "source": "./aiup-compose-ktor-exposed",
-      "description": "AI Unified Process for Kotlin Multiplatform, Compose, Ktor, and Exposed - migrations, implementation, tests, and status"
+      "description": "AI Unified Process for Kotlin Multiplatform, Compose or Kobweb UI, Ktor, and Exposed - migrations, implementation, tests, and status"
     }
   ]
 }

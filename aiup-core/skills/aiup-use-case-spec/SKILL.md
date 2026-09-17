@@ -90,7 +90,7 @@ Draft, not automatically Approved or Tested.
 
 - Detect monorepo services from `mise.toml` (`monorepo_root` or namespaced tasks) or multiple sibling `settings.gradle.kts` builds.
 - Use existing docs language when updating; default to English for new docs.
-- For German docs, use the exact labels in [references/format-spec.md](references/format-spec.md), including `Übersicht`, `Vorbedingungen`, `Hauptablauf`, `Alternativabläufe`, `Nachbedingungen`, and `Geschäftsregeln`. Keep domain terms untranslated.
+- For German docs, use the exact labels in [references/format-spec.md](references/format-spec.md), including `Übersicht`, `Vorbedingungen`, `Haupt Flows`, `Alternative Flows`, `Nachbedingungen`, and `Business Regeln`. Keep domain terms untranslated.
 
 ## Template
 

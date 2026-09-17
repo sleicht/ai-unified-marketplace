@@ -82,27 +82,27 @@ labels, status values and the rule prefix differ. The language is
 detected from the document (majority of matching headings/labels; ties
 and empty files are English) and preserved on save.
 
-| Element            | English                      | German                                     |
-|--------------------|------------------------------|--------------------------------------------|
-| Title prefix       | `# Use Case:`                | `# Use Case:` (same)                       |
-| Overview           | `## Overview`                | `## Übersicht`                             |
-| ID field           | `**Use Case ID:**`           | `**Use-Case-ID:**`                         |
-| Name field         | `**Use Case Name:**`         | `**Use-Case-Name:**`                       |
-| Primary actor      | `**Primary Actor:**`         | `**Primärer Akteur:**`                     |
-| Secondary actors   | `**Secondary Actors:**`      | `**Sekundäre Akteure:**`                   |
-| Goal               | `**Goal:**`                  | `**Ziel:**`                                |
-| Status             | `**Status:**`                | `**Status:**` (same)                       |
-| Requirements       | `**Requirements:**`          | `**Anforderungen:**`                       |
-| Preconditions      | `## Preconditions`           | `## Vorbedingungen`                        |
-| Main scenario      | `## Main Success Scenario`   | `## Hauptablauf`                           |
-| Alternative flows  | `## Alternative Flows`       | `## Alternativabläufe`                     |
-| Trigger field      | `**Trigger:**`               | `**Auslöser:**` (reads `**Trigger:**` too) |
-| Flow field         | `**Flow:**`                  | `**Ablauf:**`                              |
-| Postconditions     | `## Postconditions`          | `## Nachbedingungen`                       |
-| Success subsection | `### Success Postconditions` | `### Erfolgsfall`                          |
-| Failure subsection | `### Failure Postconditions` | `### Fehlerfall`                           |
-| Business rules     | `## Business Rules`          | `## Geschäftsregeln`                       |
-| Rule prefix        | `BR`                         | `GR` (reads `BR` too)                      |
+| Element            | English                      | German                   |
+|--------------------|------------------------------|--------------------------|
+| Title prefix       | `# Use Case:`                | `# Use Case:` (same)     |
+| Overview           | `## Overview`                | `## Übersicht`           |
+| ID field           | `**Use Case ID:**`           | `**Use-Case-ID:**`       |
+| Name field         | `**Use Case Name:**`         | `**Use-Case-Name:**`     |
+| Primary actor      | `**Primary Actor:**`         | `**Primärer Akteur:**`   |
+| Secondary actors   | `**Secondary Actors:**`      | `**Sekundäre Akteure:**` |
+| Goal               | `**Goal:**`                  | `**Ziel:**`              |
+| Status             | `**Status:**`                | `**Status:**` (same)     |
+| Requirements       | `**Requirements:**`          | `**Anforderungen:**`     |
+| Preconditions      | `## Preconditions`           | `## Vorbedingungen`      |
+| Main scenario      | `## Main Success Scenario`   | `## Haupt Flows`         |
+| Alternative flows  | `## Alternative Flows`       | `## Alternative Flows`   |
+| Trigger field      | `**Trigger:**`               | `**Trigger:**`           |
+| Flow field         | `**Flow:**`                  | `**Flow:**`              |
+| Postconditions     | `## Postconditions`          | `## Nachbedingungen`     |
+| Success subsection | `### Success Postconditions` | `### Erfolgsfall`        |
+| Failure subsection | `### Failure Postconditions` | `### Fehlerfall`         |
+| Business rules     | `## Business Rules`          | `## Business Regeln`     |
+| Rule prefix        | `BR`                         | `BR`                     |
 
 Status values (either language is readable in any document):
 
@@ -137,10 +137,10 @@ Status values (either language is readable in any document):
 5. **Main Success Scenario** — top-level numbered items (`1. `,
    unindented). Wrapped continuation lines are joined into their item.
 6. **Alternative Flows** — each flow is a `### ` heading followed by a
-   trigger line (`**Trigger:**` / `**Auslöser:**`), the flow field line
-   (`**Flow:**` / `**Ablauf:**`) and at least one numbered step. A flow
-   missing any of the three is incomplete. Plain prose inside a flow is
-   unexpected content (markup paragraphs are notes — see tolerances).
+   trigger line (`**Trigger:**`), the flow field line (`**Flow:**`) and at least
+   one numbered step. A flow missing any of the three is incomplete. Plain prose
+   inside a flow is unexpected content (markup paragraphs are notes — see
+   tolerances).
 7. **Business Rules** — each rule is a `### ` heading followed by
    free-text description lines.
 8. Any other **plain prose at top level or inside an item section** is
@@ -164,9 +164,6 @@ canonical form, but validators must accept:
   and flow field, or after the steps. They are read as the note of the
   flow; a note never substitutes for trigger or steps.
 - **Decorated status values** as described above.
-- **`**Trigger:**` in German documents** (written back as
-  `**Auslöser:**`).
-- **`BR-` rule labels in German documents** (written back as `GR-`).
 - **Wrapped lines** — joined into the item above.
 
 ## Normalized on save by Studio (WARN level)
@@ -195,8 +192,8 @@ The `/aiup-use-case-spec` skill additionally requires:
   main-scenario step must exist, including conditional continuations.
 - Success and failure postconditions are non-empty (an explicit italic
   placeholder such as `_None — …_` counts as a deliberate statement).
-- Business rule headings carry a `BR-XXX:` / `GR-XXX:` label, numbered
-  `BR-001`, `BR-002`, … without gaps within the document.
+- Business rule headings carry a `BR-XXX:` label, numbered `BR-001`, `BR-002`, 
+  … without gaps within the document.
 - No concrete implementation-level terms in steps (SMTP, email server, JWT,
   bcrypt, password hashing, access tokens, SHA, SQL, SELECT, INSERT). Ambiguous
   standalone words such as token, salt and hash need contextual review; legitimate

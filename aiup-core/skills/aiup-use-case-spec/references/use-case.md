@@ -74,10 +74,10 @@ labels. The canonical section names are:
 |-----------------------|-------------------|
 | Overview              | Übersicht         |
 | Preconditions         | Vorbedingungen    |
-| Main Success Scenario | Hauptablauf       |
-| Alternative Flows     | Alternativabläufe |
+| Main Success Scenario | Haupt Flows       |
+| Alternative Flows     | Alternative Flows |
 | Postconditions        | Nachbedingungen   |
-| Business Rules        | Geschäftsregeln   |
+| Business Rules        | Business Regeln   |
 
 ### Step Writing Guidelines
 

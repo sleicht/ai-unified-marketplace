@@ -1,7 +1,7 @@
 {
   "name": "aiup-compose-ktor-exposed",
   "description": "AI Unified Process for Kotlin Multiplatform, Compose or Kobweb UI, Ktor, and Exposed - migrations, implementation, tests, and status",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "author": {
     "name": "Stephan Leicht Vogt",
     "email": "stephan@fanaka.ch",

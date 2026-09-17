@@ -124,10 +124,24 @@ For one UC, the default filename is based on its specification, for example
 use their sorted IDs, such as `UC-001-UC-003-implementation-prompts.md`. An explicit
 output path or filename takes precedence.
 
-Start a fresh chat for each numbered session. Paste the shared header followed by
-that session's prompt, using the same working tree with the previous sessions'
-reviewed changes. Complete prerequisites before dependent sessions. The document
-contains the file context needed to work without previous chat history.
+The skill's final reply is one reusable launcher. Start a fresh chat for each
+numbered session and paste that launcher unchanged, using the same working tree with
+the previous sessions' commits. It runs the first session not marked Complete,
+records a handoff and evidence in the plan, commits that session's changes with the
+plan update, and stops. The commit message states whether the session is Complete,
+Pending or Blocked, with the reason for the latter two. It does not push; review
+each commit before the next session. Complete
+prerequisites before dependent sessions. The document contains the file context
+needed to work without previous chat history.
+
+The skill bundles `scripts/validate_implementation_plan.py`, which checks the plan's
+sections, session index, prompts, handoffs, evidence, blockers and specification
+paths. Run it in the target project's CI to catch plan drift between sessions:
+
+```sh
+python3 <installed skill directory>/scripts/validate_implementation_plan.py \
+  --strict --root . payments-service/docs/card-payments-implementation-prompts.md
+```
 
 ## The Workflow at a Glance
 

@@ -54,7 +54,7 @@ Install `aiup-core` in every project. Add `aiup-compose-ktor-exposed` when the p
 | Plugin                      | Version    | Stack and responsibility                                                                                                                                        |
 |-----------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `aiup-core`                 | `103.12.1` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.10.0`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
+| `aiup-compose-ktor-exposed` | `1.10.1`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
 
 Use only `aiup-core` when working with another implementation stack. The methodology ends at a documented boundary,
 so the specifications can feed a custom implementation workflow.

@@ -66,12 +66,12 @@ LANGUAGES = {
         "headings": {
             "overview": "## Übersicht",
             "preconditions": "## Vorbedingungen",
-            "main_scenario": "## Hauptablauf",
-            "alternative_flows": "## Alternativabläufe",
+            "main_scenario": "## Haupt Flows",
+            "alternative_flows": "## Alternative Flows",
             "postconditions": "## Nachbedingungen",
             "success": "### Erfolgsfall",
             "failure": "### Fehlerfall",
-            "business_rules": "## Geschäftsregeln",
+            "business_rules": "## Business Regeln",
         },
         "fields": {
             "id": "**Use-Case-ID:**",
@@ -80,12 +80,10 @@ LANGUAGES = {
             "secondary_actors": "**Sekundäre Akteure:**",
             "goal": "**Ziel:**",
             "requirements": "**Anforderungen:**",
-            "trigger": "**Auslöser:**",
-            "flow": "**Ablauf:**",
+            "trigger": "**Trigger:**",
+            "flow": "**Flow:**",
         },
-        # German documents in the wild often keep the English "Trigger" label
-        "trigger_aliases": ["**Auslöser:**", "**Trigger:**"],
-        "rule_prefix": "GR",
+        "rule_prefix": "BR",
     },
 }
 
@@ -105,8 +103,8 @@ NUMBERED_ITEM = re.compile(r"(\d+)\.\s+(.*)")
 ID_TITLE = re.compile(r"#\s+[SB]?UC-[A-Za-z0-9_-]+\s*:.*")
 FLOW_LABEL = re.compile(r"A\d+\s*:\s*(.*)")
 # Hyphenated tails like BR-USER-050 are valid Navigator-style rule ids.
-RULE_LABEL = re.compile(r"(?:BR|GR)-[A-Za-z0-9_-]+\s*:\s*.*")
-RULE_NUMBER = re.compile(r"(?:BR|GR)-(\d+)\s*:")
+RULE_LABEL = re.compile(r"BR-[A-Za-z0-9_-]+\s*:\s*.*")
+RULE_NUMBER = re.compile(r"BR-(\d+)\s*:")
 PLACEHOLDER = re.compile(r"_[^_].*_|\*[^*].*\*")
 UC_ID_GRAMMAR = re.compile(r"[SB]?UC-[A-Za-z0-9_-]+")
 
@@ -745,12 +743,12 @@ VALID_DE_TOLERANT = """\
 
 Die Suche akzeptiert Name und Nummer.
 
-## Hauptablauf
+## Haupt Flows
 
 1. Der Benutzer öffnet die Erfassung.
 2. Das System speichert die Mitteilung.
 
-## Alternativabläufe
+## Alternative Flows
 
 ### A1: Pflichtfeld fehlt
 
@@ -758,7 +756,7 @@ Die Suche akzeptiert Name und Nummer.
 
 > Hinweis: Die Feldliste ist konfigurierbar.
 
-**Ablauf:**
+**Flow:**
 
 1. Das System zeigt eine Fehlermeldung.
 2. Der Use Case wird bei Schritt 1 fortgesetzt.
@@ -773,9 +771,9 @@ Die Suche akzeptiert Name und Nummer.
 
 _Keine — die Erfassung ist wiederholbar._
 
-## Geschäftsregeln
+## Business Regeln
 
-### GR-001: Zustellung
+### BR-001: Zustellung
 
 Mitteilungen werden nur dem eigenen Team zugestellt.
 """

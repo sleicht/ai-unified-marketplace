@@ -2,7 +2,8 @@
 """Validate implementation session prompt plans.
 
 Checks *-implementation-prompts.md files written by aiup-implementation-prompts
-against references/output-template.md: required sections, the session index,
+against references/output-template.md: required sections, the launcher block,
+the session index,
 one prompt and handoff per session, predecessors, status evidence, blockers,
 leftover template placeholders, and scoped specification paths.
 
@@ -33,6 +34,7 @@ WARN = "WARN"
 TITLE = "Implementation Session Prompts"
 SECTIONS = [
     "How to Use",
+    "Session Launcher",
     "Shared Session Header Prompt",
     "Session Index",
     "Session Prompts",
@@ -61,6 +63,8 @@ PLACEHOLDERS = [
     "<feature name, when supplied>",
     "<selected UC IDs and names>",
     "<detected Compose Multiplatform or Kobweb pair, or Not applicable>",
+    "<absolute plan path>",
+    "<plan-slug>",
     "<project working directory>",
     "<service>",
     "<docs path>",
@@ -104,6 +108,7 @@ class Plan:
         self.index = []  # dicts
         self.prompts = []  # dicts
         self.blockers = []  # (line, text)
+        self.launchers = []  # (line, fence language)
 
     def add(self, line, severity, code, message):
         self.problems.append(Problem(line, severity, code, message))
@@ -168,6 +173,8 @@ def parse_plan(text):
         if section == "Session Index" and not fenced and line.lstrip().startswith("|"):
             cells = [c.strip() for c in CELL_SPLIT.split(line.strip().strip("|"))]
             plan.index.append({"line": number, "cells": cells})
+        elif section == "Session Launcher" and opening is not None:
+            plan.launchers.append((number, opening))
         elif section == "Blockers" and line.strip():
             plan.blockers.append((number, line.strip()))
         elif session is not None and part == "prompt":
@@ -190,6 +197,11 @@ def check_structure(plan):
         if seconds.count(name) != 1:
             plan.add(1, ERROR, "SECTION",
                      "expected exactly one '## " + name + "' section")
+    launcher = [line for level, title, line in plan.headings
+                if level == 2 and title == "Session Launcher"]
+    if launcher and [lang for _, lang in plan.launchers] != ["text"]:
+        plan.add(launcher[0], ERROR, "LAUNCHER",
+                 "Session Launcher must hold exactly one fenced text block")
     present = [name for name in seconds if name in SECTIONS]
     if len(present) == len(set(present)) and present != [n for n in SECTIONS if n in present]:
         plan.add(1, ERROR, "SECTION_ORDER",
@@ -384,6 +396,12 @@ Use cases: UC-001 Charge Card
 
 Run the numbered sessions sequentially in fresh chats.
 
+## Session Launcher
+
+```text
+Select the first session in plan order that is not Complete.
+```
+
 ## Shared Session Header Prompt
 
 ```text
@@ -452,6 +470,8 @@ def self_test():
 
     cases = [
         ("missing-section", VALID.replace("## Blockers\n\nNone.\n", ""), ["SECTION"]),
+        ("launcher-unfenced",
+         VALID.replace("```text\nSelect the first", "Select the first"), ["LAUNCHER"]),
         ("unknown-status", VALID.replace("| Pending  |", "| Started  |"), ["STATUS"]),
         ("complete-without-evidence",
          VALID.replace("| Complete | `:server:test` passed    |", "| Complete | None |"),

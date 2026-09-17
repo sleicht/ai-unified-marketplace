@@ -66,6 +66,11 @@ Choose one filename for the plan, in this order:
    order, for example `UC-001-UC-003-implementation-prompts.md`. Do not imply that
    unselected IDs between them are included.
 
+Derive the Claude Code command filename from the plan filename: drop
+`-implementation-prompts.md` and append `-session.md`, for example
+`card-payments-session.md` for `card-payments-implementation-prompts.md`. Rename
+it whenever the plan is renamed.
+
 Keep the filename stable when updating the same plan unless the user requests a
 rename. Read an existing target
 before replacing it; do not overwrite a plan for a different feature or UC scope.
@@ -121,27 +126,30 @@ checks the structure below. Write one Markdown file containing these sections:
 
 1. `# Implementation Session Prompts` and the resolved service, docs path, output
    filename, feature name when supplied, and UC scope.
-2. `## How to Use`: start a fresh chat for every numbered session, reuse the final
-   chat launcher unchanged, and use the same working tree containing previous
-   sessions' commits. Each session commits its own changes and states its status
+2. `## How to Use`: start a fresh chat for every numbered session with the start
+   prompt from the final chat response, shown in a fenced `text` block, or the
+   `/<plan-slug>-session` command where written, and use the same working tree
+   containing previous sessions' commits. Each session commits its own changes and states its status
    in the commit message; review that commit before the next session. Run
    sessions sequentially; resolve failures before dependent sessions. The
    document does not start chats.
-3. `## Shared Session Header Prompt`: one fenced `text` block common to every
+3. `## Session Launcher`: the launcher block from the template, copied verbatim.
+   It is the only stored copy of the session procedure; sessions must not edit it.
+4. `## Shared Session Header Prompt`: one fenced `text` block common to every
    session. Include the actual service/docs paths, repository instruction handling,
    re-reading current files, following the named skill and its references, scope
    limits, preservation of unrelated work, verification/reporting expectations,
    and committing only the session's own changes with the plan update, stating
    its status in the commit message.
    Require reporting unresolved prerequisites rather than guessing.
-4. `## Session Index`: number, UC IDs, skill, predecessors, expected outputs,
+5. `## Session Index`: number, UC IDs, skill, predecessors, expected outputs,
    status (`Pending`, `Complete`, or `Blocked`) and evidence. The index is the only
    place that records status. Evidence names the checks run with their results, or
    links the handoff or status page; a `Complete` row without evidence is not
    complete. Initialise new sessions as `Pending` with evidence `None`; retain
    supported completion evidence when updating a plan. Reopen changed sessions and
    affected dependants when previous evidence no longer applies.
-5. `## Session Prompts`: a numbered subsection per session with one fenced `text`
+6. `## Session Prompts`: a numbered subsection per session with one fenced `text`
    prompt. Name the exact `aiup-` skill, selected UC ID/name, actual specification
    path, applicable inputs, expected changes, required checks from that skill, and
    a stop condition after this single skill. Resolve the skill through the agent's
@@ -151,7 +159,7 @@ checks the structure below. Write one Markdown file containing these sections:
    that session records changed files, affected symbols, pending test scenarios,
    checks run/passed/failed/unrun, and unresolved prerequisites. Do not put status
    in the handoff; keep it in the index.
-6. `## Blockers`: unresolved prerequisites with their affected UCs/sessions, or `None`.
+7. `## Blockers`: unresolved prerequisites with their affected UCs/sessions, or `None`.
 
 Make each session prompt complete when combined with the shared header. Keep
 domain scenarios in their canonical specifications; link by path instead of
@@ -166,49 +174,42 @@ An update replaces obsolete prompts rather than appending a duplicate plan.
 
 ## Final Chat Response
 
-After writing the Markdown file, return only one fenced `text` block containing
-the reusable launcher below. Substitute the actual absolute plan path. Do not
-include a session number, selected-session placeholder, counts or usage commentary
-outside the block. The user must be able to paste it unchanged into every fresh
-chat. Keep usage instructions and blockers in the plan itself.
+After writing the files, return only one fenced `text` block containing the start
+prompt below, with the actual absolute plan path. When the Claude Code command was
+written, a single line naming it may precede the block; add nothing else. The user
+must be able to paste it unchanged into every fresh chat with any coding agent.
+Keep usage instructions, the launcher and blockers in the plan itself.
 
 ```text
-Read the complete implementation plan:
-<absolute path to the generated Markdown file>
-
-Follow applicable repository instructions. Read the session index, blockers,
-shared header and session descriptions, then check the current project files
-and saved verification evidence. Do not rely on previous chat history.
-
-Check that the session index and the session prompt subsections list the same
-session numbers, UC IDs and skills. If they differ, record the mismatch under
-Blockers and stop.
-
-Select the first session in plan order that is not Complete. Apply the Shared
-Session Header Prompt and execute only that session's prompt. Respect its skill,
-scope and prerequisites. If a predecessor or prerequisite is incomplete, record
-the blocker and stop; do not skip ahead or execute another session.
-
-Save changed files, verification results and the handoff in this session's
-Handoff block. Update this session's index row: set Complete with evidence only
-when its required outputs and checks are satisfied; otherwise leave it Pending
-or mark it Blocked with the reason.
-
-Commit this session's changes together with the plan update, whatever its
-status, following repository version-control and commit-message instructions.
-Include only files and hunks changed by this session; name the UC ID and session
-number; state the session status (Complete, Pending or Blocked) in the commit
-subject and, for Pending or Blocked, the reason in the body; do not push. If
-unrelated changes cannot be separated, do not commit; report them.
-
-Report the result and any commit, then stop after this session.
-If all sessions are Complete, report completion without running more work. If the
-plan contains no sessions, report its blockers without inventing a session.
+Read <absolute path to the generated Markdown file> and follow its Session Launcher section to run the next implementation session.
 ```
 
 A reference to another session supplies context or identifies later work; it does
-not authorise executing it. Persist handoffs on disk so the same launcher can
+not authorise executing it. Persist handoffs on disk so the same start prompt can
 resume after an interrupted, failed or blocked session without advancing silently.
+
+## Claude Code Command
+
+When the host is Claude Code or the repository root already has a `.claude/`
+directory, also write `.claude/commands/<plan-slug>-session.md` at the repository
+root, so the user can type `/<plan-slug>-session` instead of pasting. Other agents
+need no extra file: the start prompt works unchanged. Read an existing file of that
+name first and replace only a command for the same plan; report a name collision
+with an unrelated command rather than overwriting it.
+
+The file holds front matter with a single `description`, then the start prompt as
+the body, unfenced and unchanged:
+
+```markdown
+---
+description: Run the next pending session of the <feature or UC scope> plan
+---
+
+Read <absolute path to the generated Markdown file> and follow its Session Launcher section to run the next implementation session.
+```
+
+If the repository root is not writable, report that the command file was not
+written and rely on the start prompt.
 
 ## Verification
 
@@ -231,8 +232,12 @@ unavailable, report that the validator was not run and apply the checks below ma
 - Confirm every session has a `Handoff` block and every index row has an evidence value.
 - Confirm the shared header plus any single prompt needs no earlier chat context.
 - Confirm checks reflect the chosen skill; do not assign test creation to implementation skills.
-- Confirm no implementation has been run and only the requested prompt document was written.
-- Confirm the final chat response is only the reusable launcher with the actual
-  output path, and requires no edits between sessions.
+- Confirm no implementation has been run and only the prompt document and, where
+  applicable, its Claude Code command file were written.
+- Confirm the plan's Session Launcher matches the template's launcher verbatim.
+- Confirm the start prompt, in the plan's How to Use, the chat response and any
+  command file, is identical and names the actual plan path.
+- Confirm the chat response adds nothing beyond the start prompt and at most one
+  line naming the command, and requires no edits between sessions.
 - Check selection for a new plan, a completed predecessor, an interrupted or
   blocked session, and a completed or empty plan; never skip unfinished work.

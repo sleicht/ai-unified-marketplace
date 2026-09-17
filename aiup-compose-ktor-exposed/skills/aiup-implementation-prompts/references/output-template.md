@@ -10,13 +10,54 @@ UI/test pair: <detected Compose Multiplatform or Kobweb pair, or Not applicable>
 ## How to Use
 
 Run the numbered sessions sequentially. Start a fresh agent chat for each session
-in the same project working tree. Paste the generic launcher from the final chat
-response unchanged each time. It selects the first session not marked Complete
+in the same project working tree and send this start prompt unchanged, with any
+coding agent:
+
+```text
+Read <absolute plan path> and follow its Session Launcher section to run the next implementation session.
+```
+
+Where the Claude Code command was written, `/<plan-slug>-session` sends the same
+prompt. The launcher selects the first session not marked Complete
 and combines the shared header with that session's prompt. Every session commits
 its own changes with the plan update and states its status (Complete, Pending or
 Blocked) in the commit message; review that commit and the verification report
 before starting a dependent session. A new chat clears conversation context; previous
 sessions' commits remain available in the working tree.
+
+## Session Launcher
+
+```text
+Follow applicable repository instructions. Read this whole plan: the session
+index, blockers, shared header and session prompts. Then check the current
+project files and saved verification evidence. Do not rely on previous chat
+history. Do not edit this launcher or the shared header.
+
+Check that the session index and the session prompt subsections list the same
+session numbers, UC IDs and skills. If they differ, record the mismatch under
+Blockers and stop.
+
+Select the first session in plan order that is not Complete. Apply the Shared
+Session Header Prompt and execute only that session's prompt. Respect its skill,
+scope and prerequisites. If a predecessor or prerequisite is incomplete, record
+the blocker and stop; do not skip ahead or execute another session.
+
+Save changed files, verification results and the handoff in this session's
+Handoff block. Update this session's index row: set Complete with evidence only
+when its required outputs and checks are satisfied; otherwise leave it Pending
+or mark it Blocked with the reason.
+
+Commit this session's changes together with the plan update, whatever its
+status, following repository version-control and commit-message instructions.
+Include only files and hunks changed by this session; name the UC ID and session
+number; state the session status (Complete, Pending or Blocked) in the commit
+subject and, for Pending or Blocked, the reason in the body; do not push. If
+unrelated changes cannot be separated, do not commit; report them.
+
+Report the result and any commit, then stop after this session.
+If all sessions are Complete, report completion without running more work. If the
+plan contains no sessions, report its blockers without inventing a session.
+```
 
 ## Shared Session Header Prompt
 

@@ -124,8 +124,12 @@ For one UC, the default filename is based on its specification, for example
 use their sorted IDs, such as `UC-001-UC-003-implementation-prompts.md`. An explicit
 output path or filename takes precedence.
 
-The skill's final reply is one reusable launcher. Start a fresh chat for each
-numbered session and paste that launcher unchanged, using the same working tree with
+The plan holds the session procedure in its `## Session Launcher` section. The
+skill's final reply is a one-line start prompt that tells the agent to follow it,
+so it works with any coding agent. In Claude Code projects the skill also writes
+`.claude/commands/card-payments-session.md`, which sends the same prompt as
+`/card-payments-session`. Start a fresh chat for each numbered session with that
+prompt or command, using the same working tree with
 the previous sessions' commits. It runs the first session not marked Complete,
 records a handoff and evidence in the plan, commits that session's changes with the
 plan update, and stops. The commit message states whether the session is Complete,
@@ -249,7 +253,7 @@ The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/referenc
 | [`aiup-kobweb-ui`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-ui/SKILL.md)                           | Construction          | UC ID + existing API             | Kobweb pages, state and client                          | compose-ktor-exposed |
 | [`aiup-kobweb-test`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-test/SKILL.md)                       | Construction          | UC ID + Kobweb UI                | Kotlin / browser / export tests                         | compose-ktor-exposed |
 | [`aiup-implementation-status`](../aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md)   | Construction          | UC ID(s)                         | status matrix + Markdown pages                          | compose-ktor-exposed |
-| [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/*-implementation-prompts.md` | compose-ktor-exposed |
+| [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/*-implementation-prompts.md` plus, in Claude Code projects, `.claude/commands/*-session.md` | compose-ktor-exposed |
 
 ## Verify Before Continuing
 

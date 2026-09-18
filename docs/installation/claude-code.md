@@ -41,9 +41,10 @@ Once specifications exist, generate the prompt document with:
 /aiup-compose-ktor-exposed:aiup-implementation-prompts for Card Payments (UC-001 UC-002) in payments-service
 ```
 
-It writes `payments-service/docs/card-payments-implementation-prompts.md`. Paste the shared
-header and one numbered prompt into each fresh chat; the skill does not launch
-sessions or implement code.
+It writes `payments-service/docs/prompts/card-payments-implementation-prompts.md` and
+`.claude/commands/card-payments-session.md`. Run `/card-payments-session` in each
+fresh chat to execute the next session; the skill itself does not launch sessions
+or implement code.
 
 ## Invoke skills
 

@@ -536,7 +536,8 @@ def self_test():
     with tempfile.TemporaryDirectory(prefix="aiup plan validation ") as temporary:
         docs = os.path.join(temporary, "billing", "docs")
         os.makedirs(os.path.join(docs, "use_cases"))
-        plan_path = os.path.join(docs, "UC-001-charge-card-implementation-prompts.md")
+        os.makedirs(os.path.join(docs, "prompts"))
+        plan_path = os.path.join(docs, "prompts", "UC-001-charge-card-implementation-prompts.md")
         with open(plan_path, "w", encoding="utf-8") as handle:
             handle.write(VALID)
         expect("path-missing", validate_file(plan_path, temporary), ["PATH"])

@@ -112,7 +112,7 @@ Use aiup-implementation-prompts for the Card Payments feature
 (UC-001 and UC-002) in payments-service.
 ```
 
-The skill writes `payments-service/docs/card-payments-implementation-prompts.md` with a shared
+The skill writes `payments-service/docs/prompts/card-payments-implementation-prompts.md` with a shared
 session header, an ordered session index, and individual prompts for the required
 migration, backend, UI, testing, and status work. It records missing prerequisites
 and generates prompts without executing them. For a named feature without IDs, it selects the relevant specifications and asks
@@ -144,7 +144,7 @@ paths. Run it in the target project's CI to catch plan drift between sessions:
 
 ```sh
 python3 <installed skill directory>/scripts/validate_implementation_plan.py \
-  --strict --root . payments-service/docs/card-payments-implementation-prompts.md
+  --strict --root . payments-service/docs/prompts/card-payments-implementation-prompts.md
 ```
 
 ## The Workflow at a Glance
@@ -253,7 +253,7 @@ The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/referenc
 | [`aiup-kobweb-ui`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-ui/SKILL.md)                           | Construction          | UC ID + existing API             | Kobweb pages, state and client                          | compose-ktor-exposed |
 | [`aiup-kobweb-test`](../aiup-compose-ktor-exposed/skills/aiup-kobweb-test/SKILL.md)                       | Construction          | UC ID + Kobweb UI                | Kotlin / browser / export tests                         | compose-ktor-exposed |
 | [`aiup-implementation-status`](../aiup-compose-ktor-exposed/skills/aiup-implementation-status/SKILL.md)   | Construction          | UC ID(s)                         | status matrix + Markdown pages                          | compose-ktor-exposed |
-| [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/*-implementation-prompts.md` plus, in Claude Code projects, `.claude/commands/*-session.md` | compose-ktor-exposed |
+| [`aiup-implementation-prompts`](../aiup-compose-ktor-exposed/skills/aiup-implementation-prompts/SKILL.md) | Construction planning | scoped specs + project structure | UC- or feature-named `docs/prompts/*-implementation-prompts.md` plus, in Claude Code projects, `.claude/commands/*-session.md` | compose-ktor-exposed |
 
 ## Verify Before Continuing
 

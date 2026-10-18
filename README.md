@@ -53,8 +53,8 @@ Install `aiup-core` in every project. Add `aiup-compose-ktor-exposed` when the p
 
 | Plugin                      | Version    | Stack and responsibility                                                                                                                                        |
 |-----------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `aiup-core`                 | `103.12.1` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
-| `aiup-compose-ktor-exposed` | `1.12.0`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
+| `aiup-core`                 | `103.13.0` | Stack-independent requirements, Mermaid entity/use-case modelling, specifications, journey test cases, reverse engineering, architecture, and project reference |
+| `aiup-compose-ktor-exposed` | `1.13.0`   | Kotlin Multiplatform, Compose or Kobweb UI, Ktor/Exposed backend, migrations, tests, status, and implementation prompts                                         |
 
 Use only `aiup-core` when working with another implementation stack. The methodology ends at a documented boundary,
 so the specifications can feed a custom implementation workflow.
@@ -206,8 +206,10 @@ compiled record example covering shared DTOs, backend persistence, client state,
 
 ## Upstream integration baseline
 
-The last completed reconciliation reviewed `upstream/main` at `c3a5da318da2186a871b07fcb3a3b8521cf03f22`;
-the shared ancestor was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`. Compare future upstream changes from the
+The last completed reconciliation reviewed `upstream/main` at `05af8163838df704620ebe1121cd6019dbce276c`;
+the shared ancestor was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`. Deliberately not ported: BPMN business
+processes and test-case process mode, the `spec-review` lint skill (deferred), `glossary.md` (domain vocabulary
+stays in `docs/REFERENCE.md`), per-folder skill self-containment, and Tessl/GitHub release tooling. Compare future upstream changes from the
 reviewed commit and selectively port improvements that preserve this fork's plugins, Mermaid/monorepo contract,
 Git distribution, and `aiup-` skill names. Update this baseline after a completed reconciliation.
 

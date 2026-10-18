@@ -99,7 +99,7 @@ Read the project before writing stack details:
 - package/module layout for layering
 - `ArchitectureTest.kt` when present; document enforced rules rather than inventing new ones
 - deployment files when present (`Dockerfile`, Helm, Kubernetes, CI config)
-- ADR files under `docs/adr/` when present
+- ADR files when present, found with the glob `docs/**/adr/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/`)
 
 ## DO NOT
 

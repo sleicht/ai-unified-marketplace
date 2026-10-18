@@ -48,7 +48,10 @@ Business priority and performance targets are not documented.
 
 Expected artefacts:
 
-- An FR user-story row with an ID, `To confirm` priority and an evidenced status.
+- An FR user-story row with an ID, `To confirm` priority and status `Open`,
+  derived from its `Draft` use case; implementation evidence goes in Requirements
+  Notes.
+- The recovered UC has Status `Draft`, despite the passing test.
 - Canonical NFR/constraint tables, without invented rows or limits.
 - Requirements Notes identify evidence and unknowns.
 - The UC's Mermaid comment and Overview link to the same existing FR ID.

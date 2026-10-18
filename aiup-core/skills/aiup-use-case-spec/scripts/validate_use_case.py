@@ -83,6 +83,7 @@ LANGUAGES = {
             "trigger": "**Trigger:**",
             "flow": "**Flow:**",
         },
+        "trigger_aliases": ["**Trigger:**"],
         "rule_prefix": "BR",
     },
 }
@@ -304,6 +305,14 @@ def parse_overview(doc, lines, index):
             overview["requirements"] = \
                 line[len(fields["requirements"]):].strip()
             index += 1
+        elif any(line.startswith(a) for a in lang["trigger_aliases"]):
+            # the use case trigger: the event that starts the use case
+            alias = next(a for a in lang["trigger_aliases"]
+                         if line.startswith(a))
+            parts = [line[len(alias):].strip()]
+            overview["trigger_line"] = index + 1
+            index = join_continuation(doc, lines, index + 1, parts)
+            overview["trigger"] = " ".join(parts)
         else:
             # unknown overview lines are kept verbatim by Studio (pass-through)
             index += 1
@@ -590,6 +599,27 @@ def check_contract(doc, path):
         doc.add(0, WARN, "ID_FILENAME_MISMATCH",
                 "filename does not start with the use case id " + uc_id)
 
+    # The use case trigger is optional (older documents have none), but when
+    # present it must name the starting event, not restate a precondition.
+    trigger = doc.overview.get("trigger")
+    if trigger is not None:
+        trigger_line = doc.overview.get("trigger_line", 0)
+        if not trigger.strip():
+            doc.add(trigger_line, WARN, "UC_TRIGGER_EMPTY",
+                    "the use case trigger line names no event")
+        elif STEP_REFERENCE.search(trigger):
+            doc.add(trigger_line, WARN, "UC_TRIGGER_STEP_REF",
+                    "the use case trigger references a step; '(step N)' "
+                    "belongs to alternative-flow triggers only")
+        normalized = trigger.strip().rstrip(".").lower()
+        for condition in doc.preconditions:
+            if normalized and \
+                    condition.strip().rstrip(".").lower() == normalized:
+                doc.add(trigger_line, WARN, "UC_TRIGGER_IS_PRECONDITION",
+                        "the use case trigger repeats a precondition; a "
+                        "trigger is the event that starts the use case, a "
+                        "precondition is what is already true: " + trigger)
+
     if not doc.main_scenario and not doc.main_scenario_placeholder \
             and "main_scenario" in doc.sections_seen:
         doc.add(0, WARN, "MAIN_SCENARIO_EMPTY",
@@ -603,8 +633,11 @@ def check_contract(doc, path):
     if not doc.flows and not doc.flows_placeholder \
             and "alternative_flows" in doc.sections_seen:
         doc.add(0, WARN, "NO_ALTERNATIVE_FLOWS",
-                "no alternative flow is defined; most use cases have at "
-                "least one error or exception path")
+                "no alternative flow is defined; analyse every main-scenario "
+                "step for alternative or exception conditions, and when "
+                "there really is none, state it with an italic placeholder "
+                "such as '_None — no step can fail or branch._' instead of "
+                "inventing a flow")
     for flow in doc.flows:
         if not STEP_REFERENCE.search(flow["trigger"]):
             doc.add(flow["line"], WARN, "TRIGGER_STEP_REF",
@@ -679,6 +712,7 @@ VALID_EN = """\
 **Use Case Name:** Create Reservation
 **Primary Actor:** Clerk
 **Goal:** Create a reservation for a guest
+**Trigger:** A guest asks the clerk to book a room
 **Status:** Approved
 
 **Requirements:** [FR-001, FR-002](../requirements.md)
@@ -731,6 +765,7 @@ VALID_DE_TOLERANT = """\
 **Primärer Akteur:** SachbearbeiterIn
 **Sekundäre Akteure:** TeamleiterIn
 **Ziel:** Eine Mitteilung erfassen und dem Team zustellen
+**Trigger:** Eine Kundin meldet einen Sachverhalt telefonisch
 **Status:** ✅ Implementiert (2025-07-11)
 
 **Priorität:** Hoch
@@ -787,9 +822,12 @@ INVALID = """\
 **Use Case Name:** Broken
 **Primary Actor:** User
 **Goal:** Show every error class
+**Trigger:** User is logged in
 **Status:** In Progress
 
 ## Preconditions
+
+- User is logged in
 
 The user is logged in.
 
@@ -849,7 +887,58 @@ def self_test():
     doc = parse_document(INVALID)
     check_contract(doc, "UC-002-broken.md")
     expect("invalid", doc.problems,
-           ["STATUS_INVALID", "UNEXPECTED_CONTENT", "FLOW_INCOMPLETE"])
+           ["STATUS_INVALID", "UNEXPECTED_CONTENT", "FLOW_INCOMPLETE",
+            "UC_TRIGGER_IS_PRECONDITION"])
+
+    for name, text, code in [
+        ("uc-trigger-empty", VALID_EN.replace(
+            "**Trigger:** A guest asks the clerk to book a room",
+            "**Trigger:**"), "UC_TRIGGER_EMPTY"),
+        ("uc-trigger-step-ref", VALID_EN.replace(
+            "asks the clerk to book a room",
+            "asks the clerk to book a room (step 1)"), "UC_TRIGGER_STEP_REF"),
+        ("uc-trigger-precondition", VALID_EN.replace(
+            "**Trigger:** A guest asks the clerk to book a room",
+            "**Trigger:** Clerk is logged into the system."),
+         "UC_TRIGGER_IS_PRECONDITION"),
+        ("uc-trigger-empty-de", VALID_DE_TOLERANT.replace(
+            "**Trigger:** Eine Kundin meldet einen Sachverhalt telefonisch",
+            "**Trigger:**"), "UC_TRIGGER_EMPTY"),
+        ("uc-trigger-step-ref-de", VALID_DE_TOLERANT.replace(
+            "meldet einen Sachverhalt telefonisch",
+            "meldet einen Sachverhalt telefonisch (Schritt 1)"),
+         "UC_TRIGGER_STEP_REF"),
+        ("uc-trigger-precondition-de", VALID_DE_TOLERANT.replace(
+            "**Trigger:** Eine Kundin meldet einen Sachverhalt telefonisch",
+            "**Trigger:** Der Benutzer ist eingeloggt"),
+         "UC_TRIGGER_IS_PRECONDITION"),
+    ]:
+        doc = parse_document(text)
+        check_contract(doc, "UC-001-example.md")
+        expect(name, doc.problems, [code])
+
+    doc = parse_document(VALID_EN.replace(
+        "**Primary Actor:** Clerk", "**Primary Actor:** Clerk, Guest"))
+    check_contract(doc, "UC-001-create-reservation.md")
+    expect("several-primary-actors", doc.problems, [],
+           forbidden_severity=WARN)
+    expect("several-primary-actors", doc.problems, [],
+           forbidden_severity=ERROR)
+
+    doc = parse_document(VALID_EN.replace(
+        """### A1: Guest Already Exists
+
+**Trigger:** Guest email matches existing record (step 2)
+**Flow:**
+
+1. System displays existing guest information.
+2. Use case continues at step 3.
+""", "_None — no step of the main success scenario can fail or branch._\n"))
+    check_contract(doc, "UC-001-create-reservation.md")
+    expect("no-alternative-placeholder", doc.problems, [],
+           forbidden_severity=WARN)
+    expect("no-alternative-placeholder", doc.problems, [],
+           forbidden_severity=ERROR)
 
     for name, text in [
         ("invalid-trigger", VALID_EN.replace("(step 2)", "(step 99)")),

@@ -121,27 +121,45 @@ and the Data Types with their Length/Precision conventions.
 
 ## Multi-Column Constraints
 
-If validation spans multiple columns, add after the table:
+If validation spans multiple columns, add a `#### Constraints` heading below the
+entity's attribute table and list one rule per bullet:
 
-**Constraints:** Check-out date must be after check-in date.
+```markdown
+#### Constraints
+
+- Check-out date must be after check-in date.
+- The number of guests must not exceed the room type's capacity.
+```
+
+Never write constraints as a bold `**Constraints:**` line or an extra table row.
+Omit the heading when the entity has no multi-column constraint.
 
 ## Workflow
 
 1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
 2. Read the existing entity model and requirements from the resolved docs path; reconcile only the requested scope.
-3. Track entities with the available planning/task mechanism when useful.
-4. Write the document header and ER diagram (relationships only).
-5. For each entity:
+3. **Clarify before writing.** Scan the sources with [references/clarify-checklist.md](references/clarify-checklist.md)
+   and ask only the questions whose answer changes the model and has no reasonable default: at most five, most
+   important first (entities and cardinality before ranges and lengths), each with a recommended option. Write
+   answers into the affected relationship lines, Validation Rules cells and constraints. Decide everything else with
+   the best default, label it as a proposal and report it as an assumption. When no one can answer (a pipeline run, a
+   host without a way to ask, or the user said not to ask), take the recommended option for every question and
+   report it as an assumption. Never ask about SQL types, indexes or other implementation choices.
+4. Track entities with the available planning/task mechanism when useful.
+5. Write the document header and ER diagram (relationships only).
+6. For each entity:
     - Write ### heading
     - Write one sentence description
     - Write attribute table with 5 columns
-    - Add constraints if needed
+    - Add a `#### Constraints` heading with one bullet per rule if needed
     - Mark todo complete
-6. Validate the document:
+7. Validate the document:
     - Every entity in the ER diagram has a corresponding attribute table section
     - Every attribute table has exactly 5 columns
     - No attributes appear inside the Mermaid diagram entity blocks
     - All foreign keys reference existing entities
+    - Every foreign key has a relationship line in the ER diagram, and every relationship line has a backing foreign key
+    - Multi-column constraints are a `#### Constraints` bullet list below the table
     - All validation rules use values from [references/REFERENCE.md](references/REFERENCE.md)
     - Both relationship ends agree with FK nullability, uniqueness and participation evidence
-7. Report the output path, changed entities/constraints, checks and unresolved evidence or downstream impacts. Suggest a migration skill only when its installed contract supports this model.
+8. Report the output path, changed entities/constraints, checks and unresolved evidence or downstream impacts, with the **Clarified**, **Assumed** and **Open** items described in the clarification checklist. Suggest a migration skill only when its installed contract supports this model.

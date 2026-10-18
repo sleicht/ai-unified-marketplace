@@ -4,14 +4,17 @@
 
 **Use Case ID:** UC-XXX
 **Use Case Name:** [Descriptive Name]
-**Primary Actor:** [Role]
+**Primary Actor:** [Role that pursues the goal — several comma-separated when each starts the use case alone and pursues the same goal]
+**Secondary Actors:** [Supporting roles or external systems, comma-separated — omit this line when there are none]
 **Goal:** [In one sentence: the observable outcome the actor achieves and why — not "use the system"]
+**Trigger:** [The event that starts the use case — an actor's request, a point in time, or a message from an external system; not a state that is already true]
 **Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete
-**Requirements:** [FR-001](../requirements.md)
+
+**Requirements:** [FR-XXX, NFR-XXX, CON-XXX](../requirements.md)
 
 ## Preconditions
 
-- [Condition that must be true before the use case starts]
+- [State that is already true before the use case starts — not an event, and not checked during the use case]
 
 ## Main Success Scenario
 
@@ -38,7 +41,7 @@
 
 ### Failure Postconditions
 
-- [State of the system if the use case fails]
+- [Minimum guarantee that holds for every unsuccessful end of the use case, e.g. no partial data is stored]
 
 ## Business Rules
 

@@ -44,9 +44,12 @@ Use the same headings and tables as
 `## Requirements Notes`. Preserve existing rows and IDs when updating.
 
 For recovered functional behaviour, create FR rows in user-story form with ID,
-Title, User Story, Priority and Status. Use `To confirm` for unknown priority;
-use Implemented only with direct implementation evidence, and do not equate code
-presence with verification or stakeholder approval. In Requirements Notes, link
+Title, User Story, Priority and Status. Use `To confirm` for unknown priority.
+Derive each FR's status from its linking use cases as defined in the
+[requirements reference](../../aiup-requirements/references/REFERENCE.md);
+because recovered use cases are `Draft`, recovered FRs are `Open` until a human
+approves and advances their use cases. Do not equate code presence with
+verification or stakeholder approval. In Requirements Notes, link
 each recovered FR to source files, distinguish observed behaviour from accepted
 intent, and record uncertainty or divergence. Apply the corresponding German
 vocabulary when appropriate.
@@ -57,8 +60,8 @@ or unsupported constraints to fill the tables.
 
 Add FR mappings inside the diagram as comments, for example `%% UC-001 -> FR-001`.
 Every mapped FR must exist. Include the same evidenced IDs in the UC Overview's
-Requirements field. If the link cannot be established, report the gap and leave
-the UC Draft rather than inventing a requirement.
+Requirements field. If the link cannot be established, report the gap rather
+than inventing a requirement.
 
 ## Use-Case Specification Files
 
@@ -75,7 +78,7 @@ Required structure:
 **Use Case Name:** [Name]
 **Primary Actor:** [Role]
 **Goal:** [Observable outcome]
-**Status:** Implemented | Draft
+**Status:** Draft
 **Requirements:** [FR-001](../requirements.md)
 **Stakeholders:** [Affected roles/groups]
 **Trigger:** [Starting event/action]
@@ -115,6 +118,13 @@ Required structure:
 
 [Rule]
 ````
+
+Every recovered specification is `Draft`, even for working, tested code. The code
+is the only source, so a bug in it would otherwise be written down as required
+behaviour and tests derived from the spec would restate it. A human reviews each
+spec against intended behaviour and sets `Approved`; from there the status moves
+on as for any other use case. An existing spec whose content a re-run leaves
+unchanged keeps its human-set status.
 
 Use business language. For example, translate `POST /orders` into “System creates the order”, a validation exception into the rejected condition, and a mail call into “System sends a confirmation email”.
 
@@ -168,6 +178,24 @@ A unique FK limits multiplicity only. For parent A and child B, a non-null uniqu
 FK normally gives `A ||--o| B`, while a nullable unique FK gives `A |o--o| B`.
 Use `A ||--|| B` only when both mandatory participation rules are evidenced.
 Represent a domain join entity with its separate FKs and composite constraints.
+
+Close these recurring entity-model gaps:
+
+- **One line per FK.** Draw an ER relationship line for every foreign-key
+  column, not only the obvious parent. A tenant or owner FK added later (for
+  example with `ALTER TABLE`) gets its own line even when the entity already
+  hangs off another parent.
+- **FK and ER line cross-check.** Every `Foreign Key (TABLE.attribute)` has a
+  relationship line between the two entities, and every relationship line is
+  backed by a foreign key or a join entity.
+- **Composite keys.** Mark each composite-key column `Primary Key`, or `Primary
+  Key, Foreign Key (TABLE.id)` when it also references another table; never fall
+  back to `Not Null`. Name the composite key under `#### Constraints`.
+- **Delete behaviour.** If the document describes what a delete removes, trace
+  `ON DELETE CASCADE` and ORM cascade/orphan removal transitively: deleting A
+  removes B, deleting B removes C, and C may belong to someone other than A's
+  owner. State what leaves the database and whose data it was, or leave delete
+  behaviour out; an incomplete cascade summary misleads more than none.
 Add source paths and unresolved mappings after the attribute table. Do not claim
 migration readiness when a source type or constraint remains unrepresented.
 

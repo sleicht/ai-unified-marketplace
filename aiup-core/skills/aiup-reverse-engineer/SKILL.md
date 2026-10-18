@@ -65,7 +65,8 @@ canonical requirements headings stable and use the UC format's language labels.
 
 - Recover intent; do not transcribe implementation.
 - Group entry points by the actor's end-to-end goal. A CRUD controller is usually one “Manage X” use case, not one per route.
-- Derive only what code, schema, configuration, and tests support. Mark partial or unclear behaviour as `Draft` and report the uncertainty.
+- Derive only what code, schema, configuration, and tests support. Report partial or unclear behaviour as uncertain.
+- Every recovered use-case specification has Status `Draft`, even for working, tested code: code is the only source, so a bug in it would otherwise be written down as required behaviour, and tests derived from the spec would restate that bug. The user reviews each spec against intended behaviour and sets `Approved` before tests are written from it. An existing spec whose content this run leaves unchanged keeps its human-set status.
 - Treat migrations as the persistence source of truth, then use ORM models and DTOs to add relationships and validation.
 - Exclude health/metrics/static routes and technical persistence tables from business artifacts.
 
@@ -91,7 +92,7 @@ For large projects, first list every entry-point file, cluster files by feature,
 
 ### 3. Aggregate use cases
 
-For each entry point, ask what goal the actor achieves. Group all operations serving that goal before assigning IDs.
+For each entry point, ask what goal the actor achieves. Group all operations serving that goal before assigning IDs. Test each candidate: is it a complete goal the primary actor would recognise as valuable? A service that validates, loads or persists data is a step of a use case, not a use case.
 
 Example aggregation:
 
@@ -113,6 +114,9 @@ existing IDs; allocate IDs only for genuinely new goals.
 - Derive preconditions from guards and required upstream state.
 - Derive postconditions from persisted changes, events, notifications, and rollback behaviour.
 - Derive business rules from validation, configuration, constants, constraints, and policy branches.
+- Apply the use-case quality rules of `aiup-use-case-spec` (its SKILL.md and `references/format-spec.md`) instead of restating them here: preconditions are states, never the request that starts the use case; input checks during the use case become a step plus an alternative flow; failure postconditions are minimum guarantees derived from transaction boundaries and pre-write checks, not error responses; when the code has no alternative branch, write an italic `_None — …_` placeholder rather than inventing a flow.
+- Name actors and business objects with the terms of the domain vocabulary section of the scoped `docs/REFERENCE.md`, when present.
+- A policy enforced in several places is one rule: write it in the use case that owns the data and cite it elsewhere with a qualified reference instead of copying it.
 - Number `BR-XXX` business-rule IDs from `BR-001` within each generated use-case file. Qualify cross-use-case references with the use case ID, for example `UC-005 BR-002`.
 
 ### 5. Recover the entity model
@@ -123,7 +127,9 @@ Inspect sources in this order:
 2. ORM models and mappings
 3. DTOs/forms only when persistence structure is otherwise unavailable
 
-Map implementation types and validation into the AIUP vocabulary defined in the artifact contract. Derive relationship cardinality from foreign keys, nullability, unique constraints, and ORM associations. Skip framework tables unless they carry domain lifecycle.
+Map implementation types and validation into the AIUP vocabulary defined in the artifact contract. Derive relationship cardinality from foreign keys, nullability, unique constraints, and ORM associations. Skip framework tables unless they carry domain lifecycle. Apply the artifact contract's foreign-key, cascade and composite-key rules.
+
+Structure comes from the schema; meaning does not. A migration comment records what a table was for when it was written, not every current use. Before writing an entity's description, read the decision records and domain docs — ADRs found with the glob `docs/**/adr/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/`), and the domain vocabulary section of the scoped `docs/REFERENCE.md`, when present — and the code that reads the table. If a row can play more than one role, the description must say so.
 
 ### 6. Write and cross-validate
 
@@ -147,13 +153,17 @@ Fix every reported problem, then verify:
 - every spec numbers business rules `BR-001`, `BR-002`, … without gaps;
 - entity tables have exactly five columns and only AIUP types/validation terms;
 - every ER entity has an attribute section and every section appears in the ER diagram;
+- every foreign-key column, including a tenant or owner FK added later, has its own ER relationship line, and every relationship line is backed by a foreign key or join entity;
+- every composite-key column says `Primary Key` or `Primary Key, Foreign Key (TABLE.id)`, never only `Not Null`;
+- any described delete behaviour traces `ON DELETE CASCADE` and ORM cascade/orphan removal transitively, or is left out;
+- every recovered use-case specification has Status `Draft`, except an existing spec this run leaves unchanged;
 - grouping follows distinct actor goals; explain any close entry-point/use-case counts without forcing unrelated goals together;
 - every UC maps to existing FR rows, and the recovered catalogue follows the forward table/heading contract;
 - recovered key types, signed values, string bounds and relationship optionality match source evidence.
 
 ### 7. Report
 
-Report output paths, changed IDs and rule mappings, validation results, use-case and entity counts, unclassified entry points/files, excluded technical tables, unresolved evidence and affected consumers. Identify uncertain use cases for review before recommending a compatible downstream skill.
+Report output paths, changed IDs and rule mappings, validation results, use-case and entity counts, unclassified entry points/files, excluded technical tables, unresolved evidence and affected consumers. State that every recovered specification is `Draft` and why: the code was the only source, so its bugs are now written down as behaviour until a human approves each use case. Identify uncertain use cases for review first, before recommending a compatible downstream skill.
 
 ## Do Not
 

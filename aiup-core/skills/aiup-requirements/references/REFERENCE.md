@@ -61,6 +61,23 @@ Translate states by meaning: `Deferred` ↔ `Zurückgestellt`, `Rejected` ↔
 superseded requirement. Keep review/conflict notes separate from these states;
 proposed thresholds and priorities remain unconfirmed until reviewed.
 
+### Status Derived from Use Cases
+
+Deferred, Rejected and Superseded are scope decisions and are set by hand. Open,
+In Progress, Implemented and Verified are progress, and progress follows the use
+cases that list the requirement in their `**Requirements:**` (German
+`**Anforderungen:**`) line:
+
+| Requirement status      | When                                                                                                   |
+|-------------------------|--------------------------------------------------------------------------------------------------------|
+| Open / Offen            | No linking use case is Implemented yet (all Draft/Entwurf, Reviewed/Geprüft or Approved/Genehmigt)     |
+| In Progress / Teilweise | Some linking use cases are Implemented or beyond, others are not                                       |
+| Implemented / Umgesetzt | Every linking use case is Implemented/Implementiert or beyond, but not all are Tested or Done          |
+| Verified / Bestätigt    | Every linking use case is Tested/Getestet or Done/Abgeschlossen                                        |
+
+Obsolete/Obsolet use cases do not count. A requirement that no use case links
+keeps its status by hand, including one linked only by Obsolete use cases.
+
 ## NFR Categories
 
 | Category        | Description                                   |
@@ -82,6 +99,14 @@ proposed thresholds and priorities remain unconfirmed until reviewed.
 | Schedule    | Deadlines, milestones, time constraints       |
 | Regulatory  | Legal, compliance, industry standards         |
 | Operational | Deployment, maintenance, support requirements |
+
+### Constraint Source
+
+The optional `Source` column sits directly before `Priority`, so `Status` stays
+the last column. It names the law, regulation, standard or internal policy a
+constraint comes from, down to the article and, where it matters, the version
+(`GDPR Art. 17(1)`, `ISO 27001:2022 A.8.24`). When the column is present, fill it
+for every `Regulatory` constraint and leave it empty for the others.
 
 ## Language Variants
 

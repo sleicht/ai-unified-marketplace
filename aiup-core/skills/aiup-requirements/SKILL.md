@@ -116,6 +116,12 @@ Define limitations and boundaries imposed on the solution.
 
 Use columns `ID`, `Title`, `Constraint`, `Category`, `Priority`, and `Status`. Example: `CON-001 | Runtime Platform | Backend must run on Java 21 LTS. | Technical | High | Open`.
 
+An optional `Source` column, placed directly before `Priority` so `Status` stays last, names where a constraint comes
+from: a law, regulation, standard or internal policy, down to the article or paragraph and, where it matters, the
+version (`GDPR Art. 17(1)`, `ISO 27001:2022 A.8.24`, `Operating Policy OP-12 v3`). Omit the column when no constraint
+comes from an outside document. When present, fill it for every `Regulatory` constraint and leave it empty for the
+others. Example: `CON-006 | Right to Erasure | Personal data of a customer must be erased within 30 days of a request. | Regulatory | GDPR Art. 17(1), 12(3) | High | Open`.
+
 ## Language Variants
 
 Default to English. For German docs, use these vocabulary variants and keep domain terms untranslated:
@@ -138,7 +144,7 @@ Every requirement must pass these checks before finalizing:
 | Check       | Rule                                 | Bad Example                          | Good Example                  |
 |-------------|--------------------------------------|--------------------------------------|-------------------------------|
 | Measurable  | NFRs must have a number or threshold | "System should be fast"              | "Pages load within 2 seconds" |
-| Singular    | One requirement per row              | "System must log in and export data" | Split into FR-001 and FR-002  |
+| Singular    | One requirement per row              | "System must import and export data" | Split into FR-001 and FR-002  |
 | Unambiguous | No subjective terms                  | "User-friendly interface"            | "WCAG 2.1 AA compliant"       |
 | Testable    | Can write a pass/fail test           | "System is reliable"                 | "99.9% uptime over 30 days"   |
 | Unique IDs  | No duplicate IDs across all tables   | Two FR-001 entries                   | Each ID used exactly once     |
@@ -147,7 +153,7 @@ Every requirement must pass these checks before finalizing:
 
 Record assumptions, rewrites, and unresolved conflicts under `## Requirements Notes`; do not create a separate notes file.
 
-- **Incomplete source document**: Record missing roles, NFRs or constraints in Requirements Notes. Progress on grounded requirements; ask only for decisions that block the requested scope.
+- **Incomplete source document**: Record missing roles, NFRs or constraints in Requirements Notes. Ask about them in the clarification step (workflow step 4) when they block the requested scope; otherwise progress on grounded requirements.
 - **Ambiguous requirement from user**: Propose a measurable requirement, label it as unconfirmed in Requirements Notes and ask the user to confirm the threshold
 - **Conflicting requirements**: Flag the conflict explicitly (e.g., "FR-003 requires real-time sync but CON-002 limits to
   batch processing") and ask the user to resolve
@@ -165,20 +171,28 @@ Record assumptions, rewrites, and unresolved conflicts under `## Requirements No
 1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
 2. Detect existing docs language or user-requested language; default to English.
 3. Read the vision document or project brief from the resolved docs path.
-4. Track each requirement type with the available planning/task mechanism when the environment provides one.
-5. Write the document header.
-6. For functional requirements:
+4. **Clarify before writing.** Scan the sources with [references/clarify-checklist.md](references/clarify-checklist.md)
+   and ask only the questions whose answer changes the catalogue and has no reasonable default: at most five, most
+   important first (scope and roles before quality thresholds), each with a recommended option; for a quality
+   threshold, propose a number. Write answers into the affected rows. Decide everything else with the best default,
+   record it in `## Requirements Notes` as unconfirmed, and report it as an assumption. When no one can answer (a
+   pipeline run, a host without a way to ask, or the user said not to ask), take the recommended option for every
+   question and report it as an assumption.
+5. Track each requirement type with the available planning/task mechanism when the environment provides one.
+6. Write the document header.
+7. For functional requirements:
     - Identify user roles
     - Define user stories with clear goals and benefits
     - Preserve confirmed priorities; propose new ones based on evidenced business value, or use `To confirm`
-7. For non-functional requirements:
+8. For non-functional requirements:
     - Define measurable quality attributes
     - Categorize by NFR type
     - Ensure requirements are testable
-8. For constraints:
+9. For constraints:
     - Document technical and business limitations
     - Categorize by constraint type
-9. Validate: run every requirement against the quality checks table above
+    - Name the source of each regulatory or externally imposed constraint in the optional `Source` column
+10. Validate: run every requirement against the quality checks table above
     - No duplicate IDs across all tables
     - All Status columns filled
     - **Hard gate:** every FR User Story matches the selected language's story
@@ -186,5 +200,9 @@ Record assumptions, rewrites, and unresolved conflicts under `## Requirements No
       row; any row missing the role / goal / benefit clauses is rejected and
       rewritten before finalizing, no exceptions
     - All NFRs contain a measurable threshold
-10. Validate the Markdown headings, table columns, stable IDs, and the single fenced Mermaid block under `## Use Case Diagram`.
-11. Report the output path, changed IDs, checks, proposed thresholds and unresolved decisions. Name `aiup-use-case-diagram` as the next skill only when the catalogue is ready.
+11. Validate the Markdown headings, table columns, stable IDs, and the single fenced Mermaid block under `## Use Case Diagram`.
+12. When updating a catalogue whose use cases exist, derive each requirement's progress status from the `**Status:**`
+    of the use cases linking it, as defined under Status in the reference; never change a Deferred, Rejected or
+    Superseded status on your own.
+13. Report the output path, changed IDs, checks, proposed thresholds and unresolved decisions, with the **Clarified**,
+    **Assumed** and **Open** items described in the clarification checklist. Name `aiup-use-case-diagram` as the next skill only when the catalogue is ready.

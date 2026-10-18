@@ -33,12 +33,13 @@ this order on save):
 
 **Use Case ID:** UC-XXX
 **Use Case Name:** <name>
-**Primary Actor:** <role>
+**Primary Actor:** <roles>                       (one or more, comma-separated)
 **Secondary Actors:** <roles>                    (optional)
 **Goal:** <one sentence>
+**Trigger:** <event that starts the use case>    (optional)
 **Status:** <status value>
 
-**Requirements:** [FR-001, FR-002](../requirements.md)   (optional)
+**Requirements:** [FR-001, NFR-004, CON-003](../requirements.md)   (optional)
 
 ## Preconditions
 
@@ -75,6 +76,12 @@ this order on save):
 <free-text description>
 ```
 
+`### Failure Postconditions` (German `### Fehlerfall`) keeps its heading for
+compatibility but holds the **minimum guarantees**: statements that must hold
+for every unsuccessful termination of the use case, such as "No reservation is
+created". A system reaction to the failure (an error message) belongs in the
+alternative flow, not here.
+
 ## Languages
 
 The structure is identical in English and German; only headings, field
@@ -91,12 +98,13 @@ and empty files are English) and preserved on save.
 | Primary actor      | `**Primary Actor:**`         | `**Primärer Akteur:**`   |
 | Secondary actors   | `**Secondary Actors:**`      | `**Sekundäre Akteure:**` |
 | Goal               | `**Goal:**`                  | `**Ziel:**`              |
+| Use case trigger   | `**Trigger:**` (Overview)    | `**Trigger:**` (same)    |
 | Status             | `**Status:**`                | `**Status:**` (same)     |
 | Requirements       | `**Requirements:**`          | `**Anforderungen:**`     |
 | Preconditions      | `## Preconditions`           | `## Vorbedingungen`      |
 | Main scenario      | `## Main Success Scenario`   | `## Haupt Flows`         |
 | Alternative flows  | `## Alternative Flows`       | `## Alternative Flows`   |
-| Trigger field      | `**Trigger:**`               | `**Trigger:**`           |
+| Flow trigger field | `**Trigger:**`               | `**Trigger:**`           |
 | Flow field         | `**Flow:**`                  | `**Flow:**`              |
 | Postconditions     | `## Postconditions`          | `## Nachbedingungen`     |
 | Success subsection | `### Success Postconditions` | `### Erfolgsfall`        |
@@ -125,7 +133,11 @@ Status values (either language is readable in any document):
    on save.
 2. **Overview** — the `## Overview` section must exist and carry the
    five mandatory fields: ID, Name, Primary Actor, Goal, Status.
-   Secondary Actors and Requirements are optional.
+   Secondary Actors, Trigger and Requirements are optional. Primary
+   Actor holds one role or a comma-separated list of roles; the label
+   stays singular (`**Primary Actor:**`, `**Primärer Akteur:**`) in
+   both cases. A `**Trigger:**` line inside the Overview is the use case
+   trigger; inside an alternative flow it is that flow's trigger.
 3. **Status** — the status value must start with one of the values
    above (case-insensitive). Decoration without letters before the
    value and any annotation after it at a word boundary are tolerated:
@@ -181,17 +193,31 @@ creates diffs on the first Studio save:
 
 The `/aiup-use-case-spec` skill additionally requires:
 
+- The Overview names the use case trigger — the event that starts the use
+  case (an actor's request, a point in time, a message from an external
+  system). The line is optional so that older documents stay valid, and
+  the skill writes it for every new document. The validator warns when a
+  present trigger is empty (`UC_TRIGGER_EMPTY`), references a step
+  (`UC_TRIGGER_STEP_REF`; `(step N)` belongs to alternative-flow triggers),
+  or repeats a precondition word for word (`UC_TRIGGER_IS_PRECONDITION`).
+  Whether it is really an event and not a state needs semantic review.
 - All five template sections and both postcondition subsections exist.
 - The use case id matches `[SB]?UC-[A-Za-z0-9_-]+` and the filename
   starts with the id (canonical: `UC-XXX-<kebab-case-name>.md`).
 - The main scenario has steps numbered `1..n` without gaps.
-- At least one alternative flow; each trigger names its main-scenario
+- Alternative flows document every meaningful alternative or exception
+  condition of a main-scenario step. A use case without one states this
+  with an italic placeholder (`_None — …_`) instead of an invented flow;
+  the validator warns (`NO_ALTERNATIVE_FLOWS`) only when the section is
+  empty without a placeholder. Each trigger names its main-scenario
   step as `(step N)` / `(Schritt N)`; each flow's last step ends with
   `Use case continues at step N.` or `Use case ends.` (German: `Der Use
   Case wird bei Schritt N fortgesetzt.` / `Der Use Case endet.`). Every referenced
   main-scenario step must exist, including conditional continuations.
 - Success and failure postconditions are non-empty (an explicit italic
   placeholder such as `_None — …_` counts as a deliberate statement).
+  Failure postconditions are minimum guarantees that hold for every
+  unsuccessful end, not system reactions (semantic review, not validated).
 - Business rule headings carry a `BR-XXX:` label, numbered `BR-001`, `BR-002`, 
   … without gaps within the document.
 - No concrete implementation-level terms in steps (SMTP, email server, JWT,
@@ -202,7 +228,9 @@ The `/aiup-use-case-spec` skill additionally requires:
 ### Generation and updates
 
 The Requirements field remains optional for tolerant parsing of existing files.
-New or updated generated specs include evidenced FR links; unresolved mappings
+New or updated generated specs include evidenced FR links, plus the `NFR-*`
+and `CON-*` ids the use case must respect (ids only, never copied requirement
+text, separated from `Status` by a blank line); unresolved mappings
 are reported and the specification remains Draft. Preserve UC identity and
 unaffected content. If positional BR labels change, record the qualified old/new
 mapping in an extra Change Notes section and reconcile authorised references.

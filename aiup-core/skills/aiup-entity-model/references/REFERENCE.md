@@ -29,8 +29,10 @@ empty; use `Unknown` when evidence is insufficient. Do not infer defaults.
 
 Examples: `Optional, Foreign Key (USER.id), Unique` and `Primary Key,
 Application Generated` for an application-generated UUID. A Primary Key does not
-imply a sequence. For composite keys or constraints, name the participating
-attributes in `**Constraints:**` after the table. Record unknown generation there
+imply a sequence. Mark each composite-key column `Primary Key`, or `Primary Key,
+Foreign Key (TABLE.id)` when it also references another entity. For composite
+keys or constraints, name the participating attributes as bullets under a
+`#### Constraints` heading after the table, one rule per bullet. Record unknown generation there
 instead of inventing it. Preserve source paths for constraints and generation.
 Never copy a credential-bearing default value; describe its purpose and location.
 

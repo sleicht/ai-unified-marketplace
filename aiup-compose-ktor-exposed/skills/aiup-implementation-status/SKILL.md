@@ -35,7 +35,9 @@ Resolve docs paths before writing:
 Read these before updating status:
 
 - `docs/entity_model.md`
-- `docs/use_cases/UC-*.md` for requested use cases
+- `docs/use_cases/UC-*.md` for requested use cases, and only the `requirements.md` rows their `**Requirements:**` (German `**Anforderungen:**`) lines link
+- `UC-XXX BR-YYY` business-rule markers in source, found first by searching for `UC-XXX BR-`; fall back to domain names only for unmarked rules
+- Open questions recorded in implementation plans or handoffs
 - server module `src/main/kotlin/**/modules/**`
 - shared module `src/commonMain/kotlin/**`
 - UI module only when UI implementation status is requested; discover Compose common/platform sources or Kobweb jsMain pages, layouts, styles and app entry
@@ -76,14 +78,19 @@ Required sections:
 
 1. `Implementation Status`
 2. `Use Case Scope` — use case ID, title, primary actor, status
-3. `Traceability` — requirements/use-case/entity/code links
+3. `Traceability` — requirements/use-case/entity/code links; one coverage unit per business rule and per linked NFR/CON. Judge a testable NFR/CON like a business rule; mark a system-wide one `Not applicable` with its reason; never mark a performance NFR covered from reading code alone
 4. `Entity Coverage` — filtered entity matrix rows
 5. `Backend Coverage` — route, service, repository, DTO, migration evidence
 6. `Architecture and Contract Coverage` — DI graph, dependency rules, shared API checks, and local coverage gates
 7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/Compose or Kobweb browser test evidence; record scenario, file, command, execution date/revision when available, result and outstanding gap separately
-8. `Gaps` — missing or partial items with file-level evidence, including implementation-to-test handoffs and unexecuted checks
+8. `Gaps` — missing or partial items with file-level evidence, including implementation-to-test handoffs, unexecuted checks, business rules without a `UC-XXX BR-YYY` marker, and open questions from handoffs
+9. `Changes since previous status` — only when the page already existed: closed items, new items, and verdicts that changed although no code, specification or test changed (flag these; do not silently flip them)
 
 Never infer passing tests from source-file presence. Use `Present, not run`, `Passed`, `Failed`, or `Blocked` with evidence for each verification item; distinguish compiled source, executed unit tests, browser tests and exported-site smoke tests. Shared JSON compatibility is separate from JVM/KLIB API checks.
+
+## Requirement Coverage
+
+Only when asked whether all requirements are covered, add a `Requirement Coverage` section to the response or a user-named file. For each active requirement (list Deferred, Rejected and Superseded as out of scope), check three stages: linked from a non-obsolete use case, every linking use case appears in a scoped `docs/test_cases/` journey, and Verified (every linking use case `Tested` or `Done`). List each missing requirement by ID at its first missing stage with one handoff: `aiup-use-case-spec` or `aiup-use-case-diagram`, `aiup-test-case`, or the construction/test skill for the use case. An unlinked NFR or CON may legitimately apply system-wide; say so rather than pushing a link. Never write `requirements.md`.
 
 ## DO NOT
 
@@ -92,6 +99,9 @@ Never infer passing tests from source-file presence. Use `Present, not run`, `Pa
 - Create company-specific styling, names, or libraries
 - Rewrite requirements, use case specs, migrations, or source code
 - Run broad builds just to produce a status page
+- Pick the side of a drift between code and specification; list both remedies (change the specification with `aiup-use-case-spec`, or the code with the construction skill) and let the user decide
+- Suggest the same fix twice for a gap still open after a fix aimed at it; state what the specification and code each say and ask the user to settle it
+- Suggest another status run when every unit is fully evidenced
 
 ## Workflow
 
@@ -100,11 +110,11 @@ Never infer passing tests from source-file presence. Use `Present, not run`, `Pa
 3. Read `entity_model.md` and requested use case specs.
 4. Discover server/shared/UI modules from the owning stack's `settings.gradle.kts`.
 5. Read Flyway migration filenames and SQL headers, especially `-- Source:` comments when present.
-6. Search source files for entity model classes, repositories, services, routes, DTOs, and tests.
+6. Search source files for `UC-XXX BR-` markers first, then entity model classes, repositories, services, routes, DTOs, and tests.
 7. For UI scope, trace ViewModel dependencies through feature ports to transport adapters and record state/action screen seams.
 8. Record feature-owned DI modules, complete graph verification, architecture rules, shared API dumps, and measured local coverage gates when evidence exists.
 9. Update the entity implementation-status matrix in `entity_model.md`.
-10. Write or refresh per-use-case implementation-status Markdown.
+10. Write or refresh per-use-case implementation-status Markdown; when refreshing, compare with the previous page for `Changes since previous status`.
 11. Verify links point to existing relative paths and matrix columns line up.
 12. If commands are needed, use detected command shape: `mise run //<stack>:<task>` from monorepo root, bare `mise run <task>` inside a stack, or Gradle fallback.
 

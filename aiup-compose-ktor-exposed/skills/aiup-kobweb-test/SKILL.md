@@ -56,17 +56,39 @@ Do not import Compose Multiplatform `runComposeUiTest` or Android test rules.
   API errors must retain their HTTP meaning instead of hitting an HTML fallback.
 
 Delete tests only for explicitly retired or clearly superseded contract behaviour.
-A missing paragraph is not proof a scenario was removed.
+A missing paragraph is not proof a scenario was removed. Keep existing traceability
+conventions; name a test-case journey's `TC-XXX` ID only in KDoc or the test name.
+
+## When a Test Fails
+
+The specification is the oracle, not the code. Take every expected value from the
+specification or test data, never from what the code returns. When a test fails,
+decide which side is wrong before changing anything:
+
+- **Test mechanics** (fixture, setup, wait, locator, navigation, stubbed response,
+  MockEngine wiring, or test data that misses a precondition): fix the test.
+- **A value or outcome the specification states** (message, count, status,
+  calculated value, a step that must or must not happen): the code disagrees with
+  the specification. Do not change, weaken (`assertTrue(x > 0)`, `assertNotNull`
+  instead of `assertEquals`, `contains` instead of the full message) or delete the
+  assertion, and do not disable the test (`@Ignore`, `test.skip`, a commented-out
+  assertion). Leave it failing and report the step or rule, the expected value and
+  the actual value. The user decides which side is wrong: the code
+  ([aiup-kobweb-ui](../aiup-kobweb-ui/SKILL.md)) or the specification (`aiup-use-case-spec`).
+
+An expected value changes only when the specification changed.
 
 ## Verify and Report
 
 Run the complete affected suite through existing mise tasks or the owning wrapper
 and configured browser runner. Record each scenario's test file, command,
 execution result and remaining gap; distinguish present, unrun, failed and passed.
+Handle failures as described in [When a Test Fails](#when-a-test-fails).
 For new browser infrastructure required by requested tests, add only the smallest
 supported harness; otherwise report the missing prerequisite.
 
 A test-only session exposes production bugs and gives concrete fixes to
-[aiup-kobweb-ui](../aiup-kobweb-ui/SKILL.md). Do not weaken expectations or silently
-rewrite production code. Use `aiup-ktor-test` for backend route/persistence tests.
+aiup-kobweb-ui; it does not silently rewrite production code. Use `aiup-ktor-test`
+for backend route/persistence tests. Then hand off to `aiup-implementation-status`
+for the use case.
 

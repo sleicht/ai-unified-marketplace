@@ -70,6 +70,7 @@ Read [the executable record migrations and repository test](../aiup-implement/re
 9. Apply the real migration chain to disposable PostgreSQL; also upgrade the previous schema with representative existing rows. Assert affected constraints, defaults and audit triggers.
 10. If language-server diagnostics are available, run them for related Kotlin table files that were touched.
 11. Run the discovered migration/Testcontainers task using the namespaced or local command shape in the reference. Run repository round trips for changed mappings; Kotlin compilation alone does not verify SQL. Report execution prerequisites and unrun checks explicitly.
+12. Report the migration files created and end with one handoff line: `Next: aiup-implement UC-XXX` for the use case that needs the new schema, or `Next: aiup-implement` naming the specification to implement first when no use case was given.
 
 ## Resources
 

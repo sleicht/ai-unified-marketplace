@@ -108,8 +108,8 @@ after their prerequisites. For each UC, order backend before backend tests and U
 UI before UI tests, and status last. Record predecessor session numbers and
 required on-disk outputs; never say only "continue the previous session".
 Implementation sessions must save changed files, affected symbols, pending test
-scenarios, failed/unrun checks and prerequisites in their session's `Handoff`
-block; they may link the existing use-case status artefact for detail. Tests
+scenarios, failed/unrun checks, prerequisites and open specification questions
+in their session's `Handoff` block; they may link the existing use-case status artefact for detail. Tests
 consume that handoff; status distinguishes test presence from execution and
 passing evidence.
 
@@ -158,8 +158,8 @@ checks the structure below. Write one Markdown file containing these sections:
    Use plain-language invocation, without requiring a particular slash-command host.
    Follow each prompt with a `#### Handoff` block, initialised as `Pending`, where
    that session records changed files, affected symbols, pending test scenarios,
-   checks run/passed/failed/unrun, and unresolved prerequisites. Do not put status
-   in the handoff; keep it in the index.
+   checks run/passed/failed/unrun, unresolved prerequisites and open questions.
+   Do not put status in the handoff; keep it in the index.
 7. `## Blockers`: unresolved prerequisites with their affected UCs/sessions, or `None`.
 
 Make each session prompt complete when combined with the shared header. Keep

@@ -74,8 +74,8 @@ unrelated changes, and stay within the named skill's boundary. If a required
 file, skill, or tool is unavailable, report the prerequisite and stop dependent
 work. Run the verification required by the named skill using this project's
 actual tasks. Report changed files, checks and results, and remaining blockers.
-Save changed files, affected symbols, pending test scenarios, checks and
-unresolved prerequisites in this session's Handoff block so the next session can
+Save changed files, affected symbols, pending test scenarios, checks, open
+questions and unresolved prerequisites in this session's Handoff block so the next session can
 read them. Distinguish test files present from executed/passing evidence.
 Update only this session's index row: Complete with evidence only when its
 required outputs and checks are satisfied; otherwise Pending or Blocked with the
@@ -119,6 +119,7 @@ Pending.
 - Pending test scenarios:
 - Checks run / passed / failed / unrun:
 - Unresolved prerequisites:
+- Open questions:
 -->
 
 ## Blockers

@@ -1,7 +1,23 @@
 #!/usr/bin/env ruby
 
+require "fileutils"
 require "json"
 require "pathname"
+
+def frontmatter_field(frontmatter, key)
+  lines = frontmatter.lines(chomp: true)
+  lines.each_with_index do |line, index|
+    match = line.match(/\A#{key}:\s*(.*)\z/)
+    next unless match
+
+    value = match[1].strip
+    return value.delete_prefix("'").delete_prefix('"').delete_suffix("'").delete_suffix('"') unless value.start_with?(">", "|")
+
+    block = lines[(index + 1)..].take_while { |next_line| next_line.empty? || next_line.match?(/\A\s/) }.map(&:strip)
+    return block.reject(&:empty?).join(value.start_with?(">") ? " " : "\n").strip
+  end
+  nil
+end
 
 def markdown_resource_links(text)
   fence = nil
@@ -61,7 +77,12 @@ retained_plugins.each do |plugin_name|
   errors << "marketplace description mismatch: #{plugin_name}" unless marketplace_entry&.fetch("description") == manifest.fetch("description")
 end
 %w[LICENSE NOTICE].each do |legal_file|
-  errors << "missing core #{legal_file}" unless ROOT.join("aiup-core", legal_file).file?
+  core_file = ROOT.join("aiup-core", legal_file)
+  if !core_file.file?
+    errors << "missing core #{legal_file}"
+  elsif !FileUtils.compare_file(core_file, ROOT.join(legal_file))
+    errors << "core #{legal_file} differs from root #{legal_file}"
+  end
 end
 
 
@@ -83,6 +104,17 @@ skill_files.each do |file|
   end
 
   name = text[/\A---\n.*?^name:\s+(\S+)/m, 1]
+  frontmatter = text[/\A---\n(.*?)\n---\n/m, 1].to_s
+  relative_file = Pathname.new(file).relative_path_from(ROOT)
+  unless name && name.length <= 64 && name.match?(/\A[a-z0-9]+(-[a-z0-9]+)*\z/)
+    errors << "skill name must be at most 64 lowercase letters, digits, and hyphens: #{relative_file}"
+  end
+  description = frontmatter_field(frontmatter, "description")
+  if description.to_s.empty?
+    errors << "missing skill description: #{relative_file}"
+  elsif description.length > 1024
+    errors << "skill description has #{description.length} characters, at most 1024 allowed: #{relative_file}"
+  end
   directory_name = Pathname.new(file).dirname.basename.to_s
   errors << "skill name must use aiup- prefix: #{file}" unless name&.start_with?("aiup-")
   errors << "skill name/directory mismatch: #{file}" unless name == directory_name
@@ -159,6 +191,12 @@ end
 forbidden_distribution_references = /aiup-vaadin-jooq|registry\.tessl\.io|tessl install|publish-tessl/
 [ROOT.join("README.md"), ROOT.join("CLAUDE.md"), ROOT.join("aiup-core/README.md")].each do |file|
   errors << "obsolete distribution reference: #{file.relative_path_from(ROOT)}" if File.read(file).match?(forbidden_distribution_references)
+end
+
+# Guides carry no scope notes about removed distribution or stacks, so any mention is stale.
+forbidden_docs_references = /tessl|use_cases\.puml|plantuml|vaadin|jooq|hilla|karibu|angular|\bjpa\b|spring boot|blazor|\.net\b|nestjs|next\.js|drizzle/i
+Dir.glob(ROOT.join("docs/**/*.md")).each do |file|
+  errors << "obsolete reference: #{Pathname.new(file).relative_path_from(ROOT)}" if File.read(file).match?(forbidden_docs_references)
 end
 
 if errors.empty?

@@ -15,9 +15,10 @@ layout depends on the selected stack plugin, but the documentation contract stay
 your-project/
 ├── docs/
 │   ├── vision.md
-│   ├── requirements.md
+│   ├── requirements.md      ← includes the Mermaid use case diagram
 │   ├── entity_model.md
-│   ├── use_cases.puml
+│   ├── architecture.md
+│   ├── REFERENCE.md
 │   ├── use_cases/
 │   │   ├── UC-001-*.md
 │   │   └── ...
@@ -29,6 +30,9 @@ your-project/
 
 `docs/vision.md` is maintained by the team. The other files are initially produced by AI Unified Process skills and then reviewed
 like any other project artifact. Commit them so identifiers, decisions, and generated code can be traced together.
+
+In a monorepo, each service owns this tree under `<service>/docs/`. Use the root `docs/` only for cross-cutting
+documentation.
 
 Stack-specific source and test trees are documented in the plugin READMEs:
 

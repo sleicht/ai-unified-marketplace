@@ -7,122 +7,87 @@ Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
 # Getting started
 
 AI Unified Process turns a product vision into reviewed specifications, implementation, and traceable tests.
-Use `aiup-core` for the stack-independent analysis workflow and add exactly one stack plugin for implementation.
+Use `aiup-core` for the stack-independent analysis workflow and add `aiup-compose-ktor-exposed` for implementation.
 
 ## 1. Choose your plugins
 
-Every project needs `aiup-core`. Add the plugin that matches the application's implementation stack.
+| Plugin                                                       | Use it for                                                                                        |
+|--------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| [`aiup-core`](../aiup-core/)                                 | Requirements, entity model, use cases, test journeys, architecture, reference, reverse engineering |
+| [`aiup-compose-ktor-exposed`](../aiup-compose-ktor-exposed/) | Kotlin Multiplatform with Compose or Kobweb UI, Ktor, Exposed, and Flyway                          |
 
-| Plugin                                         | Use it for                                                                    |
-|------------------------------------------------|-------------------------------------------------------------------------------|
-| [`aiup-core`](../aiup-core/)                   | Requirements, entity model, use cases, test journeys, and reverse engineering |
-| [`aiup-vaadin-jooq`](../aiup-vaadin-jooq/)     | Vaadin Flow or Hilla with jOOQ                                                |
-| [`aiup-angular-jpa`](../aiup-angular-jpa/)     | Angular with a Spring Boot/JPA backend                                        |
-| [`aiup-blazor-dotnet`](../aiup-blazor-dotnet/) | Blazor and EF Core on .NET 10                                                 |
-| [`aiup-nestjs-nextjs`](../aiup-nestjs-nextjs/) | NestJS/Drizzle and Next.js App Router                                         |
-
-Install only `aiup-core` when you want to use the analysis workflow with an unsupported implementation stack.
+Install only `aiup-core` when another implementation stack consumes the reviewed specifications.
 
 ## 2. Prepare the product vision
 
-Create `docs/vision.md` in the project where AI Unified Process will run. Describe the problem, target users, goals, scope, and
-constraints. Start from the [vision template](templates/vision.md) if the project does not have one yet.
+Create `docs/vision.md` in the project, or `<service>/docs/vision.md` in a monorepo. Describe the problem, target
+users, goals, scope, and constraints. Start from the [vision template](templates/vision.md) if needed.
 
-The quality of the requirements catalog depends on the quality of this input. Prefer concrete goals and explicit
-non-goals over a long feature wish list.
+Prefer concrete goals and explicit non-goals over a long feature wish list.
 
 ## 3. Install the plugins
 
-### Claude Code
+In Claude Code:
 
 ```text
-/plugin marketplace add ai-unified-process/marketplace
-/plugin install aiup-core
-/plugin install aiup-vaadin-jooq
+/plugin marketplace add <internal-git-repository-url>
+/plugin install aiup-core@ai-unified-process-marketplace
+/plugin install aiup-compose-ktor-exposed@ai-unified-process-marketplace
 ```
 
-Replace `aiup-vaadin-jooq` with the selected stack plugin. See the full
-[Claude Code installation guide](installation/claude-code.md).
-
-### Tessl
-
-```sh
-tessl init --agent agents
-tessl install ai-unified-process/aiup-core
-tessl install ai-unified-process/aiup-vaadin-jooq
-```
-
-Tessl can configure several supported coding agents and pins installed versions in `tessl.json`. See the full
-[Tessl installation guide](installation/tessl.md). Replace the vendor-neutral `agents` identifier with
-`claude-code`, `cursor`, `gemini`, `codex`, `copilot`, or `copilot-vscode` when configuring a specific host layout.
-
-For direct Agent Plugins adoption or manual setup in Codex, Cursor, Copilot, Gemini CLI, and OpenCode, see
-[Agent Plugins and manual installation](installation/other-agents.md).
+See the [Claude Code installation guide](installation/claude-code.md). For other agents, see
+[manual skill setup](installation/other-agents.md).
 
 ## 4. Run the core workflow
 
-Start the coding agent in the target project and create the analysis artifacts in order:
+Name the service in every request when working in a monorepo:
 
 ```text
-/aiup-requirements
-/aiup-entity-model
-/aiup-use-case-diagram
-/aiup-use-case-spec UC-001
+aiup-requirements in payments-service
+aiup-entity-model in payments-service
+aiup-use-case-diagram in payments-service
+aiup-use-case-spec UC-001 in payments-service
+aiup-architecture in payments-service
 ```
 
-Review every generated file before continuing. The artifacts are deliberately plain Markdown, Mermaid, and PlantUML
-so a team can correct them in version control without running a skill again.
-
-The core workflow produces:
+Review every generated file before continuing. The artefacts are plain Markdown and Mermaid, so a team can correct
+them in version control without running a skill again.
 
 ```text
-docs/
+<project-or-service>/docs/
 ├── vision.md
-├── requirements.md
+├── requirements.md          ← includes the Mermaid use case diagram
 ├── entity_model.md
-├── use_cases.puml
-└── use_cases/
-    └── UC-001-*.md
+├── architecture.md
+├── REFERENCE.md
+├── use_cases/
+│   └── UC-001-*.md
+└── test_cases/
+    └── TC-001-*.md
 ```
-
-If the agent starts by reading `docs/vision.md` after `/aiup-requirements`, the core plugin is available. If the command is
-not exposed as a slash command by the selected agent, ask it to "generate the requirements catalog from the product
-vision"; Agent Skills can also be activated by intent.
 
 ## 5. Implement and test
 
-Once a use case specification exists, continue with the commands from the selected stack plugin. For example, the
-construction workflow normally consists of a migration, `/aiup-implement UC-001`, stack-specific unit or integration tests,
-and `/playwright-test UC-001`.
-
-For a journey across several use cases, first create a test-case document:
+Once a use case specification is reviewed, continue with `aiup-compose-ktor-exposed`:
 
 ```text
-/test-case UC-001 UC-004
-/playwright-test TC-001
+aiup-flyway-migration in payments-service
+aiup-implement UC-001 in payments-service
+aiup-implement-ui UC-001 in payments-service
+aiup-ktor-test UC-001 in payments-service
+aiup-compose-test UC-001 in payments-service
+aiup-implementation-status UC-001 in payments-service
 ```
 
-The `aiup-vaadin-jooq` implementation and testing skills end by handing off to a coverage check they do not run
-themselves: [`/coverage-check UC-001`](../aiup-vaadin-jooq/skills/coverage-check/SKILL.md) delegates to the read-only
-[`uc-coverage`](../aiup-vaadin-jooq/agents/uc-coverage.md) sub-agent that ships with that plugin, which reports which
-parts of the specification still have no code or no test behind them. Run it when you want the audit — typically
-before accepting a use case as done, when it judges implementation and tests together in one matrix.
+For a browser UI, use `aiup-kobweb-ui` and `aiup-kobweb-test` instead of the Compose UI/test pair. For a journey
+across several use cases, create a specification with `aiup-test-case UC-001 UC-004`. To split the work into fresh
+agent sessions, use `aiup-implementation-prompts`.
 
-The exact commands, prerequisites, generated paths, and testing conventions are documented in each plugin README.
-The complete artifact lifecycle is described in [Workflow and artifacts](workflow.md).
+The complete artefact lifecycle is described in [Workflow and artefacts](workflow.md) and the
+[usage guide](how-to-use.md).
 
 ## Existing projects
 
-When a project already contains working code but lacks AI Unified Process documents, start with:
-
-```text
-/aiup-reverse-engineer
-```
-
-The skill recovers an entity model, use case diagram, and use case specifications from the codebase. Review the
-reported gaps before using those artifacts as the baseline for further work.
-
-## Complete example
-
-The [Book Library tutorial](https://unifiedprocess.ai/tutorial.html) demonstrates the complete workflow. Its first
-five steps are stack-independent; steps six through nine use the Vaadin and jOOQ plugin for construction and testing.
+When a project already contains working code but lacks AI Unified Process documents, start with
+`aiup-reverse-engineer`. It recovers requirements with the Mermaid use case diagram, use case specifications, and an
+entity model from the codebase. Review the reported gaps before using those artefacts as the baseline.

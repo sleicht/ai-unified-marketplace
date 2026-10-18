@@ -15,7 +15,7 @@ The [AIUP workflow](../how-to-use.md) uses reviewed files as the contract betwee
 3. If the agent supports skill discovery, copy or symlink whole skill directories into its documented skill location. Preserve `SKILL.md`, `references/`, and `scripts/` together.
 4. Otherwise, give the agent the exact path to the relevant `SKILL.md` and ask it to follow that file. Resolve bundled reference and script paths relative to the skill directory; project artefact paths resolve within the selected project or service.
 
-The retained `.claude-plugin/plugin.json` files are Claude Code metadata. This fork does not provide root Agent Plugins manifests or Tessl packages. Do not assume another agent can install these directories as native plugins.
+The retained `.claude-plugin/plugin.json` files are Claude Code metadata. This fork does not provide root Agent Plugins manifests or packages for other registries. Do not assume another agent can install these directories as native plugins.
 
 ## Request a step
 

@@ -13,35 +13,40 @@ versioned, human-reviewable artifacts that every later step consumes.
 ## Workflow
 
 ```text
-Inception          Elaboration                            Construction
-─────────────     ───────────────────────────────────     ─────────────────────────────────
-/aiup-requirements  →  /aiup-entity-model  →  /aiup-use-case-diagram  →  /aiup-use-case-spec  →  migration
-                                                                          ↘  implementation
-                                                                          ↘  tests
+Inception           Elaboration                                   Construction
+─────────────────   ───────────────────────────────────────────   ──────────────────────────────
+aiup-requirements → aiup-entity-model → aiup-use-case-diagram  →  aiup-use-case-spec → aiup-flyway-migration
+                                                                                     ↘ aiup-implement / aiup-implement-ui
+                                                                                     ↘ aiup-ktor-test / aiup-compose-test
+                                                                                     ↘ aiup-implementation-status
 ```
 
-`aiup-core` owns the stack-independent steps. A stack plugin owns migrations, implementation, and tests. The boundary
-between them is the set of files under `docs/`, not a specific coding agent.
+`aiup-core` owns the stack-independent steps. `aiup-compose-ktor-exposed` owns migrations, implementation, tests, and
+implementation status. The boundary between them is the set of files under `docs/`, not a specific coding agent. In a
+monorepo, every path below resolves under the selected service's `docs/` directory.
 
 ## Artifact flow
 
-| Artifact                  | Produced by              | Consumed by                         |
-|---------------------------|--------------------------|-------------------------------------|
-| `docs/vision.md`          | Product team             | `/aiup-requirements`                |
-| `docs/requirements.md`    | `/aiup-requirements`     | Entity model and use case diagram   |
-| `docs/entity_model.md`    | `/aiup-entity-model`     | Migrations and implementations      |
-| `docs/use_cases.puml`     | `/aiup-use-case-diagram` | `/aiup-use-case-spec` and reviewers |
-| `docs/use_cases/UC-*.md`  | `/aiup-use-case-spec`    | Implementations and use case tests  |
-| `docs/test_cases/TC-*.md` | `/test-case`             | End-to-end journey tests            |
+| Artefact                  | Produced by                                     | Consumed by                                 |
+|---------------------------|-------------------------------------------------|---------------------------------------------|
+| `docs/vision.md`          | Product team                                    | `aiup-requirements`                         |
+| `docs/requirements.md`    | `aiup-requirements`, `aiup-use-case-diagram`    | Entity model, use case specifications       |
+| `docs/entity_model.md`    | `aiup-entity-model`                             | Migrations and implementations              |
+| `docs/use_cases/UC-*.md`  | `aiup-use-case-spec`                            | Implementations, tests, test cases          |
+| `docs/test_cases/TC-*.md` | `aiup-test-case`                                | End-to-end journey tests                    |
+| `docs/architecture.md`    | `aiup-architecture`                             | Implementations and reviewers               |
+| `docs/REFERENCE.md`       | `aiup-reference`                                | Agents and developers                       |
 
-Every artifact is a review point. Correcting an intermediate document is expected and is safer than compensating for
+The use case diagram is a Mermaid block under `## Use Case Diagram` in `requirements.md`, not a separate file.
+
+Every artefact is a review point. Correcting an intermediate document is expected and is safer than compensating for
 an incorrect assumption in generated code.
 
 ## Traceability
 
 AI Unified Process uses stable identifiers to preserve the path from intent to tests:
 
-- Functional requirements use `FR-XXX`; non-functional requirements use `NFR-XXX`; constraints use `C-XXX`.
+- Functional requirements use `FR-XXX`; non-functional requirements use `NFR-XXX`; constraints use `CON-XXX`.
 - Use cases use `UC-XXX` and reference the functional requirements they realize.
 - Test cases use `TC-XXX` and reference the use cases in their journey.
 - Generated tests retain the applicable `UC-*` or `TC-*` identifier in their name or metadata.
@@ -49,46 +54,26 @@ AI Unified Process uses stable identifiers to preserve the path from intent to t
 Do not reuse an identifier for a different concern after it has been committed. When a requirement changes, update it
 and rerun or reconcile the downstream artifacts that depend on it.
 
-## Coverage check
+## Implementation status
 
-Traceability is only worth as much as it is checked. `aiup-vaadin-jooq` ships the read-only
-[`uc-coverage`](../aiup-vaadin-jooq/agents/uc-coverage.md) sub-agent for that check: it turns a use case specification
-into a list of coverage units — every main success scenario step, alternative flow, business rule, precondition, and
-postcondition — and maps each one onto the code and the tests that realize it.
-
-It reports gaps (a unit with no code or no test), drift (code or tests the specification no longer describes), and the
-specification's justified next `**Status:**` value. It never edits a file; the agent that called it closes the gaps.
-
-That plugin's implementation and testing skills do not run the audit themselves — each run re-reads the
-specification and the code base and takes minutes, so the check runs once, explicitly, when you ask for it. The
-[`/coverage-check`](../aiup-vaadin-jooq/skills/coverage-check/SKILL.md) skill is that entry point, and the only one
-that judges both sides in a single matrix:
-
-```text
-/coverage-check UC-001                 # implementation and tests together
-/coverage-check UC-001 tests           # narrow the audit to one side
-/coverage-check TC-001                 # a journey audits its Flow rows and Validation items
-```
-
-A use case whose coverage matrix is complete in both columns is the point at which `**Status:** Tested` is justified.
-That is what `/coverage-check UC-001` is for; the skill reports the justified status but leaves the line to you.
-
-The agent's marker table is specific to the Vaadin/jOOQ conventions. The other stack plugins do not ship an equivalent
-yet; the same check can be run by hand from
-[the agent definition](../aiup-vaadin-jooq/agents/uc-coverage.md) with the markers of the stack in question.
+`aiup-implementation-status` checks traceability from the entity model and use case specifications to code,
+migrations, and tests. It writes per-use-case status pages under `docs/use_cases/` and keeps missing or partial
+coverage visible. A status page records evidence; it does not replace running the tests.
 
 ## Core skills
 
-| Skill                                                                          | Result                                                          |
-|--------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [`/aiup-requirements`](../aiup-core/skills/aiup-requirements/SKILL.md)         | Requirements catalog derived from `docs/vision.md`              |
-| [`/aiup-entity-model`](../aiup-core/skills/aiup-entity-model/SKILL.md)         | Mermaid entity model and attribute definitions                  |
-| [`/aiup-use-case-diagram`](../aiup-core/skills/aiup-use-case-diagram/SKILL.md) | PlantUML diagram of actors and use cases                        |
-| [`/aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)       | One detailed specification per use case                         |
-| [`/test-case`](../aiup-core/skills/test-case/SKILL.md)                         | Executable user journey across specified use cases              |
-| [`/aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md) | AI Unified Process baseline recovered from an existing codebase |
+| Skill                                                                          | Result                                                     |
+|--------------------------------------------------------------------------------|------------------------------------------------------------|
+| [`aiup-requirements`](../aiup-core/skills/aiup-requirements/SKILL.md)         | Requirements catalogue derived from `docs/vision.md`       |
+| [`aiup-entity-model`](../aiup-core/skills/aiup-entity-model/SKILL.md)         | Mermaid ER diagram and attribute tables                    |
+| [`aiup-use-case-diagram`](../aiup-core/skills/aiup-use-case-diagram/SKILL.md) | Mermaid use case diagram embedded in `requirements.md`     |
+| [`aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)       | One detailed specification per use case                    |
+| [`aiup-test-case`](../aiup-core/skills/aiup-test-case/SKILL.md)               | End-to-end journey specification across use cases          |
+| [`aiup-architecture`](../aiup-core/skills/aiup-architecture/SKILL.md)         | Service architecture documentation                         |
+| [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)               | Project reference for agents and developers                |
+| [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md) | Baseline recovered from an existing codebase               |
 
-The linked `SKILL.md` files are the authoritative descriptions of inputs, outputs, and behavior.
+Construction skills are listed in the [usage guide](how-to-use.md#skills-reference). The linked `SKILL.md` files are the authoritative descriptions of inputs, outputs, and behavior.
 
 ## Working with changes
 
@@ -98,15 +83,15 @@ When product intent changes:
 2. Reconcile `docs/requirements.md` and keep existing identifiers stable.
 3. Revisit the entity model and use case diagram if the domain or user goals changed.
 4. Update affected use case and test case documents.
-5. Reconcile migrations, implementation, and tests through the selected stack plugin.
+5. Reconcile migrations, implementation, and tests through `aiup-compose-ktor-exposed`, then refresh implementation status.
 
 Commit `docs/` with the source code. These files explain why the implementation exists and make reviews, onboarding,
 and later regeneration reproducible.
 
 ## Existing codebases
 
-`/aiup-reverse-engineer` inspects entry points, data models, authorization, and integrations to recover the same entity and
-use case artifacts produced by the forward workflow. It groups behavior by user goal rather than by endpoint and
+`aiup-reverse-engineer` inspects entry points, data models, authorization, and integrations to recover the same requirements, entity
+model, and use case artefacts produced by the forward workflow. It groups behavior by user goal rather than by endpoint and
 reports code it cannot classify. Treat the result as a proposed baseline: resolve gaps and contradictions before
 continuing with construction skills.
 

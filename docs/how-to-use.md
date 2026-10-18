@@ -71,6 +71,7 @@ aiup-requirements in payments-service
 aiup-entity-model in payments-service
 aiup-use-case-diagram in payments-service
 aiup-use-case-spec UC-001 in payments-service
+aiup-test-case UC-001 UC-002 in payments-service
 aiup-architecture in payments-service
 aiup-flyway-migration in payments-service
 aiup-implement UC-001 in payments-service
@@ -94,9 +95,11 @@ monorepo-root/
 │   │   ├── entity_model.md
 │   │   ├── architecture.md
 │   │   ├── REFERENCE.md
-│   │   └── use_cases/
-│   │       ├── UC-001-charge-card.md
-│   │       └── UC-001-implementation-status.md
+│   │   ├── use_cases/
+│   │   │   ├── UC-001-charge-card.md
+│   │   │   └── UC-001-implementation-status.md
+│   │   └── test_cases/
+│   │       └── TC-001-card-payment-journey.md
 │   └── settings.gradle.kts
 └── billing-service/
     ├── docs/…
@@ -155,6 +158,7 @@ The forward path, left to right. Each arrow consumes artefacts from the same exp
 Inception        Elaboration                          Construction
 ─────────────    ──────────────────────────────────   ──────────────────────────────
 aiup-requirements →  aiup-entity-model → aiup-use-case-diagram  →  aiup-use-case-spec → aiup-architecture
+                                                     ↘  aiup-test-case
                                                      ↘  aiup-reference
                                                      ↘  aiup-flyway-migration
                                                      ↘  aiup-implement
@@ -171,19 +175,19 @@ aiup-requirements →  aiup-entity-model → aiup-use-case-diagram  →  aiup-us
 These steps share the same artefact contract regardless of your agent or implementation toolchain. The [core manifest](../aiup-core/.claude-plugin/plugin.json) records the current plugin version. Paths below are relative to the scoped service unless stated otherwise.
 
 1. **`aiup-requirements` — Requirements catalogue**
-   Reads `docs/vision.md` and writes `docs/requirements.md` as three separate tables: functional requirements (user stories, `FR-001`…), non-functional requirements (measurable quality attributes, `NFR-001`…), and constraints (`CON-001`…). It also creates the fenced Mermaid block under `## Use Case Diagram` later updated by `aiup-use-case-diagram`. Review before continuing.
+   Reads `docs/vision.md` and writes `docs/requirements.md` as three separate tables: functional requirements (user stories, `FR-001`…), non-functional requirements (measurable quality attributes, `NFR-001`…), and constraints (`CON-001`…). It also creates the fenced Mermaid block under `## Use Case Diagram` later updated by `aiup-use-case-diagram`. Before writing, it asks a few clarifying questions about decisions the vision leaves open; with no one to ask, it records the recommended answers as assumptions in `## Requirements Notes`. Constraints may cite their origin in an optional `Source` column. Requirement progress (Open, In Progress, Implemented, Verified) follows the status of the use cases that link the requirement. Review before continuing.
    `monorepo` — `aiup-requirements payments-service` → writes `payments-service/docs/requirements.md`
 
 2. **`aiup-entity-model` — Entity model**
-   Reads the requirements and writes `docs/entity_model.md` with a Mermaid ER diagram plus one attribute table per entity (data type, length/precision, validation rules). Approve before moving on.
+   Reads the requirements and writes `docs/entity_model.md` with a Mermaid ER diagram plus one attribute table per entity (data type, length/precision, validation rules) and a `#### Constraints` list. It asks clarifying questions first and labels unconfirmed defaults as proposals. Every foreign key has a relationship line, and every relationship line has a backing foreign key. Approve before moving on.
    `monorepo` — `aiup-entity-model in payments-service` → writes `payments-service/docs/entity_model.md`
 
 3. **`aiup-use-case-diagram` — Use case diagram**
-   Identifies actors and use cases, then updates the single Mermaid block under `## Use Case Diagram` in `requirements.md`. Each use case gets a stable ID (`UC-001`…) tracing back to one or more functional requirements.
+   Identifies actors and use cases, then updates the single Mermaid block under `## Use Case Diagram` in `requirements.md`. Each use case gets a stable ID (`UC-001`…) tracing back to one or more functional requirements. Use cases are user goals: a technical step shared by several goals is drawn as an `include` edge, and a summary is split into user-goal use cases. Supporting roles and external systems appear as secondary actors.
    `monorepo` — `aiup-use-case-diagram in payments-service` → updates the diagram in `payments-service/docs/requirements.md`
 
 4. **`aiup-use-case-spec UC-001` — Use case specification**
-   Writes one detailed document per use case under `docs/use_cases/`: actors, stakeholders, trigger, preconditions, main success scenario (numbered steps), alternative flows, postconditions, and business rules. Pass several IDs at once: `aiup-use-case-spec UC-001 UC-002 UC-003`. One use case per file — never bundled.
+   Writes one detailed document per use case under `docs/use_cases/`: one or more primary actors, secondary actors, the triggering event, a `**Requirements:**` line linking FR, NFR and CON IDs, preconditions, main success scenario (numbered steps), alternative flows, postconditions, and business rules. It asks clarifying questions first and reports a subfunction or summary use case instead of specifying it. Preconditions are states that are already true. An alternative flow is never invented; write `_None — …_` when no step can fail. Failure postconditions state minimum guarantees, not error messages. The actors must match the use case's actors in the Mermaid diagram. Pass several IDs at once: `aiup-use-case-spec UC-001 UC-002 UC-003`. One use case per file — never bundled.
    `monorepo` — `aiup-use-case-spec UC-001 in payments-service` → writes `payments-service/docs/use_cases/UC-001-*.md`
 
 5. **`aiup-architecture` — Architecture documentation**
@@ -195,12 +199,24 @@ These steps share the same artefact contract regardless of your agent or impleme
    `monorepo` — `aiup-reference payments-service` → writes `payments-service/docs/REFERENCE.md`
 
 7. **`aiup-reverse-engineer` — Existing-code baseline**
-   An alternative starting point for an inherited service. It reads source, build configuration, APIs, tests, and schema evidence, then creates the canonical `requirements.md`, one `UC-*.md` specification per use case, and `entity_model.md`. Review the recovered business intent before continuing with implementation.
+   An alternative starting point for an inherited service. It reads source, build configuration, APIs, tests, and schema evidence, then creates the canonical `requirements.md`, one `UC-*.md` specification per use case, and `entity_model.md`. Every recovered specification has Status `Draft`, because the code may contain bugs; review the recovered business intent and approve each use case before writing tests from it.
    `monorepo` — `aiup-reverse-engineer payments-service` → writes the baseline under `payments-service/docs/`
+
+8. **`aiup-test-case UC-001 UC-002` — Journey test case**
+   Chains several use cases into one end-to-end user journey and writes `docs/test_cases/TC-*.md` with a step-by-step Flow table, concrete test data, and final validations. It writes the specification only; stack test skills turn it into executable tests.
+   `monorepo` — `aiup-test-case UC-001 UC-002 in payments-service` → writes `payments-service/docs/test_cases/TC-001-*.md`
 
 ## Part 2 — Implementation: Compose / Ktor / Exposed (`aiup-compose-ktor-exposed`)
 
 The Construction phase for a Kotlin Multiplatform project. These skills are provided by `aiup-compose-ktor-exposed`; its [manifest](../aiup-compose-ktor-exposed/.claude-plugin/plugin.json) records the current version. They discover the scoped stack and its modules before changing code; run implementation and test skills per use case ID.
+
+The specification is the contract for every construction skill:
+
+- **Status gate.** Implementation skills read the use case's `**Status:**` first. For `Draft` or `Reviewed` they ask before proceeding, and stop when no one can answer. They never implement an `Obsolete` use case and never change the status.
+- **Scoped inputs.** They read the use case, only the FR, NFR and CON rows its `**Requirements:**` line links, the entity model, `architecture.md`, and, when present, the domain vocabulary in `REFERENCE.md` and ADRs under `docs/**/adr/`. Linked NFRs and constraints are hard limits.
+- **Gaps are questions.** Behaviour the specification does not state is asked about or left out, never assumed. Each report ends with an **Open questions** list naming the element, for example `UC-001 step 4` or `UC-001 BR-003`.
+- **Business rule markers.** Code that enforces a rule carries `// UC-001 BR-003: <rule>` at every enforcing place, so `aiup-implementation-status` can trace it.
+- **Tests keep the specification.** Expected values come from the specification, never from what the code returns. When the code disagrees, the assertion stays failing and the mismatch is reported; you decide which side is wrong. Implementation skills never edit tests or specification documents.
 
 1. **`aiup-flyway-migration` — PostgreSQL migrations**
    Reads `docs/entity_model.md` and existing migrations and writes versioned Flyway scripts (`V001__create_*.sql`…) under the discovered server module's migration directory. Existing migration conventions win; `BIGSERIAL`, `TIMESTAMPTZ`, constraints, indexes, and `updated_at` triggers are reference defaults only when they match the project. Mappings remain compatible with Exposed.
@@ -223,7 +239,7 @@ The Construction phase for a Kotlin Multiplatform project. These skills are prov
    `monorepo` — `aiup-compose-test UC-001 in payments-service` → tests under the discovered UI module's `commonTest` or platform source set
 
 6. **`aiup-implementation-status UC-001` — Status & traceability**
-   Reads the entity model, use case specs, source, tests, and migrations and maintains an entity implementation-status matrix (Entity / DB Table / Domain Model / Repository / Service / Migrations). Writes per-use-case Markdown status pages under `docs/use_cases/`, cross-referencing migration version ranges and code/test evidence. Records DI graph, architecture, shared API, and coverage-gate evidence where available. Reports missing or partial implementation honestly; a status page does not replace running tests. Request UI coverage explicitly when needed.
+   Reads the entity model, use case specs, source, tests, and migrations and maintains an entity implementation-status matrix (Entity / DB Table / Domain Model / Repository / Service / Migrations). Writes per-use-case Markdown status pages under `docs/use_cases/`, cross-referencing migration version ranges and code/test evidence. Records DI graph, architecture, shared API, and coverage-gate evidence where available. Reports missing or partial implementation honestly; a status page does not replace running tests. Business rules without a `UC-XXX BR-YYY` marker are listed as gaps. On a re-run it summarises changes since the previous status and flags verdicts that changed without a code, specification, or test change. When code and specification drift, it lists both remedies instead of choosing one. Ask "are all requirements covered" for a requirement coverage section. Request UI coverage explicitly when needed.
    `monorepo` — `aiup-implementation-status UC-001 in payments-service` → writes `payments-service/docs/use_cases/UC-001-implementation-status.md`
 
 ### Kobweb browser alternative
@@ -244,7 +260,8 @@ The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/referenc
 | [`aiup-use-case-spec`](../aiup-core/skills/aiup-use-case-spec/SKILL.md)                                   | Construction          | UC ID(s) + requirements          | `docs/use_cases/UC-*.md`                                | core                 |
 | [`aiup-architecture`](../aiup-core/skills/aiup-architecture/SKILL.md)                                     | Construction          | service docs + source            | `architecture.md`                                       | core                 |
 | [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)                                           | Any                   | service docs + source            | `REFERENCE.md`                                          | core                 |
-| [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md)                             | Any                   | existing service source          | requirements + specs + model                            | core                 |
+| [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md)                             | Any                   | existing service source          | requirements + `Draft` specs + model                    | core                 |
+| [`aiup-test-case`](../aiup-core/skills/aiup-test-case/SKILL.md)                                           | Construction          | UC IDs + specifications          | `docs/test_cases/TC-*.md`                               | core                 |
 | [`aiup-flyway-migration`](../aiup-compose-ktor-exposed/skills/aiup-flyway-migration/SKILL.md)             | Construction          | model + use cases                | server module `V*.sql`                                  | compose-ktor-exposed |
 | [`aiup-implement`](../aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md)                           | Construction          | UC ID                            | Ktor backend + shared DTOs                              | compose-ktor-exposed |
 | [`aiup-implement-ui`](../aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md)                     | Construction          | UC ID                            | Compose screen + ViewModel + client                     | compose-ktor-exposed |
@@ -261,10 +278,10 @@ The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/referenc
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | Requirements                  | FRs use role/goal/benefit stories; NFRs are measurable; IDs are unique; statuses are filled.                                            |
 | Entity model and diagram      | Entity attribute tables are complete; exactly one Mermaid use-case block exists in requirements; UC IDs trace to FRs.                   |
-| Use-case specifications       | One specification per requested UC, named from the diagram; run the bundled use-case validator and fix reported errors.                 |
+| Use-case specifications       | One specification per requested UC, named from the diagram; actors match the diagram; run the bundled use-case validator; fix errors.   |
 | Architecture and reference    | Claims match repository evidence; relative links resolve; unknowns are explicit.                                                        |
-| Migrations and implementation | Changes match the reviewed specification and existing conventions; affected build, migration, and configured compatibility checks pass. |
-| Tests                         | Success and relevant alternative/error flows are covered; complete affected test tasks and configured gates pass.                       |
+| Migrations and implementation | Changes match the reviewed specification; every business rule is marked; open questions are listed; affected checks pass.               |
+| Tests                         | Relevant flows are covered with expected values from the specification; failures caused by the code are reported, not weakened.         |
 | Implementation status         | Links point to actual code, migrations, and tests; missing coverage remains visible.                                                    |
 
 ## What the Scoped Service Looks Like
@@ -279,9 +296,11 @@ payments-service/
 │   ├── entity_model.md           ← aiup-entity-model, updated by aiup-implementation-status
 │   ├── architecture.md           ← aiup-architecture
 │   ├── REFERENCE.md              ← aiup-reference
-│   └── use_cases/                ← aiup-use-case-spec + aiup-implementation-status
-│       ├── UC-001-charge-card.md
-│       └── UC-001-implementation-status.md
+│   ├── use_cases/                ← aiup-use-case-spec + aiup-implementation-status
+│   │   ├── UC-001-charge-card.md
+│   │   └── UC-001-implementation-status.md
+│   └── test_cases/               ← aiup-test-case
+│       └── TC-001-card-payment-journey.md
 ├── <server-module>/src/
 │   ├── main/
 │   │   ├── kotlin/               ← aiup-implement
@@ -295,7 +314,7 @@ payments-service/
 ## Tips for Success
 
 **Maintain traceability**
-Every entity maps to a functional requirement; every use case traces to one or more FRs; every test references a UC ID. Keep the stable IDs the skills produce.
+Every entity maps to a functional requirement; every use case traces to one or more FRs; every business rule is marked in the code that enforces it (`// UC-001 BR-003: …`); every test references a UC ID. Keep the stable IDs the skills produce.
 
 **Edit between steps**
 The intermediate documents are designed to be reviewed and corrected by hand. Don't skip the review.

@@ -34,6 +34,7 @@ plain-text artefacts that live with the source code.
 Inception            Elaboration                                   Construction
 ──────────────────   ───────────────────────────────────────────   ──────────────────────
 aiup-requirements  →  aiup-entity-model  →  aiup-use-case-diagram  →  aiup-use-case-spec
+                                                                    ↘ journey test cases
                                                                     ↘ migrations
                                                                     ↘ backend and UI
                                                                     ↘ tests and status
@@ -118,7 +119,10 @@ After reviewing the use-case specification, continue with the Compose stack:
 For Kobweb browser UI, use `aiup-kobweb-ui` and `aiup-kobweb-test` instead of the Compose UI/test pair. Keep the same backend and shared contracts; Kobweb needs compatible shared JS variants.
 
 Implementation and testing are separate steps. Both reconcile existing code with the reviewed specifications and
-preserve the target project's conventions. To prepare prompts for separate sessions, use
+preserve the target project's conventions. Implementation skills check the use case's status, implement only what the
+specification states, mark enforced business rules as `// UC-001 BR-003: …`, and list gaps as open questions. Test
+skills take expected values from the specification; when the code disagrees, the failing assertion stays and is
+reported. To prepare prompts for separate sessions, use
 `aiup-implementation-prompts`; it writes a shared header and ordered prompts without running implementation.
 
 [Follow the complete usage guide →](docs/how-to-use.md)
@@ -153,8 +157,9 @@ Start an undocumented application with:
 ```
 
 The skill inspects entry points, domain models, schema, authentication, and integrations, then proposes requirements,
-an entity model, a use-case diagram, and individual use-case specifications. Review the recovered intent and reported
-gaps before adopting the result as a baseline.
+an entity model, a use-case diagram, and individual use-case specifications. Every recovered specification is `Draft`,
+because code can contain bugs; review the recovered intent and reported gaps, and approve each use case before writing
+tests from it.
 
 ## Installation
 
@@ -175,6 +180,9 @@ Tessl packages, root Agent Plugins manifests, and automated publishing workflows
 | Guide                                          | Contents                                                                                  |
 |------------------------------------------------|-------------------------------------------------------------------------------------------|
 | [Usage and workflow](docs/how-to-use.md)       | Service scoping, analysis, Compose/Ktor/Exposed implementation, testing, and traceability |
+| [Getting started](docs/getting-started.md)     | Short first-run path from vision to tested use case                                       |
+| [Workflow and artefacts](docs/workflow.md)     | Artefact flow, traceability, and working with changes                                     |
+| [Project setup](docs/guides/project-setup.md)  | Documentation tree, product vision, and agent instructions                                |
 | [Vision template](docs/templates/vision.md)    | Starting point for `docs/vision.md`                                                       |
 | [CLAUDE.md template](docs/templates/CLAUDE.md) | Stack-neutral repository instructions for Claude Code                                     |
 | [Core plugin](aiup-core/)                      | Stack-independent analysis and specifications                                             |

@@ -56,7 +56,7 @@ README.md
 
 ### Core
 
-`aiup-requirements`, `aiup-entity-model`, `aiup-use-case-diagram`, `aiup-use-case-spec`, `aiup-reverse-engineer`, `aiup-architecture`, `aiup-reference`, and `aiup-test-case` stop at documentation and specification boundaries.
+`aiup-requirements`, `aiup-entity-model`, `aiup-use-case-diagram`, `aiup-use-case-spec`, `aiup-reverse-engineer`, `aiup-architecture`, `aiup-reference`, `aiup-test-case`, and `aiup-open-questions` stop at documentation and specification boundaries.
 
 ### Compose/Ktor/Exposed
 

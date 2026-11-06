@@ -36,6 +36,7 @@ monorepo, every path below resolves under the selected service's `docs/` directo
 | `docs/test_cases/TC-*.md` | `aiup-test-case`                                | End-to-end journey tests                    |
 | `docs/architecture.md`    | `aiup-architecture`                             | Implementations and reviewers               |
 | `docs/REFERENCE.md`       | `aiup-reference`                                | Agents and developers                       |
+| `docs/open_questions.md`  | `aiup-open-questions`, specification and construction skills | Product owner, specification skills |
 
 The use case diagram is a Mermaid block under `## Use Case Diagram` in `requirements.md`, not a separate file.
 
@@ -60,6 +61,11 @@ and rerun or reconcile the downstream artifacts that depend on it.
 migrations, and tests. It writes per-use-case status pages under `docs/use_cases/` and keeps missing or partial
 coverage visible. A status page records evidence; it does not replace running the tests.
 
+Use case and test case statuses, their meanings, and who sets each one are defined in the
+[use case format](../aiup-core/skills/aiup-use-case-spec/references/format-spec.md) and the
+[test case skill](../aiup-core/skills/aiup-test-case/SKILL.md). Construction and test skills never change a
+`**Status:**` line; `aiup-implementation-status` only suggests `Implemented`, `Tested`, or `Automated` from evidence.
+
 ## Core skills
 
 | Skill                                                                          | Result                                                     |
@@ -71,6 +77,7 @@ coverage visible. A status page records evidence; it does not replace running th
 | [`aiup-test-case`](../aiup-core/skills/aiup-test-case/SKILL.md)               | End-to-end journey specification across use cases          |
 | [`aiup-architecture`](../aiup-core/skills/aiup-architecture/SKILL.md)         | Service architecture documentation                         |
 | [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)               | Project reference for agents and developers                |
+| [`aiup-open-questions`](../aiup-core/skills/aiup-open-questions/SKILL.md)     | Log of open specification questions and their answers      |
 | [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md) | Baseline recovered from an existing codebase               |
 
 Construction skills are listed in the [usage guide](how-to-use.md#skills-reference). The linked `SKILL.md` files are the authoritative descriptions of inputs, outputs, and behavior.

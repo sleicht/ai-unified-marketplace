@@ -37,6 +37,7 @@ written along the way, so you can inspect or edit any artifact before continuing
 | Construction | `aiup-test-case`        | Create or update a journey specification spanning several use cases; hand off only to compatible installed automation |
 | Any          | `aiup-architecture`     | Document observed architecture, decisions and evidence                                                                |
 | Any          | `aiup-reference`        | Maintain concise project context, commands and canonical document links                                               |
+| Any          | `aiup-open-questions`   | Record, list, answer, and withdraw open specification questions in `docs/open_questions.md`                           |
 
 ### Workflow
 
@@ -54,6 +55,7 @@ The skills produce and consume a set of artifacts under `docs/`:
 - `docs/use_cases/UC-*.md`
 - `docs/test_cases/TC-*.md`
 - `docs/architecture.md` and `docs/REFERENCE.md`
+- `docs/open_questions.md` — open specification questions and their answers
 
 **Inheriting a legacy codebase?** Start with `aiup-reverse-engineer` — it walks the existing code, configuration, and
 schema and produces the same `docs/requirements.md`, `docs/use_cases/UC-*.md`, and `docs/entity_model.md` artifacts the
@@ -69,9 +71,8 @@ installed test skill explicitly supports that input contract.
 
 ## MCP servers
 
-| Server   | Purpose                                                                   |
-|----------|---------------------------------------------------------------------------|
-| context7 | Fetches current library/framework documentation on demand during analysis |
+The core plugin starts no MCP server; no core skill needs one. The `aiup-compose-ktor-exposed` plugin brings
+context7 for current library and framework documentation.
 
 ## Installation
 

@@ -262,6 +262,7 @@ The [record example](../aiup-compose-ktor-exposed/skills/aiup-implement/referenc
 | [`aiup-reference`](../aiup-core/skills/aiup-reference/SKILL.md)                                           | Any                   | service docs + source            | `REFERENCE.md`                                          | core                 |
 | [`aiup-reverse-engineer`](../aiup-core/skills/aiup-reverse-engineer/SKILL.md)                             | Any                   | existing service source          | requirements + `Draft` specs + model                    | core                 |
 | [`aiup-test-case`](../aiup-core/skills/aiup-test-case/SKILL.md)                                           | Construction          | UC IDs + specifications          | `docs/test_cases/TC-*.md`                               | core                 |
+| [`aiup-open-questions`](../aiup-core/skills/aiup-open-questions/SKILL.md)                                 | Any                   | question, answer, or scope       | `open_questions.md`                                     | core                 |
 | [`aiup-flyway-migration`](../aiup-compose-ktor-exposed/skills/aiup-flyway-migration/SKILL.md)             | Construction          | model + use cases                | server module `V*.sql`                                  | compose-ktor-exposed |
 | [`aiup-implement`](../aiup-compose-ktor-exposed/skills/aiup-implement/SKILL.md)                           | Construction          | UC ID                            | Ktor backend + shared DTOs                              | compose-ktor-exposed |
 | [`aiup-implement-ui`](../aiup-compose-ktor-exposed/skills/aiup-implement-ui/SKILL.md)                     | Construction          | UC ID                            | Compose screen + ViewModel + client                     | compose-ktor-exposed |
@@ -296,6 +297,7 @@ payments-service/
 │   ├── entity_model.md           ← aiup-entity-model, updated by aiup-implementation-status
 │   ├── architecture.md           ← aiup-architecture
 │   ├── REFERENCE.md              ← aiup-reference
+│   ├── open_questions.md         ← aiup-open-questions
 │   ├── use_cases/                ← aiup-use-case-spec + aiup-implementation-status
 │   │   ├── UC-001-charge-card.md
 │   │   └── UC-001-implementation-status.md

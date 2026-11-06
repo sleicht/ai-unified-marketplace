@@ -138,6 +138,7 @@ The workflow creates a shared documentation contract:
 ├── entity_model.md                   # aiup-entity-model, including Mermaid ER diagram
 ├── architecture.md                   # aiup-architecture
 ├── REFERENCE.md                      # aiup-reference
+├── open_questions.md                 # aiup-open-questions
 ├── use_cases/
 │   ├── UC-001-<name>.md               # aiup-use-case-spec
 │   └── UC-001-implementation-status.md # aiup-implementation-status
@@ -214,10 +215,13 @@ compiled record example covering shared DTOs, backend persistence, client state,
 
 ## Upstream integration baseline
 
-The last completed reconciliation reviewed `upstream/main` at `05af8163838df704620ebe1121cd6019dbce276c`;
-the shared ancestor was `48de70fd8cfe082a7b41563e4cb995c47b37a02c`. Deliberately not ported: BPMN business
+The last completed reconciliation reviewed `upstream/main` at `23f340af007fe37f455e6c80ff5b646bf4a9a2f7`;
+the previous baseline was `05af8163838df704620ebe1121cd6019dbce276c`. Deliberately not ported: BPMN business
 processes and test-case process mode, the `spec-review` lint skill (deferred), `glossary.md` (domain vocabulary
-stays in `docs/REFERENCE.md`), per-folder skill self-containment, and Tessl/GitHub release tooling. Compare future upstream changes from the
+stays in `docs/REFERENCE.md`), per-folder skill self-containment, Tessl/GitHub release tooling, the layer-plugin
+orchestration (`stack`, `use-case-implement`, `use-case-test`, `test-case-implement`, `next`), the separate
+`architecture-decision` skill, the Transition skills (`user-guide`, `acceptance-protocol`, `release-notes`), the
+`**Layers:**` line, and module-split documentation folders. Compare future upstream changes from the
 reviewed commit and selectively port improvements that preserve this fork's plugins, Mermaid/monorepo contract,
 Git distribution, and `aiup-` skill names. Update this baseline after a completed reconciliation.
 

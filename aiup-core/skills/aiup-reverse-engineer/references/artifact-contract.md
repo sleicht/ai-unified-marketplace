@@ -77,6 +77,7 @@ Required structure:
 **Use Case ID:** UC-XXX
 **Use Case Name:** [Name]
 **Primary Actor:** [Role]
+**Secondary Actors:** [External systems or supporting roles; omit when none]
 **Goal:** [Observable outcome]
 **Status:** Draft
 **Requirements:** [FR-001](../requirements.md)
@@ -119,6 +120,14 @@ Required structure:
 [Rule]
 ````
 
+Derive the Trigger from the event behind the entry point: the route or screen
+action for an interactive use case, the schedule of a scheduled job, or the
+message or webhook a listener consumes. Secondary actors include the external
+systems the code calls outbound for the use case (payment, mail, other services;
+in Kotlin, `ktor-client` calls), not only systems that initiate behaviour. Write
+the `**Requirements:**` line only when `requirements.md` exists and its IDs match
+the use case; otherwise omit it and report the gap. Never invent requirement IDs.
+
 Every recovered specification is `Draft`, even for working, tested code. The code
 is the only source, so a bug in it would otherwise be written down as required
 behaviour and tests derived from the spec would restate it. A human reviews each
@@ -156,7 +165,9 @@ A title available in the catalogue.
 Use the canonical [entity vocabulary and cardinality rules](../../aiup-entity-model/references/REFERENCE.md).
 Preserve UUID/string/numeric key types, actual key generation, optional foreign
 keys, signed decimals and evidenced bounds. `Unknown` and `Unbounded` are distinct;
-never invent a default length, range or mandatory relationship.
+never invent a default length, range or mandatory relationship. Length/Precision
+comes from the declared column type, never from the data the column holds; record
+a fixed length that only the data shows in the Description.
 
 ## Type and Relationship Mapping
 
@@ -172,11 +183,14 @@ never invent a default length, range or mandatory relationship.
 | decimal/numeric(p,s)                   | Decimal, p,s; no Min/Max without separate evidence                  |
 | timestamp/datetime                     | DateTime, -; preserve timezone semantics in Constraints             |
 | nullable foreign key                   | Optional, Foreign Key (TABLE.attribute)                             |
-| unique nullable foreign key            | Optional, Foreign Key (TABLE.attribute), Unique                     |
+| unique nullable foreign key            | Optional, Unique, Foreign Key (TABLE.attribute)                     |
+| binary column (bytea/blob)             | String, -, Description beginning `Binary content:`, Not Null or Optional |
 
 A unique FK limits multiplicity only. For parent A and child B, a non-null unique
 FK normally gives `A ||--o| B`, while a nullable unique FK gives `A |o--o| B`.
 Use `A ||--|| B` only when both mandatory participation rules are evidenced.
+Code that always creates the row, or a backfill migration, is not such evidence;
+a backfill shows that rows were once missing.
 Represent a domain join entity with its separate FKs and composite constraints.
 
 Close these recurring entity-model gaps:

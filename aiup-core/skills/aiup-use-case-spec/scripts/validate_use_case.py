@@ -60,6 +60,8 @@ LANGUAGES = {
             "flow": "**Flow:**",
         },
         "trigger_aliases": ["**Trigger:**"],
+        "mockup_aliases": ["**Mockup:**"],
+        "api_aliases": ["**API:**"],
         "rule_prefix": "BR",
     },
     "de": {
@@ -84,6 +86,8 @@ LANGUAGES = {
             "flow": "**Flow:**",
         },
         "trigger_aliases": ["**Trigger:**"],
+        "mockup_aliases": ["**Mockup:**"],
+        "api_aliases": ["**API:**"],
         "rule_prefix": "BR",
     },
 }
@@ -108,6 +112,14 @@ RULE_LABEL = re.compile(r"BR-[A-Za-z0-9_-]+\s*:\s*.*")
 RULE_NUMBER = re.compile(r"BR-(\d+)\s*:")
 PLACEHOLDER = re.compile(r"_[^_].*_|\*[^*].*\*")
 UC_ID_GRAMMAR = re.compile(r"[SB]?UC-[A-Za-z0-9_-]+")
+
+# The mockups of a use case (optional **Mockup:** line): Markdown links to a
+# Figma file, an image, or a Markdown sketch; bare URLs are tolerated.
+MOCKUP_LINK = re.compile(r"\[[^\]]*\]\(\s*<?([^)\s>]+)>?[^)]*\)")
+BARE_URL = re.compile(r"https?://[^\s,)>]+")
+# The API operations of a use case (optional **API:** line) are links of the
+# same form whose fragment names the operation: an OpenAPI operationId, or an
+# AsyncAPI channel or operation, e.g. ../api/booking.yaml#createBooking.
 
 STEP_REFERENCE = re.compile(r"\((?:step|schritt)\s+(\d+)\)", re.IGNORECASE)
 MAIN_STEP_REFERENCE = re.compile(r"\b(?:step|schritt)\s+(\d+)\b", re.IGNORECASE)
@@ -304,6 +316,18 @@ def parse_overview(doc, lines, index):
         elif line.startswith(fields["requirements"]):
             overview["requirements"] = \
                 line[len(fields["requirements"]):].strip()
+            index += 1
+        elif any(line.startswith(a) for a in lang["mockup_aliases"]):
+            alias = next(a for a in lang["mockup_aliases"]
+                         if line.startswith(a))
+            overview["mockup"] = line[len(alias):].strip()
+            overview["mockup_line"] = index + 1
+            index += 1
+        elif any(line.startswith(a) for a in lang["api_aliases"]):
+            alias = next(a for a in lang["api_aliases"]
+                         if line.startswith(a))
+            overview["api"] = line[len(alias):].strip()
+            overview["api_line"] = index + 1
             index += 1
         elif any(line.startswith(a) for a in lang["trigger_aliases"]):
             # the use case trigger: the event that starts the use case
@@ -573,6 +597,19 @@ def parse_document(text):
     return doc
 
 
+def mockup_targets(value):
+    """The link targets of a **Mockup:** line value, in order."""
+    targets = MOCKUP_LINK.findall(value)
+    if not targets:
+        targets = BARE_URL.findall(value)
+    return targets
+
+
+def api_targets(value):
+    """The link targets of an **API:** line value, in order."""
+    return mockup_targets(value)
+
+
 def check_contract(doc, path):
     """Skill-contract checks beyond what Studio's parser enforces (WARN)."""
     lang = LANGUAGES[doc.language]
@@ -619,6 +656,45 @@ def check_contract(doc, path):
                         "the use case trigger repeats a precondition; a "
                         "trigger is the event that starts the use case, a "
                         "precondition is what is already true: " + trigger)
+
+    # The mockup line is optional; when present it links at least one mockup.
+    mockup = doc.overview.get("mockup")
+    if mockup is not None:
+        mockup_line = doc.overview.get("mockup_line", 0)
+        if mockup.startswith("[") and mockup.endswith("]") \
+                and "](" not in mockup:
+            doc.add(mockup_line, WARN, "MOCKUP_NO_LINK",
+                    "the mockup line still holds the template placeholder; "
+                    "link the mockups or omit the line")
+        elif not mockup_targets(mockup):
+            doc.add(mockup_line, WARN, "MOCKUP_NO_LINK",
+                    "the mockup line links no mockup; write each as a "
+                    "Markdown link, e.g. [List view](../mockups/list.png), "
+                    "or omit the line")
+
+    # The API line is optional; when present each link names an operation.
+    api = doc.overview.get("api")
+    if api is not None:
+        api_line = doc.overview.get("api_line", 0)
+        targets = api_targets(api)
+        if api.startswith("[") and api.endswith("]") and "](" not in api:
+            doc.add(api_line, WARN, "API_NO_LINK",
+                    "the API line still holds the template placeholder; "
+                    "link the operations or omit the line")
+        elif not targets:
+            doc.add(api_line, WARN, "API_NO_LINK",
+                    "the API line links no operation; write each as a "
+                    "Markdown link to the contract with the operation as "
+                    "fragment, e.g. [createBooking](../api/booking.yaml"
+                    "#createBooking), or omit the line")
+        else:
+            for target in targets:
+                if "#" not in target or not target.split("#", 1)[1]:
+                    doc.add(api_line, WARN, "API_NO_LINK",
+                            "the API link " + target + " names no "
+                            "operation; add the operationId or the AsyncAPI "
+                            "channel as fragment, e.g. booking.yaml"
+                            "#createBooking")
 
     if not doc.main_scenario and not doc.main_scenario_placeholder \
             and "main_scenario" in doc.sections_seen:
@@ -883,6 +959,80 @@ def self_test():
         failures.append("valid-de: language not detected as German")
     expect("valid-de", doc.problems, [], forbidden_severity=ERROR)
     expect("valid-de", doc.problems, [], forbidden_severity=WARN)
+
+    requirements = "**Requirements:** [FR-001, FR-002](../requirements.md)"
+    figma = "https://www.figma.com/design/abc123/Reservations?node-id=1-2"
+    for line, targets, codes in (
+            ("**Mockup:** [Figma](" + figma + "), [Edit dialog]"
+             "(../mockups/uc-001-edit.png)",
+             [figma, "../mockups/uc-001-edit.png"], []),
+            ("**Mockup:** <" + figma + ">", [figma], []),
+            ("**Mockup:** see the whiteboard", [], ["MOCKUP_NO_LINK"]),
+            ("**Mockup:** [Links to the mockups of this use case; omit this "
+             "line when there is none]", [], ["MOCKUP_NO_LINK"])):
+        doc = parse_document(VALID_EN.replace(
+            requirements, requirements + "\n" + line))
+        check_contract(doc, "UC-001-create-reservation.md")
+        found = sorted(p.code for p in doc.problems)
+        got = mockup_targets(doc.overview.get("mockup", ""))
+        if found != codes or got != targets:
+            failures.append("mockup " + line + ": expected " + str(codes)
+                            + " " + str(targets) + ", got " + str(found)
+                            + " " + str(got))
+
+    for line, targets, codes in (
+            ("**API:** [createBooking](../api/booking.yaml#createBooking), "
+             "[booking/cancelled](../api/booking.asyncapi.yaml"
+             "#bookingCancelled)",
+             ["../api/booking.yaml#createBooking",
+              "../api/booking.asyncapi.yaml#bookingCancelled"], []),
+            ("**API:** [Booking API](../api/booking.yaml)",
+             ["../api/booking.yaml"], ["API_NO_LINK"]),
+            ("**API:** createBooking in the partner contract", [],
+             ["API_NO_LINK"]),
+            ("**API:** [Links to the operations of the agreed API contract "
+             "under docs/api/, each with the operationId as fragment — omit "
+             "this line when there is none]", [], ["API_NO_LINK"])):
+        doc = parse_document(VALID_EN.replace(
+            requirements, requirements + "\n" + line))
+        check_contract(doc, "UC-001-create-reservation.md")
+        found = sorted(p.code for p in doc.problems)
+        got = api_targets(doc.overview.get("api", ""))
+        if found != codes or got != targets:
+            failures.append("api " + line + ": expected " + str(codes)
+                            + " " + str(targets) + ", got " + str(found)
+                            + " " + str(got))
+
+    # VALID_DE_TOLERANT has no requirements line; add one as the anchor.
+    status_de = "**Status:** ✅ Implementiert (2025-07-11)\n"
+    anforderungen = status_de + "\n**Anforderungen:** [FR-001](../requirements.md)\n"
+    doc = parse_document(VALID_DE_TOLERANT.replace(
+        status_de, anforderungen + "**Mockup:** "
+        "[Skizze](../mockups/uc-013a.md)\n"))
+    check_contract(doc, "UC-013a-mitteilung-erfassen.md")
+    if doc.overview.get("mockup") != "[Skizze](../mockups/uc-013a.md)":
+        failures.append("valid-de: **Mockup:** label not accepted")
+    expect("valid-de-mockup", doc.problems, [], forbidden_severity=WARN)
+
+    doc = parse_document(VALID_DE_TOLERANT.replace(
+        status_de, anforderungen + "**API:** "
+        "[buchungAnlegen](../api/buchung.yaml#buchungAnlegen)\n"))
+    check_contract(doc, "UC-013a-mitteilung-erfassen.md")
+    if doc.overview.get("api") != \
+            "[buchungAnlegen](../api/buchung.yaml#buchungAnlegen)":
+        failures.append("valid-de: **API:** label not accepted")
+    expect("valid-de-api", doc.problems, [], forbidden_severity=WARN)
+
+    doc = parse_document(VALID_EN.replace(
+        "- No reservation is created",
+        "_None — the use case changes no data._"))
+    check_contract(doc, "UC-001-create-reservation.md")
+    if not doc.failure_placeholder:
+        failures.append("read-only-failure-placeholder: not read as placeholder")
+    expect("read-only-failure-placeholder", doc.problems, [],
+           forbidden_severity=WARN)
+    expect("read-only-failure-placeholder", doc.problems, [],
+           forbidden_severity=ERROR)
 
     doc = parse_document(INVALID)
     check_contract(doc, "UC-002-broken.md")

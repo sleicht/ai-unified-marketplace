@@ -148,6 +148,7 @@ copyright_exclusions = [
   # package LICENSE/NOTICE and their owning SKILL.md retain attribution.
   ROOT.join("aiup-core/skills/aiup-use-case-spec/references/example.md").to_s,
   ROOT.join("aiup-core/skills/aiup-use-case-spec/references/use-case.md").to_s,
+  ROOT.join("aiup-core/skills/aiup-open-questions/references/open-questions.md").to_s,
   ROOT.join("aiup-core/skills/aiup-test-case/references/example.md").to_s,
   ROOT.join("aiup-core/skills/aiup-test-case/references/test-case.md").to_s,
 ]

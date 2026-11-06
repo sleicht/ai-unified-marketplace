@@ -25,6 +25,25 @@ implied by the user's request. Carry state from step to step: data created early
 in the journey is used in later actions. This document is an input to compatible
 test automation; creating it does not run or implement tests.
 
+## Use case tests and test cases
+
+Use cases are normally **disjoint**: no step belongs to two use cases. They are
+connected through **data and state**: the postcondition of one use case fulfils
+the precondition of the next (an order created in UC-010 is the order approved in
+UC-011). That connection is what a test case tests.
+
+| | Use case test (stack test skill, e.g. `aiup-ktor-test`, `aiup-compose-test`, `aiup-kobweb-test`) | Test case (`TC-XXX`) |
+|---|---|---|
+| Scope | One use case | Several use cases in business order |
+| Precondition | Set up directly with seeded test data | Created by the earlier steps of the journey |
+| Covers | Main success scenario, alternative flows, business rules | The hand-over between use cases and the end state |
+| Finds | A rule that is implemented wrong | A state left by one use case that the next one cannot handle |
+
+A test case is triggered by a **business flow**, never by an overlap of use cases:
+a sequence of use cases where the postcondition of one is the precondition of the
+next. Use cases that hand no state to each other do not form a journey; their use
+case tests are enough.
+
 ## Path, Language and Update Scope
 
 Resolve `<service>/docs/` when a service/module is named or the current directory
@@ -73,13 +92,17 @@ Use [references/test-case.md](references/test-case.md) as the document structure
 
 ## Status and priority values
 
-| Status    | Description                                       |
-|-----------|---------------------------------------------------|
-| Draft     | Initial version, still being written.             |
-| Reviewed  | Review completed; awaiting approval.              |
-| Approved  | Reviewed and approved for automation.             |
-| Automated | An end-to-end test implements this test case.     |
-| Obsolete  | No longer valid, superseded by another test case. |
+| Status    | Description                                                                | How it gets there                                                                                                                                  |
+|-----------|----------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| Draft     | Initial version, still being written.                                      | The author; this skill writes new journeys here and returns materially changed ones here.                                                          |
+| Reviewed  | Complete and checked by the author, awaiting the product owner's approval. | The author sets it once the test case is complete.                                                                                                 |
+| Approved  | Reviewed and approved for automation.                                      | The product owner sets it by hand.                                                                                                                 |
+| Automated | An end-to-end test implements this test case.                              | An audit or automation skill only suggests it, once every Flow row, validation and postcondition has a step in the journey test; a person sets it. |
+| Obsolete  | No longer valid, superseded by another test case.                          | The product owner sets it.                                                                                                                         |
+
+Construction and test skills never change the `**Status:**` line. `Automated` says
+the journey is automated, not that it passes; a failing journey points at a use
+case it chains.
 
 | Priority | Description                                                        |
 |----------|--------------------------------------------------------------------|
@@ -109,7 +132,7 @@ Use [references/test-case.md](references/test-case.md) as the document structure
 4. Write the document from the template: Overview (ID, Goal, Priority, Status), Roles, Preconditions, Flow table, Validation, Postconditions.
 5. Run the Completeness Checklist below; fix anything that fails.
 6. Report the output path, changed IDs/links, checks, fixture gaps and unresolved decisions.
-7. Suggest an installed automation skill only after checking that it explicitly accepts TC journey documents. Do not assume a UC/component test skill supports a TC. If none fits, report: “Journey specification ready; no matching automation skill identified.”
+7. Suggest an installed automation skill only after checking that it explicitly accepts TC journey documents. Do not assume a UC/component test skill supports a TC. If none fits, report: “Journey specification ready; no matching automation skill identified.” The journey then stays a manual script.
 
 ## Completeness Checklist
 
@@ -120,6 +143,7 @@ Use [references/test-case.md](references/test-case.md) as the document structure
 - [ ] The Flow table has the columns `Step | Name | Description | Test Data | Use Case`, steps numbered from 1 without gaps.
 - [ ] Every use case in the resolved request appears in at least one Flow row, linked with a working relative path.
 - [ ] Action steps carry literal test data (or `-`); at least one verification step separates or follows the actions.
+- [ ] Each consecutive action step consumes state left by an earlier one.
 - [ ] Validation has at least one numbered, bold-named check observable after the flow ends.
 - [ ] Postconditions list every record the journey creates or changes, and state deletion-order constraints where business rules impose them.
 - [ ] No step contains implementation detail (HTTP verbs, SQL, class names, protocol terms).

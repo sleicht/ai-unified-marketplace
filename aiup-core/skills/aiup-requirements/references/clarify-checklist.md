@@ -74,7 +74,9 @@ Priority, the `Source` column or a new row. Never add a questions-and-answers
 section to `requirements.md`. Unconfirmed defaults and proposed thresholds stay
 in `## Requirements Notes`, linked by ID, until the user confirms them.
 Terminology decisions that affect the domain vocabulary are reported for
-`aiup-reference`; do not create a separate glossary file.
+`aiup-reference`; do not create a separate glossary file. A question nobody
+answers now goes into the scoped `docs/open_questions.md`, never into the
+document.
 
 ## Report
 
@@ -84,7 +86,8 @@ After writing, list in the final report:
   (`NFR-001: search answers within 1 second for 95% of requests`);
 - **Assumed:** each default chosen without asking, naming the element
   (`CON-006 Source: GDPR Art. 17(1) — the vision names GDPR but no article`), so
-  the user can correct it;
+  the user can correct it; each one is also recorded as an `Open` question with
+  an `**Assumed:**` line in `docs/open_questions.md`, and the report names its ID;
 - **Open:** any category still **Missing** that could not be resolved, such as a
   role nobody could name or a conflict the user wants to settle with a
   stakeholder.

@@ -58,7 +58,8 @@ Name the element the question is about (`UC-004 step 5`, `UC-004 BR-002`) so the
 
 Into the specification itself — the step, the alternative flow, the business rule, the postcondition, or the
 `**Requirements:**` line it affects. Never add a questions-and-answers section to the use case; the file follows the
-template, and the history of the decisions lives in version control. A new domain term is reported for the domain
+template, and the history of the decisions lives in version control. A question nobody answers now goes into the
+scoped `docs/open_questions.md`, never into the document. A new domain term is reported for the domain
 vocabulary of `REFERENCE.md` (see `aiup-reference`); a new requirement is a hand-off to `aiup-requirements`.
 
 ## Report
@@ -68,5 +69,7 @@ After writing, list in the final report:
 - **Clarified:** each answered question in one line (`UC-004 BR-002: booking window is 6 months`);
 - **Assumed:** each default you chose without asking, naming the element (`UC-004 step 7: payment timeout handled as
   a declined payment`), so the user can correct it by re-running `aiup-use-case-spec` for that use case;
+  each one is also recorded as an `Open` question with an `**Assumed:**` line in `docs/open_questions.md`, and the
+  report names its ID;
 - **Open:** any category still **Missing** that you could not resolve, with the skill that would (`aiup-requirements`,
   `aiup-use-case-diagram`, `aiup-entity-model`).

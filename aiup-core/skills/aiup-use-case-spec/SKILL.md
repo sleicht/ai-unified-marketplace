@@ -132,9 +132,11 @@ structure and this skill's content rules.
    that the primary actor would recognise as valuable?* A subfunction ("Validate
    METAR", "Load NOTAM", "Persist Result") is a step of a larger user goal
    ("Determine Airport Suitability"), and a summary ("Manage Flight Operations")
-   spans several. A scenario that hands the work over to another role, waits for
-   an outside event or a deadline, or runs branches in parallel for different
-   actors is a summary, too: its parts are separate user-goal use cases, chained
+   spans several. One actor adding, changing and removing one business object
+   ("Manage Catalog") is a user goal, not a summary; split it only when the
+   operations differ in actor or carry their own rules. A scenario that hands
+   the work over to another role, waits for an outside event or a deadline, or
+   runs branches in parallel for different actors is a summary, too: its parts are separate user-goal use cases, chained
    as a journey via `aiup-test-case`, not a section of one use case. Do not rename,
    merge or split use cases yourself — the IDs belong to the diagram. Write the
    specification, then report which use case looks like a subfunction or a
@@ -151,11 +153,18 @@ structure and this skill's content rules.
    pipeline run, a host without a way to ask, or the user said not to ask — take
    the recommended option for every question and report it as an assumption as
    well. Never ask about implementation choices; they do not belong in a use case.
+   For the questions of the scoped `docs/open_questions.md` on the use case —
+   resolving the answered ones, asking the open ones, logging each unresolved
+   question and each assumption taken, withdrawing the ones that no longer apply —
+   follow "In the Clarify Step of a Specification Skill" of
+   [aiup-open-questions](../aiup-open-questions/SKILL.md), reading the existing
+   questions first so none is asked twice.
 7. Track progress with the available planning/task mechanism when useful — one item per use case file.
 8. For each use case, derive the filename with the rule in "File naming" above.
 9. Write the Overview section: `Use Case ID`, `Use Case Name`, primary actors,
    secondary actors, goal, trigger, an evidenced `Status` from the template's
-   list, and — after a blank line — linked `Requirements`.
+   list, and — after a blank line — linked `Requirements`, followed by the
+   optional `Mockup` and `API` lines.
    - **Primary actors** are the roles that pursue the goal. A use case often has
      one, but it may have several: list them comma-separated
      (`**Primary Actor:** Front Desk Clerk, Guest`) when each of them can start the
@@ -184,6 +193,24 @@ structure and this skill's content rules.
      (`NFR-*`) and constraints (`CON-*`) it must respect, e.g.
      `**Requirements:** [FR-001, NFR-004, CON-003](../requirements.md)`. List IDs
      only, never copy requirement text.
+   - The optional **`**Mockup:**`** line (the same label in German) follows the
+     Requirements line: one or more comma-separated Markdown links to the use
+     case's mockups or wireframes — a Figma link, an image, or a Markdown sketch
+     under `docs/mockups/` — e.g.
+     `**Mockup:** [List view](../mockups/uc-001-list.png)`; bare URLs are
+     tolerated. UI implementation skills take only the layout from it; behaviour,
+     rules and messages stay in the specification, and the steps do not describe
+     the layout because a mockup exists.
+   - The optional **`**API:**`** line (the same label in German) follows next:
+     one or more comma-separated Markdown links to the operations of an agreed
+     OpenAPI or AsyncAPI contract under `docs/api/`, each with the operation
+     (`operationId`) as fragment, e.g.
+     `**API:** [createBooking](../api/booking.yaml#createBooking)`. API
+     implementation skills build the operation as the contract says; the steps
+     describe the messages in business terms and never copy paths, field names
+     or status codes from the contract.
+   - Keep an existing Mockup or API line when updating a use case; add one only
+     when the user names a mockup or contract, and never ask for one.
 10. Define preconditions — verifiable facts that must be true before the use case
     starts. They are states the system has already established (often by another
     use case), never events or actor actions, and the use case does not check
@@ -224,6 +251,10 @@ structure and this skill's content rules.
       notification, or a return to a screen is not a guarantee — it belongs in the
       alternative flow that handles the failure. A statement that holds for only
       one failure path belongs in that flow, not here.
+    - A use case that changes no data — it only searches, lists or shows — has
+      nothing to protect when it fails. Do not write a guarantee such as "The
+      catalog is unchanged"; write the italic placeholder
+      `_None — the use case changes no data._` instead.
 14. Document applicable business rules with `BR-XXX` IDs, numbered `BR-001`,
     `BR-002`, … within the file. Every file starts again at `BR-001`; rule IDs
     are scoped to their use case (see "Scope").
@@ -285,7 +316,7 @@ definition of done:
 - [ ] Each alternative flow has a **Trigger** that references a specific main-scenario step number as `(step N)`.
 - [ ] Every trigger and continuation points to an existing main-scenario step.
 - [ ] Every alternative flow ends with `Use case continues at step N.` or `Use case ends.` — never open-ended.
-- [ ] Both Success and Failure postconditions are defined and non-empty.
+- [ ] Both Success and Failure postconditions are defined and non-empty; a use case that changes no data holds `_None — the use case changes no data._` as its Failure postcondition.
 - [ ] Every failure postcondition is a minimum guarantee that holds for every unsuccessful end of the use case — not a system reaction such as an error message, and not an outcome of a single failure path.
 - [ ] Each business rule has a `BR-XXX` ID, numbered `BR-001`, `BR-002`, … without gaps within its file; every file starts at `BR-001` because rule IDs are scoped to their use case.
 - [ ] No step contains technical implementation detail — no HTTP verbs (POST/GET), SQL, class names, regex, exception names, or protocol terms (SMTP, JWT, bcrypt). See the template's step-writing guidelines.

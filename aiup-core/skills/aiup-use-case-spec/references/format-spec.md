@@ -40,6 +40,8 @@ this order on save):
 **Status:** <status value>
 
 **Requirements:** [FR-001, NFR-004, CON-003](../requirements.md)   (optional)
+**Mockup:** [List view](../mockups/uc-001-list.png)                (optional)
+**API:** [createBooking](../api/booking.yaml#createBooking)       (optional)
 
 ## Preconditions
 
@@ -101,6 +103,8 @@ and empty files are English) and preserved on save.
 | Use case trigger   | `**Trigger:**` (Overview)    | `**Trigger:**` (same)    |
 | Status             | `**Status:**`                | `**Status:**` (same)     |
 | Requirements       | `**Requirements:**`          | `**Anforderungen:**`     |
+| Mockup             | `**Mockup:**`                | `**Mockup:**` (same)     |
+| API                | `**API:**`                   | `**API:**` (same)        |
 | Preconditions      | `## Preconditions`           | `## Vorbedingungen`      |
 | Main scenario      | `## Main Success Scenario`   | `## Haupt Flows`         |
 | Alternative flows  | `## Alternative Flows`       | `## Alternative Flows`   |
@@ -114,15 +118,17 @@ and empty files are English) and preserved on save.
 
 Status values (either language is readable in any document):
 
-| English       | German          |
-|---------------|-----------------|
-| Draft         | Entwurf         |
-| Reviewed      | Geprüft         |
-| Approved      | Genehmigt       |
-| Implemented   | Implementiert   |
-| Tested        | Getestet        |
-| Done          | Abgeschlossen   |
-| Obsolete      | Obsolet         |
+| English     | German        | Meaning                                                                    | Set by                                                                       |
+|-------------|---------------|----------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| Draft       | Entwurf       | Initial version, still being written.                                      | The author.                                                                  |
+| Reviewed    | Geprüft       | Complete and checked by the author, awaiting the product owner's approval. | The author, once the specification is complete.                              |
+| Approved    | Genehmigt     | Reviewed and approved for implementation.                                  | The product owner, by hand.                                                  |
+| Implemented | Implementiert | Implementation complete, pending testing.                                  | A person, when `aiup-implementation-status` suggests it from evidence.       |
+| Tested      | Getestet      | All tests pass, pending final acceptance.                                  | A person, when `aiup-implementation-status` suggests it from evidence.       |
+| Done        | Abgeschlossen | Fully implemented, tested, and accepted.                                   | The product owner, by hand.                                                  |
+| Obsolete    | Obsolet       | No longer valid, superseded by another use case.                           | The product owner, by hand.                                                  |
+
+Construction and test skills never change the `**Status:**` line.
 
 ## Structural rules (ERROR level)
 
@@ -133,7 +139,7 @@ Status values (either language is readable in any document):
    on save.
 2. **Overview** — the `## Overview` section must exist and carry the
    five mandatory fields: ID, Name, Primary Actor, Goal, Status.
-   Secondary Actors, Trigger and Requirements are optional. Primary
+   Secondary Actors, Trigger, Requirements, Mockup and API are optional. Primary
    Actor holds one role or a comma-separated list of roles; the label
    stays singular (`**Primary Actor:**`, `**Primärer Akteur:**`) in
    both cases. A `**Trigger:**` line inside the Overview is the use case
@@ -201,6 +207,24 @@ The `/aiup-use-case-spec` skill additionally requires:
   (`UC_TRIGGER_STEP_REF`; `(step N)` belongs to alternative-flow triggers),
   or repeats a precondition word for word (`UC_TRIGGER_IS_PRECONDITION`).
   Whether it is really an event and not a state needs semantic review.
+- A `**Mockup:**` line is optional, and a use case without one is never
+  reported. When present it holds one or more comma-separated Markdown
+  links to the use case's mockups or wireframes — a Figma link, an image,
+  or a Markdown sketch under `docs/mockups/`, e.g.
+  `[List view](../mockups/uc-001-list.png), [Figma](https://www.figma.com/design/…)`;
+  bare URLs are tolerated. The label is the same in German. The mockup
+  gives the layout only; behaviour, rules and messages stay in the
+  specification. The validator warns (`MOCKUP_NO_LINK`) when the line
+  links nothing or still holds the template placeholder.
+- An `**API:**` line is optional, and a use case without one is never
+  reported. When present it holds one or more comma-separated Markdown
+  links to the operations of the agreed OpenAPI or AsyncAPI contract
+  under `docs/api/`, each with the operation (`operationId`) as
+  fragment, e.g. `[createBooking](../api/booking.yaml#createBooking)`.
+  The label is the same in German. Steps never copy paths, field names
+  or status codes from the contract. The validator warns (`API_NO_LINK`)
+  when the line links nothing, a link names no operation, or the line
+  still holds the template placeholder.
 - All five template sections and both postcondition subsections exist.
 - The use case id matches `[SB]?UC-[A-Za-z0-9_-]+` and the filename
   starts with the id (canonical: `UC-XXX-<kebab-case-name>.md`).
@@ -215,7 +239,9 @@ The `/aiup-use-case-spec` skill additionally requires:
   Case wird bei Schritt N fortgesetzt.` / `Der Use Case endet.`). Every referenced
   main-scenario step must exist, including conditional continuations.
 - Success and failure postconditions are non-empty (an explicit italic
-  placeholder such as `_None — …_` counts as a deliberate statement).
+  placeholder such as `_None — …_` counts as a deliberate statement; a
+  use case that changes no data writes `_None — the use case changes no
+  data._` as its failure postcondition).
   Failure postconditions are minimum guarantees that hold for every
   unsuccessful end, not system reactions (semantic review, not validated).
 - Business rule headings carry a `BR-XXX:` label, numbered `BR-001`, `BR-002`, 

@@ -177,7 +177,11 @@ Record assumptions, rewrites, and unresolved conflicts under `## Requirements No
    threshold, propose a number. Write answers into the affected rows. Decide everything else with the best default,
    record it in `## Requirements Notes` as unconfirmed, and report it as an assumption. When no one can answer (a
    pipeline run, a host without a way to ask, or the user said not to ask), take the recommended option for every
-   question and report it as an assumption.
+   question and report it as an assumption. For the questions of the scoped `docs/open_questions.md` on requirements
+   (`FR-`, `NFR-`, `CON-`), follow "In the Clarify Step of a Specification Skill" of
+   [aiup-open-questions](../aiup-open-questions/SKILL.md): read the existing questions first so none is asked twice,
+   and log each unresolved question and each assumption taken in its format. Requirements Notes keep the unconfirmed
+   defaults as before.
 5. Track each requirement type with the available planning/task mechanism when the environment provides one.
 6. Write the document header.
 7. For functional requirements:
@@ -205,4 +209,9 @@ Record assumptions, rewrites, and unresolved conflicts under `## Requirements No
     of the use cases linking it, as defined under Status in the reference; never change a Deferred, Rejected or
     Superseded status on your own.
 13. Report the output path, changed IDs, checks, proposed thresholds and unresolved decisions, with the **Clarified**,
-    **Assumed** and **Open** items described in the clarification checklist. Name `aiup-use-case-diagram` as the next skill only when the catalogue is ready.
+    **Assumed** and **Open** items described in the clarification checklist. When this run changed, deferred,
+    rejected or removed an NFR or constraint, search the architecture decision records (`docs/**/adr/`,
+    `docs/**/adrs/` and `docs/**/decisions/` under the scoped docs directory) for its ID, name each ADR that cites it
+    and suggest `aiup-architecture` to revisit it; never edit an ADR. When the user states an architecture decision,
+    record the NFR or constraint behind it in the catalogue and refer the decision itself to `aiup-architecture`.
+    Name `aiup-use-case-diagram` as the next skill only when the catalogue is ready.

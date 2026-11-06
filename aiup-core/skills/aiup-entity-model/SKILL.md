@@ -134,6 +134,14 @@ entity's attribute table and list one rule per bullet:
 Never write constraints as a bold `**Constraints:**` line or an extra table row.
 Omit the heading when the entity has no multi-column constraint.
 
+## External Entities
+
+A foreign key may reference a table the model does not own, such as the identity
+or user table of another system. Such an entity gets no `###` section and no node
+in the Mermaid diagram. Write its cell as usual (`Not Null, Foreign Key (APP_USER.id)`)
+and name it once, in one sentence under the document title:
+`APP_USER is owned by the identity service and is an external boundary.`
+
 ## Workflow
 
 1. Resolve docs path: `<service>/docs/` for a scoped monorepo service, otherwise `docs/`.
@@ -144,7 +152,10 @@ Omit the heading when the entity has no multi-column constraint.
    answers into the affected relationship lines, Validation Rules cells and constraints. Decide everything else with
    the best default, label it as a proposal and report it as an assumption. When no one can answer (a pipeline run, a
    host without a way to ask, or the user said not to ask), take the recommended option for every question and
-   report it as an assumption. Never ask about SQL types, indexes or other implementation choices.
+   report it as an assumption. Never ask about SQL types, indexes or other implementation choices. For the questions
+   of the scoped `docs/open_questions.md` on entities (`Entity: BOOK`, `Entity: BOOK.isbn`), follow "In the Clarify
+   Step of a Specification Skill" of [aiup-open-questions](../aiup-open-questions/SKILL.md): read the existing
+   questions first so none is asked twice, and log each unresolved question and each assumption taken in its format.
 4. Track entities with the available planning/task mechanism when useful.
 5. Write the document header and ER diagram (relationships only).
 6. For each entity:
@@ -157,9 +168,10 @@ Omit the heading when the entity has no multi-column constraint.
     - Every entity in the ER diagram has a corresponding attribute table section
     - Every attribute table has exactly 5 columns
     - No attributes appear inside the Mermaid diagram entity blocks
-    - All foreign keys reference existing entities
-    - Every foreign key has a relationship line in the ER diagram, and every relationship line has a backing foreign key
+    - Every foreign key references a model entity or a named external entity
+    - Every foreign key to a model entity has a relationship line in the ER diagram, there is a relationship line only for foreign keys to model entities, and every relationship line has a backing foreign key
     - Multi-column constraints are a `#### Constraints` bullet list below the table
     - All validation rules use values from [references/REFERENCE.md](references/REFERENCE.md)
+    - Every Validation Rules cell follows the fixed order (nullability, Unique, Foreign Key, Min/Max or Values, Format), never combines Values with a range, and moves unlisted formats and multi-column uniqueness to `#### Constraints` bullets
     - Both relationship ends agree with FK nullability, uniqueness and participation evidence
 8. Report the output path, changed entities/constraints, checks and unresolved evidence or downstream impacts, with the **Clarified**, **Assumed** and **Open** items described in the clarification checklist. Suggest a migration skill only when its installed contract supports this model.

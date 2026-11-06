@@ -8,6 +8,8 @@ description: >
   Do not trigger merely because Mermaid is mentioned for another diagram type.
   Use aiup-requirements instead when the request is to create the requirements
   catalog itself rather than visualise already documented functional requirements.
+  Class, sequence, and ER diagrams are not use case diagrams; the entity model
+  is aiup-entity-model.
 ---
 <!--
 Copyright 2025-2026 Simon Martinelli and the AI Unified Process contributors.
@@ -96,7 +98,10 @@ the primary actor walks away with. Test each use case with one question:
   waits for an outside event or a deadline, or runs branches in parallel for different actors — "Process Insurance
   Claim" with a clerk, an assessor, and a payout after approval. Each role's part is a user goal of its own; split
   it into those user-goal use cases and chain them as a journey via `aiup-test-case`. Do not describe the
-  hand-overs inside one use case.
+  hand-overs inside one use case. "Manage <business object>" is the exception when it means one actor maintaining
+  one business object in one sitting — adding, changing, and removing books in the catalogue: that is a user goal
+  (Cockburn's CRUD use case), with each operation a branch of its scenario. Split it only when the operations
+  differ in actor or carry rules of their own.
 
 A functional requirement that describes a step rather than a goal traces to the user goal use case that contains
 the step.
@@ -129,4 +134,6 @@ the step.
     - Use case IDs follow the UC-{3-digit} convention
     - Mermaid syntax is valid
     - Exactly one `## Use Case Diagram` heading and one fenced `mermaid` block exist
+
+   When a check fails, fix the diagram and run every check again; report the diagram only when all of them pass.
 8. Report the output path, changed IDs/names, validation and any affected spec/TC links. Recommend `aiup-use-case-spec` for ready use cases or required filename reconciliation.

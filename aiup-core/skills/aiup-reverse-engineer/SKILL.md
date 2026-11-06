@@ -64,7 +64,7 @@ canonical requirements headings stable and use the UC format's language labels.
 ## Principles
 
 - Recover intent; do not transcribe implementation.
-- Group entry points by the actor's end-to-end goal. A CRUD controller is usually one “Manage X” use case, not one per route.
+- Group entry points by the actor's end-to-end goal. A CRUD controller is usually one “Manage X” use case, not one per route: one actor maintaining one business object in one sitting is a user goal, with each operation a branch. Split it only when the operations differ in actor or carry rules of their own.
 - Derive only what code, schema, configuration, and tests support. Report partial or unclear behaviour as uncertain.
 - Every recovered use-case specification has Status `Draft`, even for working, tested code: code is the only source, so a bug in it would otherwise be written down as required behaviour, and tests derived from the spec would restate that bug. The user reviews each spec against intended behaviour and sets `Approved` before tests are written from it. An existing spec whose content this run leaves unchanged keeps its human-set status.
 - Treat migrations as the persistence source of truth, then use ORM models and DTOs to add relationships and validation.
@@ -81,13 +81,14 @@ Use the available planning/task mechanism when useful.
 - Locate authentication/authorisation rules, migrations, ORM models, validation, and tests. Read authentication configuration for role and permission names only; never carry credential values out of it.
 - Prefer target-project conventions and existing documentation over the bundled examples.
 
-For large projects, first list every entry-point file, cluster files by feature, process one cluster at a time, then make one shared data-layer pass.
+For large projects, first list every entry-point file, cluster files by feature, process one cluster at a time, then make one shared data-layer pass. Cut clusters along declared modules first, then feature packages, then schema or table prefixes, then foreign-key clusters; never make a cluster of shared technical code (`common`, `util`, `security`, `config`) — its tables and entry points join the cluster they serve. Assign each entity to the cluster whose code writes it (a shared table goes to its writer) and number use cases contiguously per cluster. The clusters organise the work only; all artifacts stay in the scoped service `docs/`.
 
 ### 2. Identify actors
 
 - Derive roles from route guards, permissions, security configuration, and tested access rules.
 - Distinguish anonymous and authenticated actors only when behaviour differs.
 - Model external systems, schedulers, and inbound integrations as actors when they initiate behaviour.
+- Model external systems the code calls outbound for a use case (payment, mail, other services) as its secondary actors.
 - Use role names from the domain; do not invent finer roles than the code enforces.
 
 ### 3. Aggregate use cases
@@ -111,12 +112,14 @@ existing IDs; allocate IDs only for genuinely new goals.
 
 - Trace happy paths through code and tests, expressing steps as actor/system outcomes.
 - Derive alternatives from validation branches, exceptions, conditional UI, and error tests.
+- Derive the trigger from the event behind the entry point: the route or screen action for an interactive use case, the schedule of a scheduled job, or the message or webhook a listener consumes.
 - Derive preconditions from guards and required upstream state.
 - Derive postconditions from persisted changes, events, notifications, and rollback behaviour.
 - Derive business rules from validation, configuration, constants, constraints, and policy branches.
 - Apply the use-case quality rules of `aiup-use-case-spec` (its SKILL.md and `references/format-spec.md`) instead of restating them here: preconditions are states, never the request that starts the use case; input checks during the use case become a step plus an alternative flow; failure postconditions are minimum guarantees derived from transaction boundaries and pre-write checks, not error responses; when the code has no alternative branch, write an italic `_None — …_` placeholder rather than inventing a flow.
 - Name actors and business objects with the terms of the domain vocabulary section of the scoped `docs/REFERENCE.md`, when present.
 - A policy enforced in several places is one rule: write it in the use case that owns the data and cite it elsewhere with a qualified reference instead of copying it.
+- Write the `**Requirements:**` line only when `requirements.md` exists and its IDs match the use case; never invent requirement IDs.
 - Number `BR-XXX` business-rule IDs from `BR-001` within each generated use-case file. Qualify cross-use-case references with the use case ID, for example `UC-005 BR-002`.
 
 ### 5. Recover the entity model
@@ -127,9 +130,9 @@ Inspect sources in this order:
 2. ORM models and mappings
 3. DTOs/forms only when persistence structure is otherwise unavailable
 
-Map implementation types and validation into the AIUP vocabulary defined in the artifact contract. Derive relationship cardinality from foreign keys, nullability, unique constraints, and ORM associations. Skip framework tables unless they carry domain lifecycle. Apply the artifact contract's foreign-key, cascade and composite-key rules.
+Map implementation types and validation into the AIUP vocabulary defined in the artifact contract; a binary column (`bytea`, `blob`) follows the entity model's binary-content convention. Derive relationship cardinality from foreign keys, nullability, unique constraints, and ORM associations. Skip framework tables unless they carry domain lifecycle. Apply the artifact contract's foreign-key, cascade and composite-key rules.
 
-Structure comes from the schema; meaning does not. A migration comment records what a table was for when it was written, not every current use. Before writing an entity's description, read the decision records and domain docs — ADRs found with the glob `docs/**/adr/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/`), and the domain vocabulary section of the scoped `docs/REFERENCE.md`, when present — and the code that reads the table. If a row can play more than one role, the description must say so.
+Structure comes from the schema; meaning does not. A migration comment records what a table was for when it was written, not every current use. Before writing an entity's description, read the decision records and domain docs — ADRs found with the globs `docs/**/adr/`, `docs/**/adrs/` and `docs/**/decisions/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/` or `docs/architecture/decisions/`), and the domain vocabulary section of the scoped `docs/REFERENCE.md`, when present — and the code that reads the table. If a row can play more than one role, the description must say so.
 
 ### 6. Write and cross-validate
 

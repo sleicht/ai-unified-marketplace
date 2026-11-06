@@ -62,12 +62,53 @@ Include inline ADR subsections when decisions are known:
 
 **Status:** Proposed | Accepted | Superseded | Rejected
 
+**Requirements:** NFR-xxx, CON-xxx
+
 **Context:** ...
 
 **Decision:** ...
 
 **Consequences:** ...
 ```
+
+The `**Requirements:**` line is optional; when present it links the NFRs and
+constraints in `requirements.md` that the decision serves.
+
+## Construction Layers
+
+Section 6 (Tech Stack) ends with a `### Construction Layers` subsection that
+tells the construction skills which layers the service has and which installed
+`aiup-` skill builds and tests each one:
+
+```markdown
+### Construction Layers
+
+| Layer       | Technology | Skill | Test skill | Location |
+|-------------|------------|-------|------------|----------|
+| Migration   |            |       | –          |          |
+| Persistence |            |       |            |          |
+| Client      |            |       |            |          |
+| Service     |            |       |            |          |
+| API         |            |       |            |          |
+| UI          |            |       |            |          |
+| E2E         |            | –     |            |          |
+
+**API contract:** contract-first (agreed OpenAPI/AsyncAPI files under `docs/api/`) | code-first | –
+
+| External system | Contract | Location |
+|-----------------|----------|----------|
+|                 |          |          |
+```
+
+- Fill the rows from build modules, source layout and the installed plugin skills.
+  Mark a layer the service does not have with `–` in every column; write `–` in
+  a skill column when no installed skill builds or tests that layer.
+- Name each external system exactly as the use cases write it on their
+  `**Secondary Actors:**` line; a secondary actor without a row is a person or
+  role. Drop the table when the service calls no external system.
+- Keep rows the team has set. When the repository contradicts a row, report the
+  contradiction as an open architecture decision instead of rewriting it; write
+  `Not documented yet` for a choice nobody has made.
 
 ## Evidence and Detail
 
@@ -99,7 +140,7 @@ Read the project before writing stack details:
 - package/module layout for layering
 - `ArchitectureTest.kt` when present; document enforced rules rather than inventing new ones
 - deployment files when present (`Dockerfile`, Helm, Kubernetes, CI config)
-- ADR files when present, found with the glob `docs/**/adr/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/`)
+- ADR files when present, found with the globs `docs/**/adr/`, `docs/**/adrs/` and `docs/**/decisions/` under the scoped docs directory (matching `docs/adr/` and subdirectories such as `docs/architecture/adr/` or `docs/architecture/decisions/`)
 
 ## DO NOT
 
@@ -114,10 +155,12 @@ Read the project before writing stack details:
 1. Resolve docs path and service/module scope.
 2. Read existing `architecture.md` if present.
 3. Read `vision.md`, `requirements.md`, `entity_model.md`, and relevant use cases when present.
-4. Inspect build/module layout and dependency files for actual tech stack.
+4. Inspect build/module layout and dependency files for actual tech stack, and fill the
+   [Construction Layers](#construction-layers) subsection.
 5. Inspect source package layout and architecture tests for layering.
 6. Inspect deployment/observability/security config when present.
-7. Write or update the numbered Markdown sections.
+7. Write or update the numbered Markdown sections. Check every new or changed decision against the accepted ADRs
+   (inline and in ADR files) and report each contradiction instead of resolving it silently.
 8. Embed Mermaid diagrams only where they add useful structure.
 9. Validate links and referenced files exist.
 10. Validate heading order, links, tables, and Mermaid fences.

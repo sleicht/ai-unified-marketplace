@@ -25,10 +25,20 @@ empty; use `Unknown` when evidence is insufficient. Do not infer defaults.
 | Range | Min: X, Max: Y (include only evidenced bounds) |
 | Enumerated values | Values: A, B, C |
 | Email format | Format: Email |
+| Phone number format | Format: Phone (E.164) |
+| URL format | Format: URL |
 | Missing evidence | Unknown |
 
-Examples: `Optional, Foreign Key (USER.id), Unique` and `Primary Key,
-Application Generated` for an application-generated UUID. A Primary Key does not
+For every non-key attribute, compose the rules in this fixed order: nullability
+(`Not Null` or `Optional`) first, then `Unique`, then `Foreign Key (TABLE.attribute)`,
+then `Min:`/`Max:` or `Values:`, then `Format:`. Use each rule at most once. Never
+combine `Values:` with a range. A format not listed above is not a cell value; write
+it as a `#### Constraints` bullet. Uniqueness of a single attribute belongs in its
+cell; uniqueness of a combination of attributes is a `#### Constraints` bullet that
+names the columns (`member_id, book_id and borrowed_on are unique together`).
+
+Examples: `Optional, Unique, Foreign Key (USER.id)`, `Not Null, Unique, Format: Email`
+and `Primary Key, Application Generated` for an application-generated UUID. A Primary Key does not
 imply a sequence. Mark each composite-key column `Primary Key`, or `Primary Key,
 Foreign Key (TABLE.id)` when it also references another entity. For composite
 keys or constraints, name the participating attributes as bullets under a
@@ -51,9 +61,17 @@ Never copy a credential-bearing default value; describe its purpose and location
 
 `Unbounded` means the source explicitly establishes no length bound. `Unknown`
 means it was not established. Never substitute 255, 10,2 or a positive-only range
-for missing evidence. If an observed source type cannot be represented, record
-its semantics and the unsupported mapping as an open issue rather than coercing
-it to a different type. Resolve that issue before claiming migration readiness.
+for missing evidence.
+
+There is no binary type. Binary content (a document, an image) is a `String` with
+`-` as Length/Precision and a Description that begins with `Binary content:`
+(`Binary content: the signed contract as PDF`); its Validation Rules are `Not Null`
+or `Optional` as for any field. A migration skill maps exactly that combination to
+a binary column, so binary content is not an open issue.
+
+If any other observed source type cannot be represented, record its semantics and
+the unsupported mapping as an open issue rather than coercing it to a different
+type. Resolve that issue before claiming migration readiness.
 
 ## Relationship Cardinality
 

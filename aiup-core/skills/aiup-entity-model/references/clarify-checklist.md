@@ -75,8 +75,9 @@ Name the element the question is about (`RESERVATION.check_out`,
 Into the model itself — the ER relationship line, the Validation Rules cell or a
 bullet under `#### Constraints`. Never add a questions-and-answers section to the
 document. Defaults chosen without confirmation are proposals: label them
-separately from evidenced or confirmed facts. A new domain term or requirement is
-a hand-off to `aiup-reference` or `aiup-requirements`.
+separately from evidenced or confirmed facts. A question nobody answers now goes
+into the scoped `docs/open_questions.md`, never into the document. A new domain
+term or requirement is a hand-off to `aiup-reference` or `aiup-requirements`.
 
 ## Report
 
@@ -86,6 +87,7 @@ After writing, list in the final report:
   (`RESERVATION ||--|{ RESERVATION_ROOM: a reservation books one or more rooms`);
 - **Assumed:** each proposal chosen without asking, naming the element
   (`GUEST.email: Optional — walk-in guests give no email`), so the user can
-  correct it;
+  correct it; each one is also recorded as an `Open` question with an
+  `**Assumed:**` line in `docs/open_questions.md`, and the report names its ID;
 - **Open:** any category still **Missing** that could not be resolved, with the
   skill that would resolve it (`aiup-requirements`, `aiup-use-case-spec`).

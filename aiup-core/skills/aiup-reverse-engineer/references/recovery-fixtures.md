@@ -31,7 +31,7 @@ Expected entity model:
 
 - Both IDs: `UUID`, `-`, `Primary Key, Application Generated`.
 - `note`: `String`, `Unbounded`, `Not Null`.
-- `account_id`: `UUID`, `-`, `Optional, Foreign Key (ACCOUNT.id), Unique`.
+- `account_id`: `UUID`, `-`, `Optional, Unique, Foreign Key (ACCOUNT.id)`.
 - `amount`: `Decimal`, `10,2`, `Not Null`; no invented `Min: 0`.
 - Relationship: `ACCOUNT |o--o| ADJUSTMENT`. Neither side is mandatory.
 - Source evidence is recorded without copying credentials.

@@ -48,6 +48,10 @@ match the project in front of you.
   as `commonMain`, `jvmMain`, `androidMain` and `wasmJsMain`; shared DTOs and
   platform implementations can live in different modules. These libraries are
   independent signals: finding one does not prove the others are present.
+- **Module signals** (for clustering a large project): `include(...)` entries in
+  `settings.gradle.kts`, then feature packages (`com.acme.billing`, not layer
+  packages such as `routes` or `repository`), then groups of Exposed `Table`
+  objects and their schemas or table-name prefixes.
 - **Ktor entry points and actors**:
   - Start at the configured `Application` module or `embeddedServer` setup;
     follow installed routing functions and nested `route(...)` blocks to
@@ -99,6 +103,7 @@ match the project in front of you.
   | `decimal("balance", 10, 2)`                                          | `Decimal`      | 10,2             | `Not Null`; no range without another constraint                           |
   | `uuid("external_id")`                                                | `UUID`         | —                | `Not Null`; neither a primary key nor generated merely because it is UUID |
   | `reference("owner_id", Owners).nullable()` with an integer owner key | `Integer`      | 10               | `Optional, Foreign Key (OWNER.id)`                                        |
+  | `blob("scan")` or `binary("scan")` over a `bytea` column             | `String`       | -                | `Not Null`; Description begins `Binary content:`                          |
 
   Derive primary-key status and generation separately from explicit key declarations,
   ID-table behaviour and migrations. Nullable foreign keys permit missing parents;

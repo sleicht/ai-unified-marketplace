@@ -11,6 +11,8 @@
 **Status:** Draft | Reviewed | Approved | Implemented | Tested | Done | Obsolete
 
 **Requirements:** [FR-XXX, NFR-XXX, CON-XXX](../requirements.md)
+**Mockup:** [Links to the mockups or wireframes of this use case — a Figma link, an image, or a Markdown sketch under docs/mockups/ — omit this line when there is none]
+**API:** [Links to the operations of the agreed API contract under docs/api/, each with the operationId as fragment — omit this line when there is none]
 
 ## Preconditions
 
@@ -58,15 +60,8 @@ cross-use-case reference with the use case ID, for example `UC-005 BR-002`.
 
 ### Status Values
 
-| Status      | Description                                      |
-|-------------|--------------------------------------------------|
-| Draft       | Initial version, still being written.            |
-| Reviewed    | Review completed; awaiting approval.             |
-| Approved    | Reviewed and approved for implementation.        |
-| Implemented | Implementation complete, pending testing.        |
-| Tested      | All tests pass, pending final acceptance.        |
-| Done        | Fully implemented, tested, and accepted.         |
-| Obsolete    | No longer valid, superseded by another use case. |
+See [format-spec.md](format-spec.md) for the status values, their meaning and
+who sets each one.
 
 ### German Section Names
 

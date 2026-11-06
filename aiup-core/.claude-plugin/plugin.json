@@ -1,5 +1,6 @@
 {
   "name": "aiup-core",
+  "displayName": "AI Unified Process Core",
   "description": "AI Unified Process core - stack-agnostic requirements, Mermaid modelling, use-case specifications, architecture, and project reference",
   "version": "103.13.0",
   "author": {

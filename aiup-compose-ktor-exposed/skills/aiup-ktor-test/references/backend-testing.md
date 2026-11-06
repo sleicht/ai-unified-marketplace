@@ -21,6 +21,7 @@ See [the compiled route and repository tests](../../aiup-implement/references/re
 - Install the project's auth test helper when production routes are protected.
 - Cover allowed access, missing token (`401`), and insufficient authority (`403`) when supported.
 - Assert response fields and invalid ID/limit behaviour. A write fake captures or persists mutations; a fixed read fixture cannot prove writes.
+- Test a flow that shared data or other tests' data rule out, such as an empty result, at route or service level with a fake port that returns nothing. Never assert an empty-state message while data exists.
 
 ## Outbound Clients
 
@@ -28,7 +29,7 @@ Use Ktor `MockEngine`, capture `HttpRequestData`, and assert URL, method, header
 
 ## Repository Integration
 
-Use Testcontainers, Flyway, the project's datasource configuration, and Exposed `Database.connect`. Apply the real migrations before tests. Clean only owned tables, child before parent. Keep test-data factories private and configurable. Track real ownership fields or inserted IDs, never invent test-only production columns. Close datasources/containers. Verify migration upgrades with existing rows, all-field round trips, constraints, audit timestamps and rollback after a later write fails.
+Use Testcontainers, Flyway, the project's datasource configuration, and Exposed `Database.connect`. Apply the real migrations before tests. Clean only owned tables, child before parent. Keep test-data factories private and configurable. Track real ownership fields or inserted IDs, never invent test-only production columns. A repository test may scope its query to a filter only its owned rows match; it never deletes rows it does not own. A row the application seeds at startup that a test needs is inserted with a fixed ID outside the sequence range and `ON CONFLICT DO NOTHING`. Close datasources/containers. Verify migration upgrades with existing rows, all-field round trips, constraints, audit timestamps and rollback after a later write fails.
 
 ## Architecture Rules
 

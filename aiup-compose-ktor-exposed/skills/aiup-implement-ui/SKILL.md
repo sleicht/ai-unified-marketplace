@@ -65,6 +65,7 @@ Before adding auth or runtime configuration, inspect the UI module for an existi
 - Pass a ViewModel into a screen section that can be expressed as immutable state plus actions
 - Create feature Gradle modules without evidence that package/internal boundaries are insufficient
 - Edit tests or specification documents (requirements, use cases, test cases, entity model, `REFERENCE.md`); report a failing test or doubtful specification as an open question
+- Add a library, plugin or version-catalogue entry without asking first
 ## Target UI Architecture
 
 ```text
@@ -112,8 +113,18 @@ Mark every client-side check that enforces a use-case business rule (ViewModel o
 - Always qualify the rule with its use case; rule IDs restart per use case. A rule cited from another use case keeps that use case's ID.
 - Restate the rule in one line. Client validation complements, never replaces, the backend check, which carries its own marker.
 - Add the marker while implementing the rule. A UI-enforced business rule without a marker is still unimplemented.
+- Keep the whole comment, including its indentation, within the project's ktlint/detekt `max_line_length` (`.editorconfig`). Shorten the restated rule rather than wrap it onto a second line.
 
 `aiup-implementation-status` searches these markers first.
+
+## Mockups
+
+Apply this only when the use case has a `**Mockup:**` line. Read a Figma link through a Figma MCP server when one is available; otherwise read the linked image or Markdown sketch under `docs/mockups/`.
+
+- The mockup decides layout: placement, field order, columns and labels. The specification decides which fields and actions exist, their behaviour and their messages.
+- Do not build a mockup field that neither the specification nor the entity model backs. Build a specification item the mockup omits anyway.
+- Report each disagreement as a non-blocking open question. Report an unreadable link; never guess its content.
+- A mockup never widens the use case's scope.
 
 ## Gaps in the Specification
 
@@ -121,7 +132,7 @@ Implement what the specification states; never close a gap with an assumption. A
 
 - Read the `**Status:**` line first. For `Draft` or `Reviewed` (`Entwurf`/`Geprüft`), say the use case is not yet approved and ask whether to proceed; with no one to ask, stop and report instead of implementing. Never implement an `Obsolete` use case. Never change the status line.
 - Ask about each gap or leave that part unimplemented; never pick a reading silently. A reading the user chooses is implemented and still reported, so the answer reaches the specification.
-- End the report with an **Open questions** list: one line per gap naming the element (`UC-001 step 4`, `UC-001 A2`, `UC-001 BR-003`), the question, the readings seen, and whether that part was left out or implemented with the chosen reading. `aiup-use-case-spec` answers them in the specification.
+- End the report with an **Open questions** list: one line per gap naming the element (`UC-001 step 4`, `UC-001 A2`, `UC-001 BR-003`), the question, the readings seen, and whether that part was left out or implemented with the chosen reading. `aiup-use-case-spec` answers them in the specification. Also append each to the scoped `docs/open_questions.md` in the `aiup-open-questions` format, reading it first so none is recorded twice: `**Raised by:**` this skill, `**Blocking:** Yes` for a part left out, `No` with an `**Assumed:**` line for a chosen reading. Never edit the specifications.
 - Purely presentational choices, such as a label, layout or column order, are not gaps; follow project conventions.
 
 ## Test Handoff
@@ -145,7 +156,7 @@ Run existing checks. Save affected symbols, missing scenarios, failed checks and
 13. Check that every UI-enforced business rule has its `UC-XXX BR-YYY` marker.
 14. If language-server diagnostics are available, run them for touched Kotlin files.
 15. Verify with the detected project command: namespaced `mise run //<stack>:compile` from monorepo root, bare `mise run compile` inside a stack, or UI module Gradle tasks as fallback. Run existing architecture, coverage, and shared-contract gates affected by the change. Use desktop/wasm run tasks only when manual UI verification is needed.
-16. Report changed files and the **Open questions** list, and save both in the test handoff.
+16. Report changed files, a **Decisions** list (choices taken alone, such as names, placement or which mockup layout was followed) next to the **Open questions** list, and save them in the test handoff.
 
 ## Resources
 

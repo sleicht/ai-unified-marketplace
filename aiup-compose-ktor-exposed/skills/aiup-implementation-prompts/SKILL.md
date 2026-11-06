@@ -97,7 +97,11 @@ UI-only, or testing scope. Preserve existing implementations through reconciliat
 | [aiup-kobweb-test](../aiup-kobweb-test/SKILL.md)                     | Kobweb UI implementation or testing is in scope.                                                                  | Pages, ports and API contracts exist; discover the configured browser runner.       |
 | [aiup-implementation-status](../aiup-implementation-status/SKILL.md) | After each UC's requested implementation and testing steps.                                                       | Read actual code/test evidence; request UI coverage explicitly when UI is included. |
 
-Select the UI/test pair from the actual stack or explicit user choice:
+When `architecture.md` has a `Construction Layers` table, plan no session for a
+layer marked `–` and take each layer's skill and test skill from its row; a row
+naming a skill that is not installed is a blocker to record, not a reason to
+substitute another. Otherwise select the UI/test pair from the actual stack or
+explicit user choice:
 `aiup-implement-ui` + `aiup-compose-test`, or `aiup-kobweb-ui` + `aiup-kobweb-test`.
 Do not schedule both for one UI unless both targets are requested. If the stack
 is genuinely undecided, record that blocker instead of choosing silently.

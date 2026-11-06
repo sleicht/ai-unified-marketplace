@@ -75,6 +75,8 @@ Read `references/backend-style.md`, resolved relative to this `SKILL.md`, before
 - Regenerate API dumps for an unrelated change or hide an unintended contract break
 - Duplicate a convention-plugin rule in a module or collapse independent service builds to share configuration
 - Edit tests or specification documents (requirements, use cases, test cases, entity model, `REFERENCE.md`); report a failing test or doubtful specification as an open question
+- Create or use a Ktor `HttpClient` inside an application service; outbound calls go through a port
+- Add a library, plugin or version-catalogue entry without asking first
 
 ## Target Architecture
 
@@ -89,6 +91,7 @@ Read `references/backend-style.md`, resolved relative to this `SKILL.md`, before
     │   ├── model/                   # Domain model + enums + init validation
     │   └── repository/              # Repository interfaces
     └── infrastructure/
+        ├── client/                  # Ktor HttpClient adapters for external-system ports
         ├── persistence/             # Exposed Table + ExposedXxxRepository
         └── rest/                    # Ktor Route extension + response mappers
 
@@ -115,8 +118,28 @@ Mark every place that enforces a use-case business rule (domain `init` validatio
 - Always qualify the rule with its use case; rule IDs restart per use case. A rule cited from another use case keeps that use case's ID.
 - Restate the rule in one line; do not paste the full text. Mark each enforcing place, not just one.
 - Add the marker while implementing the rule. A business rule without a marker is still unimplemented.
+- Keep the whole comment, including its indentation, within the project's ktlint/detekt `max_line_length` (`.editorconfig`). Shorten the restated rule rather than wrap it onto a second line.
+- Place the marker where the rule takes effect. A rule that only decides which rows a read returns, or their order, is marked at the Exposed `where`/`orderBy` in the repository. A rule that rejects a command or guards a write is marked in the domain model or application service. A service or route that only delegates carries no marker.
 
 `aiup-implementation-status` searches these markers first.
+
+## External Systems
+
+An outbound call to a system named on the use case's `**Secondary Actors:**` line goes through a port, placed where the existing style keeps ports (`api/` or a domain port). Implement it as an adapter with a Ktor `HttpClient` in `infrastructure/client`, bound in the feature's Koin module. Application services depend on the port only.
+
+- Build the adapter from the provider's contract (OpenAPI/AsyncAPI, client documentation) when one is present, found through the system's row in the `Construction Layers` external-system table of `architecture.md` when there is one; otherwise report the missing contract as an open question.
+- Map each provider failure the use case's alternative flows name to an exception or result the port declares.
+- Retry, timeout and fallback behaviour (`HttpTimeout`, `HttpRequestRetry`, cached answers) is an open question unless the specification or an ADR states it.
+
+## Agreed API Operation
+
+Apply this only when the use case has an `**API:**` line linking an OpenAPI operation under `docs/api/` (the `operationId` is the `#` fragment). The agreed contract decides the wire: method, path, parameters, property names and types, status codes and error bodies. The specification decides behaviour.
+
+- Take the Ktor route's path, method and response statuses from the operation.
+- Name shared `@Serializable` DTO properties exactly as the contract does; use `@SerialName` only where the contract name is not a valid Kotlin identifier.
+- A disagreement between contract and specification is an open question. It is blocking when a required field has no source.
+- When `architecture.md` records the **API contract** as code-first, an `**API:**` line contradicts it; report that as a blocking open question.
+- Documentation generated from code is not input. Do not build operations the use case does not link.
 
 ## Gaps in the Specification
 
@@ -124,7 +147,7 @@ Implement what the specification states; never close a gap with an assumption. A
 
 - Read the `**Status:**` line first. For `Draft` or `Reviewed` (`Entwurf`/`Geprüft`), say the use case is not yet approved and ask whether to proceed; with no one to ask, stop and report instead of implementing. Never implement an `Obsolete` use case. Never change the status line.
 - Ask about each gap or leave that part unimplemented; never pick a reading silently. A reading the user chooses is implemented and still reported, so the answer reaches the specification.
-- End the report with an **Open questions** list: one line per gap naming the element (`UC-001 step 4`, `UC-001 A2`, `UC-001 BR-003`), the question, the readings seen, and whether that part was left out or implemented with the chosen reading. `aiup-use-case-spec` answers them in the specification.
+- End the report with an **Open questions** list: one line per gap naming the element (`UC-001 step 4`, `UC-001 A2`, `UC-001 BR-003`), the question, the readings seen, and whether that part was left out or implemented with the chosen reading. `aiup-use-case-spec` answers them in the specification. Also append each to the scoped `docs/open_questions.md` in the `aiup-open-questions` format, reading it first so none is recorded twice: `**Raised by:**` this skill, `**Blocking:** Yes` for a part left out, `No` with an `**Assumed:**` line for a chosen reading. Never edit the specifications.
 - A choice the specification deliberately leaves open, such as a label, field order or log message, is not a gap; follow project conventions.
 
 ## Test Handoff
@@ -153,7 +176,7 @@ This backend-only skill runs existing checks; `aiup-ktor-test` creates or update
 18. Check that every business rule of the use case has its `UC-XXX BR-YYY` marker.
 19. If language-server diagnostics are available, run them for touched Kotlin files.
 20. Verify with the detected project command: `mise run //<stack>:compile` / `mise run //<stack>:verify` from a monorepo root, bare `mise run compile` / `mise run verify` inside a stack, or module Gradle tasks as fallback. Run existing DI graph and architecture tests when present.
-21. Report changed files and the **Open questions** list, and save both in the test handoff.
+21. Report changed files, a **Decisions** list (choices taken alone, such as names, package placement or mapping details) next to the **Open questions** list, and save them in the test handoff.
 
 ## Resources
 

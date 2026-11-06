@@ -48,6 +48,8 @@ Do not import Compose Multiplatform `runComposeUiTest` or Android test rules.
   Assert that Enter submits the actual query and user actions change visible state.
 - Keep ordinary UI tests independent of live services. Stub the network boundary
   while exercising the real page and HTTP adapter; use deterministic auth state.
+- After a debounced filter, first assert content only the filtered result shows,
+  then count rows. After navigation, wait for the loaded content before asserting.
 - Verify direct navigation, reload, history, invalid IDs, keyboard access and
   narrow layouts. Automated checks do not prove full accessibility.
 - Close owned clients, pages, browsers and test servers in cleanup. Keep data and
@@ -58,6 +60,9 @@ Do not import Compose Multiplatform `runComposeUiTest` or Android test rules.
 Delete tests only for explicitly retired or clearly superseded contract behaviour.
 A missing paragraph is not proof a scenario was removed. Keep existing traceability
 conventions; name a test-case journey's `TC-XXX` ID only in KDoc or the test name.
+A test whose assertion enforces a linked NFR or CON limit names that ID in its
+backtick test name or KDoc (`` `NFR-002 rejects title over 200 chars` ``); never
+name an FR ID or a system-wide NFR.
 
 ## When a Test Fails
 

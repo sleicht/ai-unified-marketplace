@@ -62,6 +62,11 @@ rule, a term neither the entity model nor the domain vocabulary defines.
   element (`UC-001 step 4`, `UC-001 A2`, `UC-001 BR-003`), the question, the
   readings seen, and whether that part was left out or implemented with the
   chosen reading. `aiup-use-case-spec` answers them in the specification.
+  Also append each to the scoped `docs/open_questions.md` in the
+  `aiup-open-questions` format, reading it first so none is recorded twice:
+  `**Raised by:**` this skill, `**Blocking:** Yes` for a part left out, `No`
+  with an `**Assumed:**` line for a chosen reading. Never edit the
+  specifications.
 - Purely presentational choices, such as a label, layout or column order, are
   not gaps; follow project conventions.
 - Do not edit tests or specification documents (requirements, use cases, test
@@ -81,6 +86,24 @@ it, always qualified because rule IDs restart per use case:
 Restate the rule in one line and mark each enforcing place. Client validation
 complements, never replaces, the backend check. A UI-enforced rule without a
 marker is still unimplemented; `aiup-implementation-status` searches markers first.
+Keep the whole comment, including its indentation, within the project's
+ktlint/detekt `max_line_length` (`.editorconfig`); shorten the restated rule
+rather than wrap it onto a second line.
+
+## Mockups
+
+Apply this only when the use case has a `**Mockup:**` line. Read a Figma link
+through a Figma MCP server when one is available; otherwise read the linked
+image or Markdown sketch under `docs/mockups/`.
+
+- The mockup decides layout: placement, field order, columns and labels. The
+  specification decides which fields and actions exist, their behaviour and
+  their messages.
+- Do not build a mockup field that neither the specification nor the entity
+  model backs. Build a specification item the mockup omits anyway.
+- Report each disagreement as a non-blocking open question. Report an
+  unreadable link; never guess its content.
+- A mockup never widens the use case's scope.
 
 ## Implement
 
@@ -102,7 +125,8 @@ marker is still unimplemented; `aiup-implementation-status` searches markers fir
   version. UI visibility is not backend authorisation.
 
 Do not introduce server `@Api` routes, migrate desktop screens, replace the
-backend or deploy externally unless that work is requested.
+backend or deploy externally unless that work is requested. Ask before adding a
+library, plugin or version-catalogue entry.
 
 ## Verify and Hand Off
 
@@ -114,7 +138,8 @@ Check that every UI-enforced business rule has its `UC-XXX BR-YYY` marker.
 
 Use [aiup-kobweb-test](../aiup-kobweb-test/SKILL.md) to create or update tests.
 Save changed symbols, acceptance scenarios, failed/unrun checks, prerequisites
-and open questions in the existing implementation plan or use-case status artefact. Changes awaiting
+and open questions in the existing implementation plan or use-case status artefact.
+Report a **Decisions** list (choices taken alone) next to **Open questions**. Changes awaiting
 tests remain pending. An end-to-end request may apply both skills sequentially;
 an explicitly scoped fresh session stops after its assigned skill.
 

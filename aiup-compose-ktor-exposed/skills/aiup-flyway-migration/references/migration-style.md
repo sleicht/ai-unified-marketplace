@@ -18,6 +18,21 @@ Read [the executable migrations and mapping](../../aiup-implement/references/rec
 - Match names, lengths, nullability, foreign keys and timestamp mappings exactly. Define blank/whitespace semantics consistently with domain validation.
 - Define an audit function before the first trigger that invokes it, even when introducing audit fields into an existing schema.
 - Choose indexes from query patterns and expected selectivity. Do not blindly index boolean/status columns or duplicate a unique-constraint index.
+- The unit is the entity, not the column. An entity without a table gets one `CREATE TABLE` with every attribute, constraint and foreign key the entity model gives it, including those the current use case does not use. An existing table gets `ALTER TABLE` only where it lags behind the entity model.
+- A required attribute that the use case creating the table cannot fill is a specification gap. Ask; never invent a default or drop `NOT NULL`.
+- A foreign key to an external entity owned by another system or database becomes a plain column without `REFERENCES`, unless its table is part of this migration chain.
+
+Map each entity-model Validation Rules value as follows:
+
+| Validation rule | PostgreSQL | Exposed |
+|---|---|---|
+| `Not Null` / `Optional` | `NOT NULL` / nullable | non-null column / `.nullable()` |
+| `Unique` | named `UNIQUE` constraint | `uniqueIndex()` with the same name |
+| `Foreign Key (T.id)` | `REFERENCES t (id)` | `reference(...)` |
+| `Min: X, Max: Y` | `CHECK (col BETWEEN X AND Y)` | domain validation; the column type only |
+| `Values: A, B, C` | `CHECK (col IN (...))`, matching the existing enum mapping | the existing enum mapping |
+| `Format: Email`, `Phone` (E.164), `URL` | `CHECK` only if the project already uses format checks | domain validation |
+| `String` with a Description beginning `Binary content:` | `BYTEA` | `binary(...)`/`blob(...)` mapped to `ByteArray`; never Base64 text |
 
 ## Verification
 

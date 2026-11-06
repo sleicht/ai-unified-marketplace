@@ -32,6 +32,7 @@ Read `references/migration-style.md`, resolved relative to this `SKILL.md`, befo
 - Forget indexes for lookup columns used by repositories/routes
 - Forget `created_at` / `updated_at` conventions when existing tables use them
 - Create Exposed table definitions in this skill unless the user asks; document compatibility notes instead
+- Add a library, plugin or version-catalogue entry without asking first
 
 ## Naming Convention
 
@@ -59,10 +60,10 @@ Read [the executable record migrations and repository test](../aiup-implement/re
 
 ## Workflow
 
-1. Resolve the service docs path, then read its `entity_model.md` and relevant `use_cases/UC-*.md`.
+1. Resolve the service docs path, then read its `entity_model.md` and relevant `use_cases/UC-*.md`. With a use case, list the entities its steps, alternative flows and business rules touch, plus the entities they reference by a foreign key.
 2. Inspect existing migrations under `<server-module>/src/main/resources/db/migration`.
 3. Determine the next Flyway version and naming format.
-4. Identify new/changed entities, columns, constraints, and indexes.
+4. Compare each listed entity with the current schema (see "Migration and Exposed Contract" in the reference): an entity without a table gets one `CREATE TABLE` with every entity-model attribute, constraint and foreign key, including those the use case does not use; an existing table gets `ALTER TABLE` only where it lags behind the model. A required attribute the creating use case cannot fill is a specification gap: ask, never invent a default or drop `NOT NULL`. Also identify the indexes the queries need.
 5. Create additive SQL only; avoid destructive changes unless user explicitly approved.
 6. Order tables so referenced tables exist before foreign keys reference them.
 7. Add `updated_at` triggers for tables with `updated_at` when the project uses trigger-based audit timestamps.
@@ -70,7 +71,7 @@ Read [the executable record migrations and repository test](../aiup-implement/re
 9. Apply the real migration chain to disposable PostgreSQL; also upgrade the previous schema with representative existing rows. Assert affected constraints, defaults and audit triggers.
 10. If language-server diagnostics are available, run them for related Kotlin table files that were touched.
 11. Run the discovered migration/Testcontainers task using the namespaced or local command shape in the reference. Run repository round trips for changed mappings; Kotlin compilation alone does not verify SQL. Report execution prerequisites and unrun checks explicitly.
-12. Report the migration files created and end with one handoff line: `Next: aiup-implement UC-XXX` for the use case that needs the new schema, or `Next: aiup-implement` naming the specification to implement first when no use case was given.
+12. Report the migration files created, a **Decisions** list of choices taken alone next to **Open questions** (also appended to the scoped `docs/open_questions.md` in the `aiup-open-questions` format, read first so none is recorded twice; never edit the specifications), and end with one handoff line: `Next: aiup-implement UC-XXX` for the use case that needs the new schema, or `Next: aiup-implement` naming the specification to implement first when no use case was given.
 
 ## Resources
 

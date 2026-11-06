@@ -37,7 +37,7 @@ Read these before updating status:
 - `docs/entity_model.md`
 - `docs/use_cases/UC-*.md` for requested use cases, and only the `requirements.md` rows their `**Requirements:**` (German `**Anforderungen:**`) lines link
 - `UC-XXX BR-YYY` business-rule markers in source, found first by searching for `UC-XXX BR-`; fall back to domain names only for unmarked rules
-- Open questions recorded in implementation plans or handoffs
+- `docs/open_questions.md`, and open questions recorded in implementation plans or handoffs
 - server module `src/main/kotlin/**/modules/**`
 - shared module `src/commonMain/kotlin/**`
 - UI module only when UI implementation status is requested; discover Compose common/platform sources or Kobweb jsMain pages, layouts, styles and app entry
@@ -78,13 +78,28 @@ Required sections:
 
 1. `Implementation Status`
 2. `Use Case Scope` — use case ID, title, primary actor, status
-3. `Traceability` — requirements/use-case/entity/code links; one coverage unit per business rule and per linked NFR/CON. Judge a testable NFR/CON like a business rule; mark a system-wide one `Not applicable` with its reason; never mark a performance NFR covered from reading code alone
+3. `Traceability` — requirements/use-case/entity/code links; a per-use-case matrix with one coverage unit per main step, alternative flow, business rule, postcondition and linked NFR/CON. Judge a testable NFR/CON like a business rule; mark a system-wide one `Not applicable` with its reason; never mark a performance NFR covered from reading code alone
 4. `Entity Coverage` — filtered entity matrix rows
 5. `Backend Coverage` — route, service, repository, DTO, migration evidence
 6. `Architecture and Contract Coverage` — DI graph, dependency rules, shared API checks, and local coverage gates
-7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/Compose or Kobweb browser test evidence; record scenario, file, command, execution date/revision when available, result and outstanding gap separately
-8. `Gaps` — missing or partial items with file-level evidence, including implementation-to-test handoffs, unexecuted checks, business rules without a `UC-XXX BR-YYY` marker, and open questions from handoffs
+7. `Test Coverage` — route/unit/ArchUnit/Testcontainers/Compose or Kobweb browser test evidence; record scenario, file, command, execution date/revision when available, result and outstanding gap separately. An NFR/CON id named in a test name or KDoc is evidence for that unit; an id the use case does not link is drift; an FR id in a test is a traceability gap. An alternative flow caused by an external system needs both a MockEngine adapter test and a route/service test with a failing fake port; one without the other is `Partial`
+8. `Gaps` — missing or partial items with file-level evidence, including implementation-to-test handoffs, unexecuted checks, business rules without a `UC-XXX BR-YYY` marker, markers whose rule no longer exists or whose text contradicts the current rule, and open questions from handoffs. A layer the `Construction Layers` table in `architecture.md` marks `–` is not a gap
 9. `Changes since previous status` — only when the page already existed: closed items, new items, and verdicts that changed although no code, specification or test changed (flag these; do not silently flip them)
+10. `Status Suggestion` — see [Status Suggestion](#status-suggestion)
+
+End the report with one `Next:` line naming the next skill to run and its reason, chosen in this order: a blocking open question or code/specification drift → `aiup-use-case-spec`; a missing or lagging table → `aiup-flyway-migration`; missing backend behaviour → `aiup-implement`; missing UI behaviour → `aiup-implement-ui` or `aiup-kobweb-ui`, whichever the `Construction Layers` table in `architecture.md` names, otherwise whichever the project uses; missing or unrun tests → `aiup-ktor-test`, `aiup-compose-test` or `aiup-kobweb-test`; a linked requirement without a journey → `aiup-test-case`. When every unit is fully evidenced, write `Next: none` with the reason.
+
+## Status Suggestion
+
+Never edit the use case's `**Status:**` line; suggest the next status only, with its evidence.
+
+- Suggest `Implemented` once every unit of the matrix has production evidence, then `Tested` once its tests have passed. Never suggest `Done`.
+- Never suggest `Tested` while a blocking open question for the use case is `Open` or `Answered` in the scoped `docs/open_questions.md` (its element names the use case, or a requirement its `**Requirements:**` line links), or remains in a handoff.
+- For a use case at `Implemented` or later, compare `git log -1 --format=%H -- <use-case file>` with the last commit that changed its Status line (`git log -1 -G '^\*\*Status:\*\*' --format=%H -- <use-case file>`). If the specification changed afterwards, flag the status as possibly stale.
+
+## Test Case Coverage
+
+When the scope names a `TC-XXX` journey under `docs/test_cases/`, report journey coverage per test case: every flow row, validation item and postcondition needs a step in an automated journey test. Suggest only `Automated` for a test case; never suggest a use-case status from journey coverage.
 
 Never infer passing tests from source-file presence. Use `Present, not run`, `Passed`, `Failed`, or `Blocked` with evidence for each verification item; distinguish compiled source, executed unit tests, browser tests and exported-site smoke tests. Shared JSON compatibility is separate from JVM/KLIB API checks.
 
@@ -97,7 +112,7 @@ Only when asked whether all requirements are covered, add a `Requirement Coverag
 - Invent implementation evidence from the entity model alone
 - Mark generated or placeholder code as implemented without usable behaviour
 - Create company-specific styling, names, or libraries
-- Rewrite requirements, use case specs, migrations, or source code
+- Rewrite requirements, use case specs (including their `**Status:**` line), migrations, or source code
 - Run broad builds just to produce a status page
 - Pick the side of a drift between code and specification; list both remedies (change the specification with `aiup-use-case-spec`, or the code with the construction skill) and let the user decide
 - Suggest the same fix twice for a gap still open after a fix aimed at it; state what the specification and code each say and ask the user to settle it
